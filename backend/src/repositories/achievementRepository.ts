@@ -1,27 +1,10 @@
 import { Database } from "../db/connection";
+import { db } from "../services/store";
 import { AchievementEntity, UserAchievementEntity } from "../types";
 import { DEFAULT_ACHIEVEMENTS } from "../db/seeds";
+import { XPRepository } from "./xpRepository";
 
 export class AchievementRepository {
-  private static inMemoryUserAchievements: UserAchievementEntity[] = [
-    {
-      id: "uach-1",
-      userId: "usr-arjun-patel",
-      achievementId: "ach-first-blood",
-      badgeCode: "FIRST_ACCEPTED",
-      progressValue: 100,
-      unlockedAt: new Date(Date.now() - 2 * 3600000).toISOString(),
-    },
-    {
-      id: "uach-2",
-      userId: "usr-arjun-patel",
-      achievementId: "ach-speed-demon",
-      badgeCode: "SPEED_DEMON",
-      progressValue: 100,
-      unlockedAt: new Date(Date.now() - 4 * 3600000).toISOString(),
-    },
-  ];
-
   static async findAll(): Promise<AchievementEntity[]> {
     const pool = Database.getPool();
     if (pool) {
@@ -44,6 +27,10 @@ export class AchievementRepository {
       }
     }
 
+    if (db.achievements.size > 0) {
+      return Array.from(db.achievements.values());
+    }
+
     return DEFAULT_ACHIEVEMENTS;
   }
 
@@ -54,7 +41,8 @@ export class AchievementRepository {
         `SELECT ua.id, ua.user_id as "userId", ua.achievement_id as "achievementId",
                 ua.badge_code as "badgeCode", ua.progress_value as "progressValue",
                 ua.unlocked_at as "unlockedAt", a.badge_name as "badgeName",
-                a.description, a.icon_name as "iconName", a.xp_reward as "xpReward"
+                a.description, a.icon_name as "iconName", a.xp_reward as "xpReward",
+                a.category
          FROM user_achievements ua
          JOIN achievements a ON ua.achievement_id = a.id
          WHERE ua.user_id = $1
@@ -62,21 +50,26 @@ export class AchievementRepository {
         [userId]
       );
 
-      return rows.map((r) => ({
-        id: r.id,
-        userId: r.userId,
-        achievementId: r.achievementId,
-        badgeCode: r.badgeCode,
-        progressValue: Number(r.progressValue),
-        unlockedAt: new Date(r.unlockedAt).toISOString(),
-        badgeName: r.badgeName,
-        description: r.description,
-        iconName: r.iconName,
-        xpReward: Number(r.xpReward),
-      }));
+      if (rows.length > 0) {
+        return rows.map((r) => ({
+          id: r.id,
+          userId: r.userId,
+          achievementId: r.achievementId,
+          badgeCode: r.badgeCode,
+          progressValue: Number(r.progressValue),
+          unlockedAt: new Date(r.unlockedAt).toISOString(),
+          badgeName: r.badgeName,
+          description: r.description,
+          iconName: r.iconName,
+          xpReward: Number(r.xpReward),
+          category: r.category,
+        }));
+      }
     }
 
-    return this.inMemoryUserAchievements.filter((ua) => ua.userId === userId);
+    return Array.from(db.userAchievements.values())
+      .filter((ua) => ua.userId === userId)
+      .sort((a, b) => new Date(b.unlockedAt).getTime() - new Date(a.unlockedAt).getTime());
   }
 
   static async awardAchievement(
@@ -87,6 +80,13 @@ export class AchievementRepository {
     const all = await this.findAll();
     const target = all.find((a) => a.badgeCode === badgeCode);
     if (!target) return null;
+
+    // Check if already unlocked
+    const existingList = await this.findUserAchievements(userId);
+    const existing = existingList.find((a) => a.badgeCode === badgeCode);
+    if (existing && existing.progressValue >= 100) {
+      return existing;
+    }
 
     const userAchId = `uach-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
     const now = new Date().toISOString();
@@ -114,17 +114,66 @@ export class AchievementRepository {
       description: target.description,
       iconName: target.iconName,
       xpReward: target.xpReward,
+      category: target.category,
     };
 
-    const existingIdx = this.inMemoryUserAchievements.findIndex(
-      (u) => u.userId === userId && u.badgeCode === badgeCode
-    );
-    if (existingIdx >= 0) {
-      this.inMemoryUserAchievements[existingIdx] = item;
-    } else {
-      this.inMemoryUserAchievements.push(item);
+    db.userAchievements.set(userAchId, item);
+
+    // Award XP reward for unlocking the badge
+    if (target.xpReward > 0 && progressValue >= 100) {
+      await XPRepository.recordXP(
+        userId,
+        target.xpReward,
+        "Accepted Solution",
+        `Unlocked Badge: ${target.badgeName}`
+      );
     }
 
     return item;
+  }
+
+  /**
+   * Unlock detection engine: evaluates user stats and awards pending achievements
+   */
+  static async evaluateAndUnlockAchievements(userId: string): Promise<UserAchievementEntity[]> {
+    const unlocked: UserAchievementEntity[] = [];
+    const userAchList = await this.findUserAchievements(userId);
+    const unlockedCodes = new Set(userAchList.map((a) => a.badgeCode));
+
+    const solvedCount = Array.from(db.solvedProblems.values()).filter((s) => s.userId === userId).length;
+    const profile = db.profiles.get(userId);
+    const streakDays = profile?.streakDays || 0;
+
+    // Check First AC
+    if (solvedCount >= 1 && !unlockedCodes.has("FIRST_ACCEPTED")) {
+      const res = await this.awardAchievement(userId, "FIRST_ACCEPTED");
+      if (res) unlocked.push(res);
+    }
+
+    // Check 50 Solved
+    if (solvedCount >= 50 && !unlockedCodes.has("SOLVED_50")) {
+      const res = await this.awardAchievement(userId, "SOLVED_50");
+      if (res) unlocked.push(res);
+    }
+
+    // Check 100 Solved
+    if (solvedCount >= 100 && !unlockedCodes.has("SOLVED_100")) {
+      const res = await this.awardAchievement(userId, "SOLVED_100");
+      if (res) unlocked.push(res);
+    }
+
+    // Check 7 Day Streak
+    if (streakDays >= 7 && !unlockedCodes.has("STREAK_7_DAYS")) {
+      const res = await this.awardAchievement(userId, "STREAK_7_DAYS");
+      if (res) unlocked.push(res);
+    }
+
+    // Check 30 Day Streak
+    if (streakDays >= 30 && !unlockedCodes.has("STREAK_30_DAYS")) {
+      const res = await this.awardAchievement(userId, "STREAK_30_DAYS");
+      if (res) unlocked.push(res);
+    }
+
+    return unlocked;
   }
 }

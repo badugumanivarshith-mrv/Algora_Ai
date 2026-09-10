@@ -2,7 +2,7 @@ import path from "path";
 import express from "express";
 import { createServer as createViteServer } from "vite";
 import { createExpressApp } from "./backend/src/server";
-import { initializeDatabase } from "./backend/src/db";
+import { initializeDatabase, Database } from "./backend/src/db";
 
 const PORT = 3000;
 
@@ -27,9 +27,29 @@ async function start() {
     });
   }
 
-  app.listen(PORT, "0.0.0.0", () => {
+  const server = app.listen(PORT, "0.0.0.0", () => {
     console.log(`[Algora Server] Running on http://0.0.0.0:${PORT} (${process.env.NODE_ENV || "development"})`);
   });
+
+  // Graceful shutdown handling
+  const shutdown = async (signal: string) => {
+    console.log(`\n[Algora Server] Received ${signal}. Initiating graceful shutdown...`);
+    server.close(async () => {
+      console.log("[Algora Server] HTTP server closed.");
+      await Database.close();
+      console.log("[Algora Server] Database connections terminated.");
+      process.exit(0);
+    });
+
+    // Force exit if hanging
+    setTimeout(() => {
+      console.error("[Algora Server] Forced shutdown timeout exceeded. Exiting.");
+      process.exit(1);
+    }, 5000).unref();
+  };
+
+  process.on("SIGTERM", () => shutdown("SIGTERM"));
+  process.on("SIGINT", () => shutdown("SIGINT"));
 }
 
 start().catch((err) => {

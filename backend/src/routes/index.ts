@@ -3,6 +3,10 @@ import healthRoutes from "./healthRoutes";
 import authRoutes from "./authRoutes";
 import userRoutes from "./userRoutes";
 import submissionRoutes from "./submissionRoutes";
+import contestRoutes from "./contestRoutes";
+import leaderboardRoutes from "./leaderboardRoutes";
+import gamificationRoutes from "./gamificationRoutes";
+import dailyReviewRoutes from "./dailyReviewRoutes";
 
 const router = Router();
 
@@ -10,5 +14,9 @@ router.use("/health", healthRoutes);
 router.use("/auth", authRoutes);
 router.use("/users", userRoutes);
 router.use("/submissions", submissionRoutes);
+router.use("/contests", contestRoutes);
+router.use("/leaderboard", leaderboardRoutes);
+router.use("/gamification", gamificationRoutes);
+router.use("/daily-review", dailyReviewRoutes);
 
 export default router;

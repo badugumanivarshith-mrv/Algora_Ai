@@ -77,7 +77,15 @@ export default function Sidebar() {
           <Settings size={15} style={{ flexShrink: 0 }} />
           <span className="sidebar-label">Settings</span>
         </button>
-        <button className="nav-link w-full text-left" style={{ marginBottom: 8 }}>
+        <button
+          onClick={async () => {
+            const { ApiClient } = await import("../services/apiClient");
+            await ApiClient.logout();
+            navigate("/");
+          }}
+          className="nav-link w-full text-left"
+          style={{ marginBottom: 8 }}
+        >
           <LogOut size={15} style={{ flexShrink: 0, color: "var(--red)" }} />
           <span className="sidebar-label" style={{ color: "var(--red)" }}>Sign out</span>
         </button>

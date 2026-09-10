@@ -239,3 +239,181 @@ export interface AnalystReport {
   }[];
 }
 
+// ==========================================
+// PHASE 6: GAMIFICATION & CONTESTS TYPES
+// ==========================================
+
+export type ContestType =
+  | "Weekly Contest"
+  | "Monthly Contest"
+  | "Topic Contest"
+  | "Company Assessment";
+
+export type ContestStatus = "upcoming" | "active" | "completed";
+
+export interface ContestProblem {
+  id: string;
+  contestId: string;
+  problemId: number;
+  problemSlug: string;
+  problemTitle: string;
+  orderIndex: number;
+  scorePoints: number;
+  difficulty?: ProblemDifficulty;
+  solved?: boolean;
+}
+
+export interface ContestLeaderboardEntry {
+  rank: number;
+  userId: string;
+  username: string;
+  fullName: string;
+  avatarUrl: string;
+  institution?: string;
+  score: number;
+  penaltySeconds: number;
+  problemsSolved: number;
+  totalProblems: number;
+  submissionTime: string;
+  isCurrentUser?: boolean;
+}
+
+export interface Contest {
+  id: string;
+  title: string;
+  description: string;
+  contestType: ContestType;
+  startTime: string;
+  endTime: string;
+  durationMinutes: number;
+  difficulty: ProblemDifficulty;
+  participantCount: number;
+  status: ContestStatus;
+  problems?: ContestProblem[];
+  leaderboard?: ContestLeaderboardEntry[];
+  registered?: boolean;
+}
+
+export type RatingTier = "Beginner" | "Intermediate" | "Advanced" | "Expert" | "Master";
+
+export interface RatingHistoryPoint {
+  id: string;
+  contestId?: string;
+  contestTitle?: string;
+  oldRating: number;
+  newRating: number;
+  ratingChange: number;
+  reason: string;
+  recordedAt: string;
+}
+
+export interface XPTransaction {
+  id: string;
+  userId: string;
+  amount: number;
+  source: string;
+  description: string;
+  createdAt: string;
+}
+
+export interface UserLevelInfo {
+  totalXP: number;
+  level: number;
+  currentLevelXP: number;
+  nextLevelXP: number;
+  progressPercent: number;
+  rank: number;
+}
+
+export type AchievementCategory = "learning" | "problem_solving" | "contest" | "ai_learning";
+
+export interface AchievementBadge {
+  id: string;
+  badgeCode: string;
+  badgeName: string;
+  description: string;
+  iconName: string;
+  xpReward: number;
+  category: AchievementCategory;
+  unlocked: boolean;
+  unlockedAt?: string;
+  progressValue: number;
+}
+
+export interface GlobalLeaderboardUser {
+  rank: number;
+  userId: string;
+  username: string;
+  fullName: string;
+  avatarUrl: string;
+  bio?: string;
+  institution?: string;
+  preferredLanguage?: SupportedLanguage;
+  rating: number;
+  ratingTier?: RatingTier;
+  streakDays: number;
+  totalXP: number;
+  isCurrentUser?: boolean;
+}
+
+export interface DailyReviewQuestion {
+  id: string;
+  problemId: number;
+  problemSlug: string;
+  title: string;
+  difficulty: ProblemDifficulty;
+  topic: string;
+  retentionScore: number;
+  lastPracticedDaysAgo: number;
+  prompt: string;
+  codeSnippet?: string;
+  options: string[];
+  correctIndex: number;
+  explanation: string;
+}
+
+export interface DailyReviewQueue {
+  queue: DailyReviewQuestion[];
+  totalDue: number;
+  overallRetentionScore: number;
+  weakTopics: {
+    topic: string;
+    masteryScore: number;
+    solvedCount: number;
+  }[];
+  streakDays: number;
+  xpRewardTotal: number;
+}
+
+export function calculateLevelInfo(totalXP: number): UserLevelInfo {
+  let level = 1;
+  let threshold = 500;
+  let remaining = totalXP;
+
+  while (remaining >= threshold) {
+    remaining -= threshold;
+    level += 1;
+    threshold = Math.round(500 * Math.pow(1.35, level - 1));
+  }
+
+  const currentLevelXP = remaining;
+  const nextLevelXP = threshold;
+  const progressPercent = Math.min(100, Math.round((currentLevelXP / nextLevelXP) * 100));
+
+  return {
+    totalXP,
+    level,
+    currentLevelXP,
+    nextLevelXP,
+    progressPercent,
+    rank: 1,
+  };
+}
+
+export function getRatingTier(rating: number): RatingTier {
+  if (rating >= 2200) return "Master";
+  if (rating >= 1900) return "Expert";
+  if (rating >= 1600) return "Advanced";
+  if (rating >= 1300) return "Intermediate";
+  return "Beginner";
+}

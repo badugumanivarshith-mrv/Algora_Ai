@@ -1,6 +1,7 @@
-import type { ElementType } from "react";
-import { Bell, Search, Sun, Moon, Sparkles, Command } from "lucide-react";
+import { useState, useEffect, type ElementType } from "react";
+import { Bell, Search, Sun, Moon, Sparkles, Command, Flame, Zap, Award } from "lucide-react";
 import { useTheme, type Theme } from "./ThemeContext";
+import { GamificationApi, GamificationProfileResponse } from "../services/gamificationApi";
 
 interface TopNavProps {
   title?: string;
@@ -8,13 +9,24 @@ interface TopNavProps {
 }
 
 const themes: { key: Theme; icon: ElementType; label: string }[] = [
-  { key: "light",    icon: Sun,      label: "Light"    },
-  { key: "dark",     icon: Moon,     label: "Dark"     },
+  { key: "light", icon: Sun, label: "Light" },
+  { key: "dark", icon: Moon, label: "Dark" },
   { key: "gradient", icon: Sparkles, label: "Gradient" },
 ];
 
 export default function TopNav({ title, subtitle }: TopNavProps) {
   const { theme, setTheme } = useTheme();
+  const [profile, setProfile] = useState<GamificationProfileResponse | null>(null);
+
+  useEffect(() => {
+    async function loadProfile() {
+      const data = await GamificationApi.getGamificationProfile();
+      if (data) {
+        setProfile(data);
+      }
+    }
+    loadProfile();
+  }, []);
 
   return (
     <header
@@ -48,15 +60,83 @@ export default function TopNav({ title, subtitle }: TopNavProps) {
               {title}
             </h1>
             {subtitle && (
-              <span
-                className="hide-mobile"
-                style={{ fontSize: 12, color: "var(--text-muted)" }}
-              >
+              <span className="hide-mobile" style={{ fontSize: 12, color: "var(--text-muted)" }}>
                 {subtitle}
               </span>
             )}
           </div>
         )}
+      </div>
+
+      {/* Gamification Pills */}
+      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        {/* Rating Pill */}
+        <div
+          className="hide-mobile"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 5,
+            padding: "4px 10px",
+            background: "color-mix(in srgb, var(--amber) 10%, transparent)",
+            border: "1px solid color-mix(in srgb, var(--amber) 25%, transparent)",
+            borderRadius: "var(--radius-full)",
+            fontSize: 12,
+            fontWeight: 700,
+            color: "var(--amber)",
+          }}
+          title="Competitive Rating"
+        >
+          <Zap size={13} style={{ fill: "currentColor" }} />
+          <span>{profile ? profile.rating.toLocaleString() : "1,842"}</span>
+          <span style={{ fontSize: 10.5, fontWeight: 500, opacity: 0.85 }}>
+            {profile?.ratingTier || "Expert"}
+          </span>
+        </div>
+
+        {/* Level & XP Pill */}
+        <div
+          className="hide-mobile"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 6,
+            padding: "4px 10px",
+            background: "color-mix(in srgb, var(--violet) 10%, transparent)",
+            border: "1px solid color-mix(in srgb, var(--violet) 25%, transparent)",
+            borderRadius: "var(--radius-full)",
+            fontSize: 12,
+            fontWeight: 700,
+            color: "var(--violet)",
+          }}
+          title="Level & XP"
+        >
+          <Award size={13} />
+          <span>Lvl {profile ? profile.level : 6}</span>
+          <span style={{ fontSize: 10.5, fontWeight: 500, opacity: 0.85 }}>
+            {profile ? `${(profile.totalXP / 1000).toFixed(1)}k XP` : "4.8k XP"}
+          </span>
+        </div>
+
+        {/* Streak Pill */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 4,
+            padding: "4px 10px",
+            background: "color-mix(in srgb, var(--red) 10%, transparent)",
+            border: "1px solid color-mix(in srgb, var(--red) 25%, transparent)",
+            borderRadius: "var(--radius-full)",
+            fontSize: 12,
+            fontWeight: 700,
+            color: "var(--red)",
+          }}
+          title="Daily Practice Streak"
+        >
+          <Flame size={13} style={{ fill: "currentColor" }} />
+          <span>{profile ? profile.streakDays : 7}d</span>
+        </div>
       </div>
 
       {/* Search pill */}
@@ -73,7 +153,7 @@ export default function TopNav({ title, subtitle }: TopNavProps) {
           color: "var(--text-muted)",
           fontSize: 12,
           cursor: "pointer",
-          minWidth: 200,
+          minWidth: 160,
           fontFamily: "inherit",
         }}
       >
@@ -180,7 +260,7 @@ export default function TopNav({ title, subtitle }: TopNavProps) {
           cursor: "pointer",
         }}
       >
-        AS
+        AP
       </div>
     </header>
   );

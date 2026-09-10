@@ -165,4 +165,120 @@ export class ProfileRepository {
     }
     return null;
   }
+
+  static async getLeaderboard(params: {
+    page?: number;
+    limit?: number;
+    search?: string;
+    sortBy?: "rating" | "totalXP" | "streakDays";
+    currentUserId?: string;
+  }): Promise<{
+    items: Array<ProfileEntity & { rank: number; username: string; isCurrentUser: boolean }>;
+    total: number;
+    page: number;
+    totalPages: number;
+    currentUserRank?: number;
+  }> {
+    const page = Math.max(1, params.page || 1);
+    const limit = Math.max(1, Math.min(100, params.limit || 20));
+    const search = (params.search || "").toLowerCase().trim();
+    const sortBy = params.sortBy || "rating";
+
+    const pool = Database.getPool();
+    if (pool) {
+      const sortColumn = sortBy === "totalXP" ? "p.total_xp" : sortBy === "streakDays" ? "p.streak_days" : "p.rating";
+      const { rows } = await Database.query<any>(
+        `SELECT p.id, p.user_id as "userId", p.full_name as "fullName", p.avatar_url as "avatarUrl",
+                p.bio, p.institution, p.github_handle as "githubHandle", p.preferred_language as "preferredLanguage",
+                p.rating, p.streak_days as "streakDays", p.total_xp as "totalXP",
+                p.created_at as "createdAt", p.updated_at as "updatedAt",
+                u.username,
+                ROW_NUMBER() OVER(ORDER BY ${sortColumn} DESC) as rank
+         FROM profiles p
+         JOIN users u ON p.user_id = u.id
+         WHERE ($1 = '' OR LOWER(p.full_name) LIKE '%' || $1 || '%' OR LOWER(u.username) LIKE '%' || $1 || '%' OR LOWER(p.institution) LIKE '%' || $1 || '%')
+         ORDER BY ${sortColumn} DESC;`,
+        [search]
+      );
+
+      const total = rows.length;
+      const totalPages = Math.ceil(total / limit) || 1;
+      const start = (page - 1) * limit;
+      const paginated = rows.slice(start, start + limit);
+
+      const items = paginated.map((r) => ({
+        id: r.id,
+        userId: r.userId,
+        username: r.username,
+        fullName: r.fullName,
+        avatarUrl: r.avatarUrl,
+        bio: r.bio || "",
+        institution: r.institution || "",
+        githubHandle: r.githubHandle,
+        preferredLanguage: r.preferredLanguage || "Python",
+        rating: Number(r.rating) || 1200,
+        streakDays: Number(r.streakDays) || 0,
+        totalXP: Number(r.totalXP) || 0,
+        rank: Number(r.rank),
+        isCurrentUser: params.currentUserId === r.userId,
+        createdAt: new Date(r.createdAt).toISOString(),
+        updatedAt: new Date(r.updatedAt).toISOString(),
+      }));
+
+      const currentUserRow = rows.find((r) => r.userId === params.currentUserId);
+
+      return {
+        items,
+        total,
+        page,
+        totalPages,
+        currentUserRank: currentUserRow ? Number(currentUserRow.rank) : undefined,
+      };
+    }
+
+    // In-memory implementation
+    const list = Array.from(db.profiles.values()).map((p) => {
+      const u = db.users.get(p.userId);
+      return {
+        ...p,
+        username: u?.username || "user",
+      };
+    });
+
+    list.sort((a, b) => {
+      if (sortBy === "totalXP") return b.totalXP - a.totalXP;
+      if (sortBy === "streakDays") return b.streakDays - a.streakDays;
+      return b.rating - a.rating;
+    });
+
+    const ranked = list.map((item, idx) => ({
+      ...item,
+      rank: idx + 1,
+      isCurrentUser: params.currentUserId === item.userId,
+    }));
+
+    const filtered = search
+      ? ranked.filter(
+          (item) =>
+            item.fullName.toLowerCase().includes(search) ||
+            item.username.toLowerCase().includes(search) ||
+            item.institution?.toLowerCase().includes(search)
+        )
+      : ranked;
+
+    const total = filtered.length;
+    const totalPages = Math.ceil(total / limit) || 1;
+    const start = (page - 1) * limit;
+    const items = filtered.slice(start, start + limit);
+
+    const currentUserEntry = ranked.find((r) => r.userId === params.currentUserId);
+
+    return {
+      items,
+      total,
+      page,
+      totalPages,
+      currentUserRank: currentUserEntry?.rank,
+    };
+  }
 }

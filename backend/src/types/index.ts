@@ -60,6 +60,8 @@ export interface SolvedProblemEntity {
   createdAt?: string;
 }
 
+export type AchievementCategory = "learning" | "problem_solving" | "contest" | "ai_learning";
+
 export interface AchievementEntity {
   id: string;
   badgeCode: string;
@@ -67,7 +69,7 @@ export interface AchievementEntity {
   description: string;
   iconName: string;
   xpReward: number;
-  category: string;
+  category: AchievementCategory | string;
   createdAt: string;
 }
 
@@ -82,6 +84,7 @@ export interface UserAchievementEntity {
   description?: string;
   iconName?: string;
   xpReward?: number;
+  category?: string;
 }
 
 export interface LearningProgressEntity {
@@ -102,6 +105,141 @@ export interface UserSessionEntity {
   ipAddress?: string;
   userAgent?: string;
   createdAt: string;
+}
+
+// === Contests & Gamification Entities ===
+
+export type ContestType = "Weekly Contest" | "Monthly Contest" | "Topic Contest" | "Company Assessment";
+export type ContestStatus = "upcoming" | "active" | "completed";
+
+export interface ContestEntity {
+  id: string;
+  title: string;
+  description: string;
+  contestType: ContestType;
+  startTime: string;
+  endTime: string;
+  durationMinutes: number;
+  difficulty: "Easy" | "Medium" | "Hard" | "All Levels";
+  participantCount: number;
+  status: ContestStatus;
+  problemIds?: number[];
+  problems?: ContestProblemEntity[];
+  registered?: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ContestProblemEntity {
+  id: string;
+  contestId: string;
+  problemId: number;
+  problemSlug: string;
+  problemTitle: string;
+  orderIndex: number;
+  scorePoints: number;
+  difficulty?: "Easy" | "Medium" | "Hard";
+  solved?: boolean;
+}
+
+export interface ContestParticipantEntity {
+  id: string;
+  contestId: string;
+  userId: string;
+  username: string;
+  fullName?: string;
+  avatarUrl?: string;
+  institution?: string;
+  score: number;
+  penaltySeconds: number;
+  rank?: number;
+  registeredAt: string;
+}
+
+export interface ContestSubmissionEntity {
+  id: string;
+  contestId: string;
+  userId: string;
+  problemSlug: string;
+  status: string;
+  pointsAwarded: number;
+  submissionTime: string;
+}
+
+export type RatingTier = "Beginner" | "Intermediate" | "Advanced" | "Expert" | "Master";
+
+export interface RatingHistoryEntity {
+  id: string;
+  userId: string;
+  contestId?: string;
+  contestTitle?: string;
+  oldRating: number;
+  newRating: number;
+  ratingChange: number;
+  reason: string;
+  recordedAt: string;
+}
+
+export type XPSource =
+  | "Accepted Solution"
+  | "Hard Problem Bonus"
+  | "Topic Completion"
+  | "Quiz Completion"
+  | "Contest Participation"
+  | "Contest Victory"
+  | "Daily Review Completion";
+
+export interface XPTransactionEntity {
+  id: string;
+  userId: string;
+  amount: number;
+  source: XPSource | string;
+  description: string;
+  createdAt: string;
+}
+
+export interface UserXPProfile {
+  totalXP: number;
+  level: number;
+  currentLevelXP: number;
+  nextLevelXP: number;
+  progressPercent: number;
+  rank: number;
+  history: XPTransactionEntity[];
+}
+
+export interface GlobalLeaderboardUser {
+  rank: number;
+  userId: string;
+  username: string;
+  fullName: string;
+  avatarUrl: string;
+  institution: string;
+  rating: number;
+  ratingTier: RatingTier;
+  totalXP: number;
+  level: number;
+  problemsSolved: number;
+  contestsAttended: number;
+  streakDays: number;
+  rankChange: number;
+  badge?: string;
+  isCurrentUser?: boolean;
+}
+
+export interface ContestLeaderboardEntry {
+  rank: number;
+  userId: string;
+  username: string;
+  fullName: string;
+  avatarUrl: string;
+  institution: string;
+  score: number;
+  penaltySeconds: number;
+  problemsSolved: number;
+  totalProblems: number;
+  submissionTime: string;
+  isCurrentUser?: boolean;
 }
 
 export interface DatabaseHealthStatus {
@@ -146,3 +284,34 @@ export interface ApiErrorResponse {
   };
 }
 
+// Level calculation helpers
+export function calculateLevelInfo(totalXP: number): {
+  level: number;
+  currentLevelXP: number;
+  nextLevelXP: number;
+  progressPercent: number;
+} {
+  // Level threshold: Level N requires (N - 1)^2 * 100 XP
+  // Total XP for Level 1 = 0, Level 2 = 100, Level 3 = 400, Level 4 = 900, Level 5 = 1600, etc.
+  const level = Math.max(1, Math.floor(Math.sqrt(Math.max(0, totalXP) / 100)) + 1);
+  const currentFloorXP = Math.pow(level - 1, 2) * 100;
+  const nextFloorXP = Math.pow(level, 2) * 100;
+  const xpInLevel = Math.max(0, totalXP - currentFloorXP);
+  const requiredForLevel = nextFloorXP - currentFloorXP;
+  const progressPercent = Math.min(100, Math.round((xpInLevel / requiredForLevel) * 100));
+
+  return {
+    level,
+    currentLevelXP: xpInLevel,
+    nextLevelXP: requiredForLevel,
+    progressPercent,
+  };
+}
+
+export function getRatingTier(rating: number): RatingTier {
+  if (rating >= 2300) return "Master";
+  if (rating >= 2000) return "Expert";
+  if (rating >= 1700) return "Advanced";
+  if (rating >= 1400) return "Intermediate";
+  return "Beginner";
+}
