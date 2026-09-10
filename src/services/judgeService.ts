@@ -8,6 +8,7 @@ import {
   UserProgressStats,
 } from "../types";
 import { PROBLEMS } from "../data/problems";
+import { ApiClient } from "./apiClient";
 
 const SUBMISSIONS_STORAGE_KEY = "algora_judge_submissions_v1";
 const PROGRESS_STORAGE_KEY = "algora_user_progress_v1";
@@ -473,6 +474,26 @@ export class JudgeService {
     };
 
     this.saveSubmission(record);
+
+    // Asynchronously synchronize submission to the backend API
+    ApiClient.createSubmission({
+      problemId: problem.id,
+      problemSlug: problem.slug,
+      problemTitle: problem.title,
+      language,
+      code,
+      status: record.status,
+      runtimeMs: record.runtimeMs,
+      memoryMb: record.memoryMb,
+      runtimePercentile: record.runtimePercentile,
+      memoryPercentile: record.memoryPercentile,
+      passedTests: record.passedTests,
+      totalTests: record.totalTests,
+      errorMessage: record.errorMessage,
+      compilationError: record.compilationError,
+    }).catch((err) => {
+      console.warn("[JudgeService] Background backend sync failed, local persistence active:", err);
+    });
 
     if (isAccepted) {
       this.recordSolvedProblem(problem.slug, problem.xpReward, language);
