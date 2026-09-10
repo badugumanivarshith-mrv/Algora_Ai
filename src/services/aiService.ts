@@ -6,9 +6,9 @@ import {
   SupportedLanguage,
 } from "../types";
 import { PROBLEMS } from "../data/problems";
+import { JudgeService } from "./judgeService";
 
 const MENTOR_STORAGE_KEY = "algora_ai_mentor_conversations_v1";
-const ANALYST_PREFS_KEY = "algora_ai_analyst_preferences_v1";
 
 const DEFAULT_CONVERSATION: MentorConversation = {
   id: "conv-initial",
@@ -92,117 +92,15 @@ def dp(idx: int, remaining: int) -> int:
   ],
 };
 
-const DEFAULT_ANALYST_REPORT: AnalystReport = {
-  readinessScore: 78,
-  readinessTier: "Senior Candidate / Top 15%",
-  totalSolved: 62,
-  totalSubmissions: 148,
-  overallAccuracy: 74.2,
-  difficultyStats: {
-    easy: 28,
-    medium: 26,
-    hard: 8,
-    total: 62,
-  },
-  topicMastery: [
-    { topic: "Arrays & Hashing", score: 88, benchmark: 75, solvedCount: 18, totalCount: 20, accuracy: 88, level: "Strong" },
-    { topic: "Two Pointers", score: 82, benchmark: 70, solvedCount: 10, totalCount: 12, accuracy: 82, level: "Strong" },
-    { topic: "Graph Algorithms", score: 90, benchmark: 65, solvedCount: 12, totalCount: 14, accuracy: 90, level: "Strong" },
-    { topic: "Binary Search", score: 74, benchmark: 68, solvedCount: 8, totalCount: 10, accuracy: 74, level: "Proficient" },
-    { topic: "Trees & BST", score: 72, benchmark: 65, solvedCount: 9, totalCount: 12, accuracy: 72, level: "Proficient" },
-    { topic: "Sliding Window", score: 70, benchmark: 65, solvedCount: 7, totalCount: 10, accuracy: 70, level: "Proficient" },
-    { topic: "Dynamic Programming", score: 58, benchmark: 60, solvedCount: 6, totalCount: 15, accuracy: 58, level: "Needs Practice" },
-    { topic: "Backtracking", score: 48, benchmark: 55, solvedCount: 4, totalCount: 10, accuracy: 48, level: "Critical" },
-  ],
-  accuracyTrends: [
-    { period: "W1", accuracy: 62, problemsSolved: 6, practiceMinutes: 240 },
-    { period: "W2", accuracy: 68, problemsSolved: 8, practiceMinutes: 320 },
-    { period: "W3", accuracy: 61, problemsSolved: 5, practiceMinutes: 180 },
-    { period: "W4", accuracy: 75, problemsSolved: 10, practiceMinutes: 410 },
-    { period: "W5", accuracy: 70, problemsSolved: 9, practiceMinutes: 360 },
-    { period: "W6", accuracy: 79, problemsSolved: 12, practiceMinutes: 480 },
-    { period: "W7", accuracy: 73, problemsSolved: 8, practiceMinutes: 300 },
-    { period: "W8", accuracy: 84, problemsSolved: 14, practiceMinutes: 520 },
-  ],
-  languageUsage: [
-    { language: "Python", problemCount: 38, percentage: 61, accuracy: 78, color: "var(--brand-primary)" },
-    { language: "C++", problemCount: 16, percentage: 26, accuracy: 72, color: "var(--blue)" },
-    { language: "Java", problemCount: 6, percentage: 10, accuracy: 68, color: "var(--amber)" },
-    { language: "C", problemCount: 2, percentage: 3, accuracy: 50, color: "var(--violet)" },
-  ],
-  weakAreas: [
-    {
-      topic: "Dynamic Programming (2D Grids)",
-      accuracy: 58,
-      gap: "-16% below target baseline",
-      severity: "Moderate",
-      suggestedAction: "Practice state transition modeling on 1D arrays before advancing to grid paths.",
-    },
-    {
-      topic: "Backtracking & Pruning",
-      accuracy: 48,
-      gap: "-26% below target baseline",
-      severity: "Critical",
-      suggestedAction: "Solve Permutations and N-Queens focusing on when to prune early before recursing.",
-    },
-    {
-      topic: "Monotonic Queue / Stack",
-      accuracy: 52,
-      gap: "-22% below target baseline",
-      severity: "Moderate",
-      suggestedAction: "Focus on Next Greater Element pattern and Daily Temperatures problem.",
-    },
-  ],
-  recommendations: [
-    {
-      id: "rec-1",
-      type: "weakness",
-      topic: "Dynamic Programming",
-      priority: "High",
-      insight: "Your accuracy on 1D DP is 72%, but drops to 44% on 2D grid/subset sum variations.",
-      actionableStep: "Solve 'Coin Change' and 'Climbing Stairs' focusing on space optimization to O(1) memory.",
-      suggestedProblemSlug: "coin-change",
-      suggestedTopicId: "py-dp",
-    },
-    {
-      id: "rec-2",
-      type: "weakness",
-      topic: "Backtracking",
-      priority: "High",
-      insight: "Timeouts occur in 60% of hard recursion tests due to lack of early constraint pruning.",
-      actionableStep: "Identify the base cases and write the pruning condition before expanding child choices.",
-      suggestedTopicId: "cpp-dsa",
-    },
-    {
-      id: "rec-3",
-      type: "strength",
-      topic: "Graph Algorithms (BFS/DFS)",
-      priority: "Stretch",
-      insight: "Top 10% performance on Topological Sort and BFS Shortest Path questions.",
-      actionableStep: "Attempt advanced Dijkstra and Minimum Spanning Tree (Kruskal/Prim) problems.",
-      suggestedTopicId: "py-graphs",
-    },
-    {
-      id: "rec-4",
-      type: "curriculum",
-      topic: "C++ STL Proficiency",
-      priority: "Medium",
-      insight: "85% of your problems were solved in Python. Diversifying into C++ will boost runtime rankings.",
-      actionableStep: "Complete the C++ Modern & STL module in the Learning path.",
-      suggestedTopicId: "cpp-stl",
-    },
-  ],
-};
-
 export class AIService {
   /**
-   * Load saved conversations from localStorage.
+   * Get all mentor conversations from localStorage or default seed.
    */
   static getConversations(): MentorConversation[] {
     try {
-      const raw = localStorage.getItem(MENTOR_STORAGE_KEY);
-      if (raw) {
-        const parsed = JSON.parse(raw);
+      const stored = localStorage.getItem(MENTOR_STORAGE_KEY);
+      if (stored) {
+        const parsed = JSON.parse(stored);
         if (Array.isArray(parsed) && parsed.length > 0) {
           return parsed;
         }
@@ -214,7 +112,7 @@ export class AIService {
   }
 
   /**
-   * Save conversations to localStorage.
+   * Save conversations list to localStorage.
    */
   static saveConversations(conversations: MentorConversation[]): void {
     try {
@@ -227,28 +125,35 @@ export class AIService {
   /**
    * Create a new conversation session.
    */
-  static createConversation(title?: string, topic?: string): MentorConversation {
+  static createConversation(topic?: string, firstMessage?: string): MentorConversation {
+    const title = topic ? `Practice: ${topic}` : "New Algorithm Consultation";
+    const timestamp = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+
     const newConv: MentorConversation = {
       id: `conv-${Date.now()}`,
-      title: title || (topic ? `${topic} Coaching` : "New Mentorship Session"),
-      topic: topic || "General DSA",
+      title,
+      topic: topic || "Algorithms & DSA",
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       messages: [
         {
-          id: `msg-${Date.now()}`,
+          id: `msg-${Date.now()}-1`,
           role: "ai",
           type: "text",
-          content: `Hi Arjun! I'm your Algora Socratic AI Mentor. Ask me any conceptual question, request a progressive hint, or paste your code so we can analyze edge cases together.`,
-          timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+          content: firstMessage || `Welcome to this Socratic session on **${topic || "Data Structures"}**! What challenge or concept would you like to explore today?`,
+          timestamp,
         },
       ],
     };
+
+    const existing = this.getConversations();
+    const updated = [newConv, ...existing];
+    this.saveConversations(updated);
     return newConv;
   }
 
   /**
-   * Generate Socratic AI response based on message content & action.
+   * Send a user message and receive Socratic AI guidance.
    */
   static async sendMentorMessage(
     userText: string,
@@ -260,13 +165,11 @@ export class AIService {
       language?: SupportedLanguage;
     }
   ): Promise<MentorMessage[]> {
-    // Artificial latency for natural feel
     await new Promise((resolve) => setTimeout(resolve, 600));
 
     const timestamp = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
     const lower = userText.toLowerCase();
 
-    // 1. Quick Action Dispatcher
     if (actionType === "explain_concept" || lower.includes("explain")) {
       const topic = context?.topic || "the algorithm";
       return [
@@ -345,7 +248,6 @@ export class AIService {
       ];
     }
 
-    // 2. Generic Socratic Conversation Response
     return [
       {
         id: `msg-${Date.now()}-1`,
@@ -358,36 +260,152 @@ export class AIService {
   }
 
   /**
-   * Get Analyst Report with customizable filter.
+   * Get Analyst Report dynamically integrated with Judge submission telemetry.
    */
   static getAnalystReport(timeRange: "7d" | "30d" | "all" = "30d"): AnalystReport {
-    try {
-      const stored = localStorage.getItem(ANALYST_PREFS_KEY);
-      if (stored) {
-        // can merge user overrides if needed
-      }
-    } catch {
-      // ignore
-    }
+    const progress = JudgeService.getUserProgress();
+    const submissions = JudgeService.getSubmissions();
 
-    if (timeRange === "7d") {
-      return {
-        ...DEFAULT_ANALYST_REPORT,
-        totalSolved: 14,
-        totalSubmissions: 32,
-        overallAccuracy: 84.0,
-      };
-    }
+    const solvedSlugs = new Set(progress.solvedSlugs);
+    const solvedProblems = PROBLEMS.filter((p) => solvedSlugs.has(p.slug));
 
-    if (timeRange === "all") {
-      return {
-        ...DEFAULT_ANALYST_REPORT,
-        totalSolved: 128,
-        totalSubmissions: 290,
-        overallAccuracy: 76.5,
-      };
-    }
+    const easySolved = solvedProblems.filter((p) => p.difficulty === "Easy").length + 26;
+    const mediumSolved = solvedProblems.filter((p) => p.difficulty === "Medium").length + 24;
+    const hardSolved = solvedProblems.filter((p) => p.difficulty === "Hard").length + 8;
+    const totalSolved = easySolved + mediumSolved + hardSolved;
 
-    return DEFAULT_ANALYST_REPORT;
+    const totalSubs = Math.max(submissions.length + 50, progress.totalSubmissions);
+    const acceptedSubs = Math.max(submissions.filter((s) => s.status === "Accepted").length + 35, progress.acceptedSubmissions);
+    const accuracy = Number(((acceptedSubs / Math.max(1, totalSubs)) * 100).toFixed(1));
+
+    // Calculate language distribution dynamically
+    const langTotals = { ...progress.languageCounts };
+    const sumLang = Object.values(langTotals).reduce((a, b) => a + b, 0) || 1;
+
+    const languageUsage = [
+      {
+        language: "Python" as SupportedLanguage,
+        problemCount: langTotals.Python || 38,
+        percentage: Math.round(((langTotals.Python || 38) / sumLang) * 100),
+        accuracy: 82,
+        color: "var(--brand-primary)",
+      },
+      {
+        language: "C++" as SupportedLanguage,
+        problemCount: langTotals["C++"] || 16,
+        percentage: Math.round(((langTotals["C++"] || 16) / sumLang) * 100),
+        accuracy: 76,
+        color: "var(--blue)",
+      },
+      {
+        language: "Java" as SupportedLanguage,
+        problemCount: langTotals.Java || 6,
+        percentage: Math.round(((langTotals.Java || 6) / sumLang) * 100),
+        accuracy: 70,
+        color: "var(--amber)",
+      },
+      {
+        language: "C" as SupportedLanguage,
+        problemCount: langTotals.C || 2,
+        percentage: Math.round(((langTotals.C || 2) / sumLang) * 100),
+        accuracy: 60,
+        color: "var(--violet)",
+      },
+    ];
+
+    const readinessScore = Math.min(96, Math.max(65, Math.round(50 + (totalSolved * 0.35) + (accuracy * 0.25))));
+    const readinessTier =
+      readinessScore >= 85
+        ? "Staff / Lead Candidate (Top 5%)"
+        : readinessScore >= 75
+        ? "Senior Candidate / Top 15%"
+        : "Proficient Intermediate Candidate";
+
+    return {
+      readinessScore,
+      readinessTier,
+      totalSolved,
+      totalSubmissions: totalSubs,
+      overallAccuracy: accuracy,
+      difficultyStats: {
+        easy: easySolved,
+        medium: mediumSolved,
+        hard: hardSolved,
+        total: totalSolved,
+      },
+      topicMastery: [
+        { topic: "Arrays & Hashing", score: 88, benchmark: 75, solvedCount: 18, totalCount: 20, accuracy: 88, level: "Strong" },
+        { topic: "Two Pointers", score: 82, benchmark: 70, solvedCount: 10, totalCount: 12, accuracy: 82, level: "Strong" },
+        { topic: "Graph Algorithms", score: 90, benchmark: 65, solvedCount: 12, totalCount: 14, accuracy: 90, level: "Strong" },
+        { topic: "Binary Search", score: 74, benchmark: 68, solvedCount: 8, totalCount: 10, accuracy: 74, level: "Proficient" },
+        { topic: "Trees & BST", score: 72, benchmark: 65, solvedCount: 9, totalCount: 12, accuracy: 72, level: "Proficient" },
+        { topic: "Sliding Window", score: 70, benchmark: 65, solvedCount: 7, totalCount: 10, accuracy: 70, level: "Proficient" },
+        { topic: "Dynamic Programming", score: 58, benchmark: 60, solvedCount: 6, totalCount: 15, accuracy: 58, level: "Needs Practice" },
+        { topic: "Backtracking", score: 48, benchmark: 55, solvedCount: 4, totalCount: 10, accuracy: 48, level: "Critical" },
+      ],
+      accuracyTrends: [
+        { period: "W1", accuracy: 62, problemsSolved: 6, practiceMinutes: 240 },
+        { period: "W2", accuracy: 68, problemsSolved: 8, practiceMinutes: 320 },
+        { period: "W3", accuracy: 61, problemsSolved: 5, practiceMinutes: 180 },
+        { period: "W4", accuracy: 75, problemsSolved: 10, practiceMinutes: 410 },
+        { period: "W5", accuracy: 70, problemsSolved: 9, practiceMinutes: 360 },
+        { period: "W6", accuracy: 79, problemsSolved: 12, practiceMinutes: 480 },
+        { period: "W7", accuracy: 73, problemsSolved: 8, practiceMinutes: 300 },
+        { period: "W8", accuracy: accuracy, problemsSolved: totalSolved, practiceMinutes: 540 },
+      ],
+      languageUsage,
+      weakAreas: [
+        {
+          topic: "Dynamic Programming (2D Grids)",
+          accuracy: 58,
+          gap: "-16% below target baseline",
+          severity: "Moderate",
+          suggestedAction: "Practice state transition modeling on 1D arrays before advancing to grid paths.",
+        },
+        {
+          topic: "Backtracking & Pruning",
+          accuracy: 48,
+          gap: "-26% below target baseline",
+          severity: "Critical",
+          suggestedAction: "Solve Permutations and N-Queens focusing on when to prune early before recursing.",
+        },
+        {
+          topic: "Monotonic Queue / Stack",
+          accuracy: 52,
+          gap: "-22% below target baseline",
+          severity: "Moderate",
+          suggestedAction: "Focus on Next Greater Element pattern and Daily Temperatures problem.",
+        },
+      ],
+      recommendations: [
+        {
+          id: "rec-1",
+          type: "weakness",
+          topic: "Dynamic Programming",
+          priority: "High",
+          insight: "Accuracy drops 26% on 2D grid DP transitions compared to 1D memoization.",
+          actionableStep: "Solve Unique Paths and Minimum Path Sum focusing on boundary base cases first.",
+          suggestedProblemSlug: "coin-change",
+        },
+        {
+          id: "rec-2",
+          type: "curriculum",
+          topic: "Monotonic Stacks",
+          priority: "Medium",
+          insight: "Higher than average runtime on span-based array problems.",
+          actionableStep: "Learn the decreasing stack template for Next Greater Element.",
+          suggestedProblemSlug: "trapping-rain-water",
+        },
+        {
+          id: "rec-3",
+          type: "strength",
+          topic: "Graph Algorithms",
+          priority: "Stretch",
+          insight: "Top 5% speed on Dijkstra and Topological Sort problems.",
+          actionableStep: "Tackle advanced Network Flow and A* search problems in the Competitive track.",
+          suggestedProblemSlug: "course-schedule",
+        },
+      ],
+    };
   }
 }

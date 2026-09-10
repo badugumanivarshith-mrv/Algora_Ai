@@ -2,7 +2,15 @@ export type SupportedLanguage = "Python" | "C++" | "Java" | "C";
 
 export type ProblemDifficulty = "Easy" | "Medium" | "Hard";
 
-export type SubmissionStatus = "Accepted" | "Wrong Answer" | "Time Limit Exceeded" | "Runtime Error" | "Pending";
+export type SubmissionStatus =
+  | "Accepted"
+  | "Wrong Answer"
+  | "Time Limit Exceeded"
+  | "Runtime Error"
+  | "Compilation Error"
+  | "Pending"
+  | "Running"
+  | "Idle";
 
 export interface ProblemExample {
   input: string;
@@ -19,6 +27,7 @@ export interface TestCase {
   runtimeMs?: number;
   memoryMb?: number;
   isHidden?: boolean;
+  errorMessage?: string;
 }
 
 export interface Problem {
@@ -95,8 +104,46 @@ export interface UserSubmissionResult {
   totalCount: number;
   runtimeMs: number;
   memoryMb: number;
+  runtimePercentile?: number;
+  memoryPercentile?: number;
   timestamp: string;
   testCases: TestCase[];
+  errorMessage?: string;
+  compilationError?: string;
+  stdout?: string;
+  stderr?: string;
+}
+
+export interface SubmissionRecord {
+  id: string;
+  problemId: number;
+  problemSlug: string;
+  problemTitle: string;
+  language: SupportedLanguage;
+  code: string;
+  status: SubmissionStatus;
+  runtimeMs: number;
+  memoryMb: number;
+  runtimePercentile: number;
+  memoryPercentile: number;
+  passedTests: number;
+  totalTests: number;
+  timestamp: string;
+  createdAt: number;
+  errorMessage?: string;
+  compilationError?: string;
+  testCases: TestCase[];
+}
+
+export interface UserProgressStats {
+  solvedSlugs: string[];
+  attemptedSlugs: string[];
+  totalXP: number;
+  streakDays: number;
+  lastActiveDate: string;
+  languageCounts: Record<SupportedLanguage, number>;
+  totalSubmissions: number;
+  acceptedSubmissions: number;
 }
 
 export type MentorMessageType = "text" | "code" | "insight" | "hint" | "remediation";

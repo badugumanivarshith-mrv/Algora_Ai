@@ -1,18 +1,22 @@
 import { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router";
 import {
-  Play, Send, RotateCcw, Lightbulb, Brain, MessageSquare,
-  FileText, CheckCircle2, ChevronRight, Sparkles,
+  Lightbulb,
+  FileText,
+  Sparkles,
+  History,
 } from "lucide-react";
 import ProblemHeader from "../components/workspace/ProblemHeader";
 import ProblemDescription from "../components/workspace/ProblemDescription";
 import CodeEditor from "../components/workspace/CodeEditor";
 import TestCasesPanel from "../components/workspace/TestCasesPanel";
 import SubmissionResultsPanel from "../components/workspace/SubmissionResultsPanel";
+import SubmissionsListTab from "../components/workspace/SubmissionsListTab";
 import { PROBLEMS } from "../data/problems";
-import type { Problem, SupportedLanguage, UserSubmissionResult } from "../types";
+import { JudgeService } from "../services/judgeService";
+import type { Problem, SupportedLanguage, UserSubmissionResult, SubmissionRecord } from "../types";
 
-type LeftTab = "description" | "hints" | "ai-mentor";
+type LeftTab = "description" | "hints" | "submissions" | "ai-mentor";
 type RightBottomTab = "testcases" | "results";
 
 export default function Workspace() {
@@ -33,6 +37,9 @@ export default function Workspace() {
   const [isRunning, setIsRunning] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submissionResult, setSubmissionResult] = useState<UserSubmissionResult | null>(null);
+  const [problemSubmissions, setProblemSubmissions] = useState<SubmissionRecord[]>(() => {
+    return JudgeService.getSubmissions(currentProblem.slug);
+  });
 
   const [mentorInput, setMentorInput] = useState("");
   const [mentorChat, setMentorChat] = useState<Array<{ sender: "user" | "ai"; text: string }>>([
@@ -42,12 +49,14 @@ export default function Workspace() {
     },
   ]);
 
-  // When problem or language changes, synchronize code and URL
+  // When problem changes, synchronize code, submissions, and URL
   useEffect(() => {
     const p = PROBLEMS.find((item) => item.slug === problemSlug);
     if (p) {
       setCurrentProblem(p);
       setCode(p.starterCodes[language] || "");
+      setProblemSubmissions(JudgeService.getSubmissions(p.slug));
+      setSubmissionResult(null);
     }
   }, [problemSlug]);
 
@@ -56,6 +65,7 @@ export default function Workspace() {
     setSearchParams({ problem: problem.slug });
     setCode(problem.starterCodes[language] || "");
     setSubmissionResult(null);
+    setProblemSubmissions(JudgeService.getSubmissions(problem.slug));
     setBottomTab("testcases");
   };
 
@@ -68,35 +78,48 @@ export default function Workspace() {
     setCode(currentProblem.starterCodes[language] || "");
   };
 
-  const handleRunCode = () => {
+  const handleRunCode = async () => {
     setIsRunning(true);
-    setTimeout(() => {
+    try {
+      const result = await JudgeService.runCode(currentProblem, language, code);
+      setSubmissionResult(result);
+      setBottomTab("results");
+    } finally {
       setIsRunning(false);
-      setBottomTab("testcases");
-    }, 600);
+    }
   };
 
-  const handleSubmitCode = () => {
+  const handleSubmitCode = async () => {
     setIsSubmitting(true);
-    setTimeout(() => {
-      setIsSubmitting(false);
-      const passedCount = currentProblem.testCases.length;
-      const res: UserSubmissionResult = {
-        status: "Accepted",
-        passedCount: passedCount,
-        totalCount: passedCount,
-        runtimeMs: Math.floor(Math.random() * 8) + 4,
-        memoryMb: Number((Math.random() * 2 + 14).toFixed(1)),
-        timestamp: "Just now",
-        testCases: currentProblem.testCases.map((tc) => ({
-          ...tc,
-          passed: true,
-          actualOutput: tc.expectedOutput,
-        })),
+    try {
+      const record = await JudgeService.submitSolution(currentProblem, language, code);
+      setProblemSubmissions(JudgeService.getSubmissions(currentProblem.slug));
+
+      const result: UserSubmissionResult = {
+        status: record.status,
+        passedCount: record.passedTests,
+        totalCount: record.totalTests,
+        runtimeMs: record.runtimeMs,
+        memoryMb: record.memoryMb,
+        runtimePercentile: record.runtimePercentile,
+        memoryPercentile: record.memoryPercentile,
+        timestamp: record.timestamp,
+        testCases: record.testCases,
+        errorMessage: record.errorMessage,
+        compilationError: record.compilationError,
       };
-      setSubmissionResult(res);
+
+      setSubmissionResult(result);
       setBottomTab("results");
-    }, 900);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleLoadSubmittedCode = (submittedCode: string, lang: SupportedLanguage) => {
+    setLanguage(lang);
+    setCode(submittedCode);
+    setLeftTab("description");
   };
 
   const handleNextProblem = () => {
@@ -148,11 +171,11 @@ export default function Workspace() {
         style={{
           flex: 1,
           display: "grid",
-          gridTemplateColumns: "minmax(320px, 45%) minmax(380px, 55%)",
+          gridTemplateColumns: "minmax(340px, 45%) minmax(380px, 55%)",
           overflow: "hidden",
         }}
       >
-        {/* Left Column: Problem Tabs (Description, Hints, AI Mentor) */}
+        {/* Left Column: Problem Tabs (Description, Hints, Submissions, AI Mentor) */}
         <div
           style={{
             display: "flex",
@@ -172,7 +195,8 @@ export default function Workspace() {
               borderBottom: "1px solid var(--border)",
               background: "var(--bg-surface)",
               flexShrink: 0,
-              gap: 6,
+              gap: 4,
+              overflowX: "auto",
             }}
           >
             <button
@@ -180,15 +204,16 @@ export default function Workspace() {
               style={{
                 display: "flex",
                 alignItems: "center",
-                gap: 6,
-                padding: "6px 12px",
+                gap: 5,
+                padding: "6px 10px",
                 borderRadius: "var(--radius-sm)",
-                fontSize: 12.5,
+                fontSize: 12,
                 fontWeight: leftTab === "description" ? 600 : 500,
                 border: "none",
                 background: leftTab === "description" ? "var(--bg-raised)" : "transparent",
                 color: leftTab === "description" ? "var(--text-primary)" : "var(--text-muted)",
                 cursor: "pointer",
+                whiteSpace: "nowrap",
               }}
             >
               <FileText size={13} /> Description
@@ -199,18 +224,39 @@ export default function Workspace() {
               style={{
                 display: "flex",
                 alignItems: "center",
-                gap: 6,
-                padding: "6px 12px",
+                gap: 5,
+                padding: "6px 10px",
                 borderRadius: "var(--radius-sm)",
-                fontSize: 12.5,
+                fontSize: 12,
                 fontWeight: leftTab === "hints" ? 600 : 500,
                 border: "none",
                 background: leftTab === "hints" ? "var(--bg-raised)" : "transparent",
                 color: leftTab === "hints" ? "var(--text-primary)" : "var(--text-muted)",
                 cursor: "pointer",
+                whiteSpace: "nowrap",
               }}
             >
               <Lightbulb size={13} /> Hints ({currentProblem.hints.length})
+            </button>
+
+            <button
+              onClick={() => setLeftTab("submissions")}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 5,
+                padding: "6px 10px",
+                borderRadius: "var(--radius-sm)",
+                fontSize: 12,
+                fontWeight: leftTab === "submissions" ? 600 : 500,
+                border: "none",
+                background: leftTab === "submissions" ? "var(--bg-raised)" : "transparent",
+                color: leftTab === "submissions" ? "var(--text-primary)" : "var(--text-muted)",
+                cursor: "pointer",
+                whiteSpace: "nowrap",
+              }}
+            >
+              <History size={13} /> Submissions ({problemSubmissions.length})
             </button>
 
             <button
@@ -218,15 +264,16 @@ export default function Workspace() {
               style={{
                 display: "flex",
                 alignItems: "center",
-                gap: 6,
-                padding: "6px 12px",
+                gap: 5,
+                padding: "6px 10px",
                 borderRadius: "var(--radius-sm)",
-                fontSize: 12.5,
+                fontSize: 12,
                 fontWeight: leftTab === "ai-mentor" ? 600 : 500,
                 border: "none",
                 background: leftTab === "ai-mentor" ? "var(--blue-light)" : "transparent",
                 color: leftTab === "ai-mentor" ? "var(--blue)" : "var(--text-muted)",
                 cursor: "pointer",
+                whiteSpace: "nowrap",
               }}
             >
               <Sparkles size={13} /> AI Mentor
@@ -264,6 +311,14 @@ export default function Workspace() {
                   ))}
                 </div>
               </div>
+            )}
+
+            {leftTab === "submissions" && (
+              <SubmissionsListTab
+                submissions={problemSubmissions}
+                currentLanguage={language}
+                onLoadCode={handleLoadSubmittedCode}
+              />
             )}
 
             {leftTab === "ai-mentor" && (
@@ -419,6 +474,7 @@ export default function Workspace() {
                 <SubmissionResultsPanel
                   result={submissionResult}
                   onGoToNextProblem={handleNextProblem}
+                  onRetry={() => setBottomTab("testcases")}
                 />
               )}
             </div>
