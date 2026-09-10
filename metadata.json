@@ -1,0 +1,6 @@
+{
+  "name": "Algora AI",
+  "description": "Intelligent computer science and algorithm learning platform featuring interactive coding workspaces, AI mentorship, skill diagnostics, algorithmic contests, and faculty analytics.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
