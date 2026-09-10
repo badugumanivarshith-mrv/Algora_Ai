@@ -4,6 +4,7 @@ import {
   SubmissionEntity,
   SolvedProblemEntity,
   AchievementEntity,
+  UserAchievementEntity,
   LearningProgressEntity,
 } from "../types";
 import { hashPassword } from "../utils/crypto";
@@ -101,21 +102,42 @@ const SEED_SOLVED: SolvedProblemEntity[] = [
 
 const SEED_ACHIEVEMENTS: AchievementEntity[] = [
   {
-    id: "ach-1",
-    userId: "usr-arjun-patel",
-    badgeCode: "FIRST_BLOOD",
-    badgeName: "First Submission",
-    description: "Submitted first verified algorithm solution to Algora judge.",
+    id: "ach-first-blood",
+    badgeCode: "FIRST_ACCEPTED",
+    badgeName: "First Blood",
+    description: "Successfully solved your first algorithm problem with an Accepted verdict.",
     iconName: "Zap",
+    xpReward: 50,
+    category: "milestone",
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: "ach-speed-demon",
+    badgeCode: "SPEED_DEMON",
+    badgeName: "Speed Demon",
+    description: "Submit a solution that beats 90% of submissions in runtime execution.",
+    iconName: "Flame",
+    xpReward: 100,
+    category: "performance",
+    createdAt: new Date().toISOString(),
+  },
+];
+
+const SEED_USER_ACHIEVEMENTS: UserAchievementEntity[] = [
+  {
+    id: "uach-1",
+    userId: "usr-arjun-patel",
+    achievementId: "ach-first-blood",
+    badgeCode: "FIRST_ACCEPTED",
+    progressValue: 100,
     unlockedAt: new Date(Date.now() - 25 * 24 * 3600 * 1000).toISOString(),
   },
   {
-    id: "ach-2",
+    id: "uach-2",
     userId: "usr-arjun-patel",
-    badgeCode: "STREAK_7",
-    badgeName: "Week Warrior",
-    description: "Maintained a 7-day algorithm problem solving streak.",
-    iconName: "Flame",
+    achievementId: "ach-speed-demon",
+    badgeCode: "SPEED_DEMON",
+    progressValue: 100,
     unlockedAt: new Date(Date.now() - 2 * 24 * 3600 * 1000).toISOString(),
   },
 ];
@@ -147,6 +169,7 @@ class InMemoryDatabase {
   public submissions: Map<string, SubmissionEntity> = new Map();
   public solvedProblems: Map<string, SolvedProblemEntity> = new Map();
   public achievements: Map<string, AchievementEntity> = new Map();
+  public userAchievements: Map<string, UserAchievementEntity> = new Map();
   public learningProgress: Map<string, LearningProgressEntity> = new Map();
 
   constructor() {
@@ -166,6 +189,9 @@ class InMemoryDatabase {
     for (const ach of SEED_ACHIEVEMENTS) {
       this.achievements.set(ach.id, { ...ach });
     }
+    for (const uach of SEED_USER_ACHIEVEMENTS) {
+      this.userAchievements.set(uach.id, { ...uach });
+    }
     for (const lp of SEED_PROGRESS) {
       this.learningProgress.set(lp.id, { ...lp });
     }
@@ -177,6 +203,7 @@ class InMemoryDatabase {
     this.submissions.clear();
     this.solvedProblems.clear();
     this.achievements.clear();
+    this.userAchievements.clear();
     this.learningProgress.clear();
     this.seed();
   }

@@ -57,16 +57,31 @@ export interface SolvedProblemEntity {
   firstSolvedAt: string;
   bestRuntimeMs: number;
   bestMemoryMb: number;
+  createdAt?: string;
 }
 
 export interface AchievementEntity {
   id: string;
-  userId: string;
   badgeCode: string;
   badgeName: string;
   description: string;
   iconName: string;
+  xpReward: number;
+  category: string;
+  createdAt: string;
+}
+
+export interface UserAchievementEntity {
+  id: string;
+  userId: string;
+  achievementId: string;
+  badgeCode: string;
+  progressValue: number;
   unlockedAt: string;
+  badgeName?: string;
+  description?: string;
+  iconName?: string;
+  xpReward?: number;
 }
 
 export interface LearningProgressEntity {
@@ -77,6 +92,29 @@ export interface LearningProgressEntity {
   solvedCount: number;
   accuracyRate: number;
   lastPracticedAt: string;
+}
+
+export interface UserSessionEntity {
+  id: string;
+  userId: string;
+  tokenHash: string;
+  expiresAt: string;
+  ipAddress?: string;
+  userAgent?: string;
+  createdAt: string;
+}
+
+export interface DatabaseHealthStatus {
+  status: "connected" | "fallback_ready" | "error";
+  databaseType: "PostgreSQL" | "In-Memory SQL Engine";
+  connected: boolean;
+  latencyMs: number;
+  migrationVersion: string;
+  activePoolClients?: number;
+  idlePoolClients?: number;
+  totalPoolClients?: number;
+  timestamp: string;
+  error?: string;
 }
 
 export interface AuthTokenPayload {
@@ -92,6 +130,11 @@ export interface ApiSuccessResponse<T> {
   success: true;
   data: T;
   message?: string;
+  meta?: {
+    total?: number;
+    limit?: number;
+    offset?: number;
+  };
 }
 
 export interface ApiErrorResponse {
@@ -102,3 +145,4 @@ export interface ApiErrorResponse {
     details?: unknown;
   };
 }
+

@@ -5,7 +5,15 @@ import { AuthenticatedRequest } from "../middleware/auth";
 export class AuthController {
   static async register(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const result = await AuthService.register(req.body);
+      const ipAddress = (req.headers["x-forwarded-for"] as string) || req.socket.remoteAddress;
+      const userAgent = req.headers["user-agent"];
+
+      const result = await AuthService.register({
+        ...req.body,
+        ipAddress,
+        userAgent,
+      });
+
       res.status(201).json({
         success: true,
         data: result,
@@ -18,7 +26,15 @@ export class AuthController {
 
   static async login(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const result = await AuthService.login(req.body);
+      const ipAddress = (req.headers["x-forwarded-for"] as string) || req.socket.remoteAddress;
+      const userAgent = req.headers["user-agent"];
+
+      const result = await AuthService.login({
+        ...req.body,
+        ipAddress,
+        userAgent,
+      });
+
       res.status(200).json({
         success: true,
         data: result,
@@ -29,11 +45,20 @@ export class AuthController {
     }
   }
 
-  static async logout(_req: Request, res: Response): Promise<void> {
-    res.status(200).json({
-      success: true,
-      message: "Logged out successfully.",
-    });
+  static async logout(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const authHeader = req.headers.authorization;
+      const token = authHeader && authHeader.startsWith("Bearer ") ? authHeader.substring(7).trim() : undefined;
+
+      await AuthService.logout(token);
+
+      res.status(200).json({
+        success: true,
+        message: "Logged out successfully.",
+      });
+    } catch (err) {
+      next(err);
+    }
   }
 
   static async me(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {

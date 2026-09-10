@@ -2,10 +2,14 @@ import path from "path";
 import express from "express";
 import { createServer as createViteServer } from "vite";
 import { createExpressApp } from "./backend/src/server";
+import { initializeDatabase } from "./backend/src/db";
 
 const PORT = 3000;
 
 async function start() {
+  // Initialize Database, Migrations, and Seeds
+  await initializeDatabase();
+
   const app = createExpressApp();
 
   // Vite middleware in development vs static file serving in production

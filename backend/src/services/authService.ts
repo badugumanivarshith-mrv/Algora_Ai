@@ -1,7 +1,8 @@
-import { db } from "./store";
+import crypto from "crypto";
 import { UserEntity, ProfileEntity, AuthTokenPayload } from "../types";
 import { hashPassword, verifyPassword, generateToken } from "../utils/crypto";
 import { ApiError } from "../middleware/error";
+import { UserRepository, ProfileRepository, SessionRepository } from "../repositories";
 
 export interface RegisterInput {
   email: string;
@@ -9,11 +10,15 @@ export interface RegisterInput {
   password: string;
   fullName?: string;
   institution?: string;
+  ipAddress?: string;
+  userAgent?: string;
 }
 
 export interface LoginInput {
   emailOrUsername: string;
   password: string;
+  ipAddress?: string;
+  userAgent?: string;
 }
 
 export interface AuthResult {
@@ -33,13 +38,14 @@ export class AuthService {
     const usernameNorm = input.username.trim();
 
     // Check if user already exists
-    for (const user of db.users.values()) {
-      if (user.email.toLowerCase() === emailNorm) {
-        throw new ApiError(409, "USER_EXISTS", "A user with this email address already exists.");
-      }
-      if (user.username.toLowerCase() === usernameNorm.toLowerCase()) {
-        throw new ApiError(409, "USERNAME_TAKEN", "This username is already taken.");
-      }
+    const existingEmail = await UserRepository.findByEmail(emailNorm);
+    if (existingEmail) {
+      throw new ApiError(409, "USER_EXISTS", "A user with this email address already exists.");
+    }
+
+    const existingUsername = await UserRepository.findByUsername(usernameNorm);
+    if (existingUsername) {
+      throw new ApiError(409, "USERNAME_TAKEN", "This username is already taken.");
     }
 
     const userId = `usr-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
@@ -70,8 +76,8 @@ export class AuthService {
       updatedAt: now,
     };
 
-    db.users.set(newUser.id, newUser);
-    db.profiles.set(newProfile.userId, newProfile);
+    await UserRepository.create(newUser);
+    await ProfileRepository.create(newProfile);
 
     const tokenPayload: Omit<AuthTokenPayload, "iat" | "exp"> = {
       userId: newUser.id,
@@ -81,6 +87,20 @@ export class AuthService {
     };
 
     const token = generateToken(tokenPayload);
+
+    // Persist session
+    const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
+    const expiresAt = new Date(Date.now() + 7 * 86400000).toISOString();
+
+    await SessionRepository.createSession({
+      id: `ses-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+      userId: newUser.id,
+      tokenHash,
+      expiresAt,
+      ipAddress: input.ipAddress,
+      userAgent: input.userAgent,
+      createdAt: now,
+    });
 
     return {
       token,
@@ -96,14 +116,7 @@ export class AuthService {
 
   static async login(input: LoginInput): Promise<AuthResult> {
     const query = input.emailOrUsername.trim().toLowerCase();
-
-    let targetUser: UserEntity | null = null;
-    for (const user of db.users.values()) {
-      if (user.email.toLowerCase() === query || user.username.toLowerCase() === query) {
-        targetUser = user;
-        break;
-      }
-    }
+    const targetUser = await UserRepository.findByEmailOrUsername(query);
 
     if (!targetUser) {
       throw new ApiError(401, "INVALID_CREDENTIALS", "Invalid email/username or password.");
@@ -114,9 +127,9 @@ export class AuthService {
       throw new ApiError(401, "INVALID_CREDENTIALS", "Invalid email/username or password.");
     }
 
-    let profile = db.profiles.get(targetUser.id);
+    let profile = await ProfileRepository.findByUserId(targetUser.id);
     if (!profile) {
-      profile = {
+      profile = await ProfileRepository.create({
         id: `prof-${targetUser.id}`,
         userId: targetUser.id,
         fullName: targetUser.username,
@@ -129,8 +142,7 @@ export class AuthService {
         totalXP: 100,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
-      };
-      db.profiles.set(targetUser.id, profile);
+      });
     }
 
     const tokenPayload: Omit<AuthTokenPayload, "iat" | "exp"> = {
@@ -141,6 +153,20 @@ export class AuthService {
     };
 
     const token = generateToken(tokenPayload);
+
+    // Persist session
+    const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
+    const expiresAt = new Date(Date.now() + 7 * 86400000).toISOString();
+
+    await SessionRepository.createSession({
+      id: `ses-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+      userId: targetUser.id,
+      tokenHash,
+      expiresAt,
+      ipAddress: input.ipAddress,
+      userAgent: input.userAgent,
+      createdAt: new Date().toISOString(),
+    });
 
     return {
       token,
@@ -154,15 +180,22 @@ export class AuthService {
     };
   }
 
+  static async logout(token?: string): Promise<void> {
+    if (token) {
+      const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
+      await SessionRepository.deleteSessionByTokenHash(tokenHash);
+    }
+  }
+
   static async getCurrentUser(userId: string): Promise<{ user: Omit<UserEntity, "passwordHash">; profile: ProfileEntity }> {
-    const user = db.users.get(userId);
+    const user = await UserRepository.findById(userId);
     if (!user) {
       throw new ApiError(404, "USER_NOT_FOUND", "User account does not exist.");
     }
 
-    let profile = db.profiles.get(userId);
+    let profile = await ProfileRepository.findByUserId(userId);
     if (!profile) {
-      profile = {
+      profile = await ProfileRepository.create({
         id: `prof-${userId}`,
         userId: userId,
         fullName: user.username,
@@ -175,8 +208,7 @@ export class AuthService {
         totalXP: 0,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
-      };
-      db.profiles.set(userId, profile);
+      });
     }
 
     const { passwordHash: _, ...safeUser } = user;

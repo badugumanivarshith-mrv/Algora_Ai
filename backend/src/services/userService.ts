@@ -1,6 +1,6 @@
-import { db } from "./store";
 import { ProfileEntity } from "../types";
 import { ApiError } from "../middleware/error";
+import { UserRepository, ProfileRepository } from "../repositories";
 
 export interface UpdateProfileInput {
   fullName?: string;
@@ -13,51 +13,45 @@ export interface UpdateProfileInput {
 
 export class UserService {
   static async getProfile(userId: string): Promise<ProfileEntity> {
-    const profile = db.profiles.get(userId);
+    let profile = await ProfileRepository.findByUserId(userId);
     if (!profile) {
-      throw new ApiError(404, "PROFILE_NOT_FOUND", "Profile not found for this user.");
+      const user = await UserRepository.findById(userId);
+      if (!user) {
+        throw new ApiError(404, "PROFILE_NOT_FOUND", "Profile not found for this user.");
+      }
+      profile = await ProfileRepository.create({
+        id: `prof-${userId}`,
+        userId,
+        fullName: user.username,
+        avatarUrl: `https://api.dicebear.com/7.x/bottts/svg?seed=${user.username}`,
+        bio: "",
+        institution: "",
+        preferredLanguage: "Python",
+        rating: 1200,
+        streakDays: 0,
+        totalXP: 0,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      });
     }
     return profile;
   }
 
   static async updateProfile(userId: string, input: UpdateProfileInput): Promise<ProfileEntity> {
-    let profile = db.profiles.get(userId);
-    if (!profile) {
-      const user = db.users.get(userId);
-      if (!user) {
-        throw new ApiError(404, "USER_NOT_FOUND", "User not found.");
-      }
-      profile = {
-        id: `prof-${userId}`,
-        userId,
-        fullName: input.fullName || user.username,
-        avatarUrl: input.avatarUrl || `https://api.dicebear.com/7.x/bottts/svg?seed=${user.username}`,
-        bio: input.bio || "",
-        institution: input.institution || "",
-        githubHandle: input.githubHandle,
-        preferredLanguage: input.preferredLanguage || "Python",
-        rating: 1200,
-        streakDays: 1,
-        totalXP: 100,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
-      db.profiles.set(userId, profile);
-      return profile;
+    const user = await UserRepository.findById(userId);
+    if (!user) {
+      throw new ApiError(404, "USER_NOT_FOUND", "User not found.");
     }
 
-    const updated: ProfileEntity = {
-      ...profile,
-      fullName: input.fullName !== undefined ? input.fullName.trim() : profile.fullName,
-      avatarUrl: input.avatarUrl !== undefined ? input.avatarUrl.trim() : profile.avatarUrl,
-      bio: input.bio !== undefined ? input.bio.trim() : profile.bio,
-      institution: input.institution !== undefined ? input.institution.trim() : profile.institution,
-      githubHandle: input.githubHandle !== undefined ? input.githubHandle.trim() : profile.githubHandle,
-      preferredLanguage: input.preferredLanguage !== undefined ? input.preferredLanguage : profile.preferredLanguage,
-      updatedAt: new Date().toISOString(),
-    };
+    const updated = await ProfileRepository.update(userId, {
+      fullName: input.fullName,
+      avatarUrl: input.avatarUrl,
+      bio: input.bio,
+      institution: input.institution,
+      githubHandle: input.githubHandle,
+      preferredLanguage: input.preferredLanguage,
+    });
 
-    db.profiles.set(userId, updated);
     return updated;
   }
 }

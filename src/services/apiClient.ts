@@ -175,6 +175,25 @@ export class ApiClient {
     });
   }
 
+  // --- Health API ---
+  public static async getDatabaseHealth(): Promise<ApiResponse<{
+    status: string;
+    databaseType: string;
+    connected: boolean;
+    latencyMs: number;
+    migrationVersion: string;
+    timestamp: string;
+  }>> {
+    return this.request<{
+      status: string;
+      databaseType: string;
+      connected: boolean;
+      latencyMs: number;
+      migrationVersion: string;
+      timestamp: string;
+    }>("/health/database");
+  }
+
   // --- Submission API ---
   public static async getSubmissions(params: {
     problemSlug?: string;
