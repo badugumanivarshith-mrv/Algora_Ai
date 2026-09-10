@@ -98,3 +98,97 @@ export interface UserSubmissionResult {
   timestamp: string;
   testCases: TestCase[];
 }
+
+export type MentorMessageType = "text" | "code" | "insight" | "hint" | "remediation";
+
+export type MentorQuickActionType =
+  | "explain_concept"
+  | "give_hint"
+  | "find_mistake"
+  | "improve_solution"
+  | "learning_advice";
+
+export interface MentorMessage {
+  id: string;
+  role: "user" | "ai";
+  type: MentorMessageType;
+  content: string;
+  codeSnippet?: string;
+  language?: SupportedLanguage;
+  timestamp: string;
+  actionType?: MentorQuickActionType;
+  feedback?: "positive" | "negative";
+}
+
+export interface MentorConversation {
+  id: string;
+  title: string;
+  topic?: string;
+  createdAt: string;
+  updatedAt: string;
+  messages: MentorMessage[];
+}
+
+export interface TopicMasteryStat {
+  topic: string;
+  score: number;
+  benchmark: number;
+  solvedCount: number;
+  totalCount: number;
+  accuracy: number;
+  level: "Strong" | "Proficient" | "Needs Practice" | "Critical";
+}
+
+export interface AccuracyTrendPoint {
+  period: string;
+  accuracy: number;
+  problemsSolved: number;
+  practiceMinutes: number;
+}
+
+export interface DifficultyDistribution {
+  easy: number;
+  medium: number;
+  hard: number;
+  total: number;
+}
+
+export interface LanguageUsageStat {
+  language: SupportedLanguage;
+  problemCount: number;
+  percentage: number;
+  accuracy: number;
+  color: string;
+}
+
+export interface AnalystRecommendation {
+  id: string;
+  type: "weakness" | "strength" | "pacing" | "curriculum";
+  topic: string;
+  priority: "High" | "Medium" | "Low" | "Stretch";
+  insight: string;
+  actionableStep: string;
+  suggestedProblemSlug?: string;
+  suggestedTopicId?: string;
+}
+
+export interface AnalystReport {
+  readinessScore: number;
+  readinessTier: string;
+  totalSolved: number;
+  totalSubmissions: number;
+  overallAccuracy: number;
+  difficultyStats: DifficultyDistribution;
+  topicMastery: TopicMasteryStat[];
+  accuracyTrends: AccuracyTrendPoint[];
+  languageUsage: LanguageUsageStat[];
+  recommendations: AnalystRecommendation[];
+  weakAreas: {
+    topic: string;
+    accuracy: number;
+    gap: string;
+    severity: "Critical" | "Moderate" | "Minor";
+    suggestedAction: string;
+  }[];
+}
+

@@ -1,382 +1,769 @@
-import { useState, useRef, useEffect } from "react";
-import { Brain, Send, Sparkles, Code2, BookOpen, Bug, Lightbulb, ChevronRight, RotateCcw, ThumbsUp, ThumbsDown, Copy } from "lucide-react";
-
-type MsgType = "text" | "code" | "insight";
-interface Msg { role: "user" | "ai"; type: MsgType; content: string; time: string; }
-
-const INITIAL: Msg[] = [
-  { role: "ai", type: "text", time: "10:32",
-    content: "Hi Arjun! I'm your AI Mentor, trained to help you master DSA without just giving you answers. What are you working on?" },
-  { role: "user", type: "text", time: "10:33",
-    content: "I understand DP conceptually but keep failing edge cases in harder problems. My recursive approach works but I miss memoization opportunities." },
-  { role: "ai", type: "text", time: "10:33",
-    content: "That's a super common pain point — and actually a great sign. It means you've internalized the recursion structure, which is the hardest part.\n\nLet me ask: when you write your recursive function, do you explicitly label what the 'parameters' represent? Like `dp(i, remaining_capacity)` vs `dp(idx)`?" },
-  { role: "user", type: "text", time: "10:34",
-    content: "Not always. I usually just write solve(i) and figure it out as I go." },
-  { role: "ai", type: "text", time: "10:34",
-    content: "That's exactly where edge cases creep in. If your subproblem definition is fuzzy, your memoization key will be wrong.\n\nHere's the habit that fixes this:\n\n**Before writing any code**, write one sentence: 'This function returns _____ given _____'. Fill in the blanks. If you can't, you don't understand the subproblem yet.\n\nLet me show you with Fibonacci first, then we'll move to a harder example." },
-  { role: "ai", type: "code", time: "10:35",
-    content: `# Step 1 — define the subproblem in English first:
-# "fib(n) returns the nth Fibonacci number"
-
-from functools import lru_cache
-
-@lru_cache(maxsize=None)
-def fib(n: int) -> int:
-    # Base cases — always ask: what's the smallest valid input?
-    if n <= 1:
-        return n
-    # Recursive case — what decisions do I have?
-    return fib(n - 1) + fib(n - 2)
-
-# Without memo: O(2^n) — exponential
-# With memo:    O(n)   — that's the entire power of DP` },
-  { role: "ai", type: "insight", time: "10:35",
-    content: "The memoization key = the function parameters. If fib(n) depends only on n, cache by n. If your knapsack function is solve(i, remaining), cache by (i, remaining). Every state you forget = a missed optimization." },
-];
-
-const QUICK = [
-  { icon: Bug,       label: "Debug my code",      color: "var(--red)"    },
-  { icon: Lightbulb, label: "Give me a hint",      color: "var(--amber)"  },
-  { icon: BookOpen,  label: "Explain a concept",   color: "var(--blue)"   },
-  { icon: Code2,     label: "Review my solution",  color: "var(--violet)" },
-];
+import { useState, useRef, useEffect, MouseEvent, KeyboardEvent } from "react";
+import {
+  Brain,
+  Send,
+  Sparkles,
+  Code2,
+  BookOpen,
+  Bug,
+  Lightbulb,
+  ChevronRight,
+  RotateCcw,
+  ThumbsUp,
+  ThumbsDown,
+  Copy,
+  Plus,
+  Trash2,
+  Compass,
+  Zap,
+  Check,
+} from "lucide-react";
+import { AIService } from "../services/aiService";
+import { MentorConversation, MentorMessage, MentorQuickActionType } from "../types";
 
 const TOPICS = [
-  "Dynamic Programming","Binary Search","Two Pointers","Sliding Window",
-  "Trees & BST","Graphs & BFS/DFS","Backtracking","Heap / Priority Queue",
-  "Monotonic Stack","Segment Tree",
+  "Dynamic Programming",
+  "Binary Search",
+  "Two Pointers",
+  "Sliding Window",
+  "Trees & BST",
+  "Graphs & BFS/DFS",
+  "Backtracking",
+  "Heap / Priority Queue",
+  "Monotonic Stack",
+];
+
+const QUICK_ACTIONS: {
+  id: MentorQuickActionType;
+  label: string;
+  icon: typeof BookOpen;
+  color: string;
+}[] = [
+  { id: "explain_concept", label: "Explain Concept", icon: BookOpen, color: "var(--blue)" },
+  { id: "give_hint", label: "Give Hint", icon: Lightbulb, color: "var(--amber)" },
+  { id: "find_mistake", label: "Find Mistake", icon: Bug, color: "var(--red)" },
+  { id: "improve_solution", label: "Improve Solution", icon: Code2, color: "var(--violet)" },
+  { id: "learning_advice", label: "Learning Path Advice", icon: Compass, color: "var(--green)" },
 ];
 
 export default function AIMentor() {
-  const [msgs, setMsgs] = useState<Msg[]>(INITIAL);
+  const [conversations, setConversations] = useState<MentorConversation[]>(() =>
+    AIService.getConversations()
+  );
+  const [activeConvId, setActiveConvId] = useState<string>(
+    () => conversations[0]?.id || "conv-initial"
+  );
+  const [selectedTopic, setSelectedTopic] = useState<string>("Dynamic Programming");
   const [input, setInput] = useState("");
-  const [typing, setTyping] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+
   const bottomRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
 
-  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }); }, [msgs]);
+  const activeConversation =
+    conversations.find((c) => c.id === activeConvId) || conversations[0];
 
-  const send = (text?: string) => {
-    const content = text || input;
-    if (!content.trim()) return;
-    const now = new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
-    setMsgs((m) => [...m, { role: "user", type: "text", content, time: now }]);
-    setInput("");
-    setTyping(true);
-    setTimeout(() => {
-      setTyping(false);
-      setMsgs((m) => [...m, {
-        role: "ai", type: "text",
-        content: "Great question! The key insight here is to think about what makes each subproblem unique. What changes between recursive calls? That's your state. Once you've nailed that down, memoization writes itself.",
-        time: new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" }),
-      }]);
-    }, 1400);
+  useEffect(() => {
+    AIService.saveConversations(conversations);
+  }, [conversations]);
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [activeConversation?.messages, isTyping]);
+
+  const handleCopy = (id: string, text: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedId(id);
+    setTimeout(() => setCopiedId(null), 2000);
+  };
+
+  const handleFeedback = (msgId: string, type: "positive" | "negative") => {
+    setConversations((prev) =>
+      prev.map((c) => {
+        if (c.id !== activeConvId) return c;
+        return {
+          ...c,
+          messages: c.messages.map((m) =>
+            m.id === msgId ? { ...m, feedback: m.feedback === type ? undefined : type } : m
+          ),
+        };
+      })
+    );
+  };
+
+  const handleNewSession = (topic?: string) => {
+    const newConv = AIService.createConversation(undefined, topic || selectedTopic);
+    setConversations((prev) => [newConv, ...prev]);
+    setActiveConvId(newConv.id);
+    if (topic) setSelectedTopic(topic);
+  };
+
+  const handleDeleteSession = (id: string, e: MouseEvent) => {
+    e.stopPropagation();
+    if (conversations.length <= 1) {
+      // Reset the only conversation
+      const resetConv = AIService.createConversation();
+      setConversations([resetConv]);
+      setActiveConvId(resetConv.id);
+      return;
+    }
+    const filtered = conversations.filter((c) => c.id !== id);
+    setConversations(filtered);
+    if (activeConvId === id) {
+      setActiveConvId(filtered[0]?.id || "");
+    }
+  };
+
+  const handleSend = async (customText?: string, actionType?: MentorQuickActionType) => {
+    const textToSend = customText !== undefined ? customText : input;
+    if (!textToSend.trim() && !actionType) return;
+
+    const userMsgId = `msg-${Date.now()}`;
+    const userMsg: MentorMessage = {
+      id: userMsgId,
+      role: "user",
+      type: "text",
+      content: textToSend || `[Quick Action: ${actionType?.replace("_", " ").toUpperCase()}]`,
+      actionType,
+      timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+    };
+
+    // Update conversation with user message immediately
+    setConversations((prev) =>
+      prev.map((c) => {
+        if (c.id !== activeConvId) return c;
+        return {
+          ...c,
+          updatedAt: new Date().toISOString(),
+          messages: [...c.messages, userMsg],
+        };
+      })
+    );
+
+    if (customText === undefined) {
+      setInput("");
+    }
+    setIsTyping(true);
+
+    try {
+      const aiReplies = await AIService.sendMentorMessage(textToSend, actionType, {
+        topic: selectedTopic,
+      });
+
+      setConversations((prev) =>
+        prev.map((c) => {
+          if (c.id !== activeConvId) return c;
+          return {
+            ...c,
+            updatedAt: new Date().toISOString(),
+            messages: [...c.messages, ...aiReplies],
+          };
+        })
+      );
+    } catch {
+      // Handle error gracefully
+      const errorMsg: MentorMessage = {
+        id: `msg-err-${Date.now()}`,
+        role: "ai",
+        type: "text",
+        content: "I encountered a minor glitch retrieving that explanation. Please try asking again.",
+        timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+      };
+      setConversations((prev) =>
+        prev.map((c) => (c.id === activeConvId ? { ...c, messages: [...c.messages, errorMsg] } : c))
+      );
+    } finally {
+      setIsTyping(false);
+    }
+  };
+
+  const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
   };
 
   return (
-    <div style={{ display: "flex", height: "100%", overflow: "hidden" }}>
-      {/* ── Left sidebar ── */}
-      <div
+    <div
+      id="ai-mentor-page"
+      style={{
+        display: "flex",
+        height: "calc(100vh - var(--topnav-height, 56px))",
+        background: "var(--bg-canvas)",
+        color: "var(--text-primary)",
+        overflow: "hidden",
+      }}
+    >
+      {/* LEFT SIDEBAR: Sessions & Topics */}
+      <aside
+        id="mentor-sessions-sidebar"
         style={{
-          width: 240,
-          flexShrink: 0,
-          display: "flex",
-          flexDirection: "column",
+          width: "280px",
+          minWidth: "240px",
           borderRight: "1px solid var(--border)",
           background: "var(--bg-surface)",
-          overflowY: "auto",
+          display: "flex",
+          flexDirection: "column",
+          padding: "16px 12px",
+          gap: "16px",
         }}
       >
-        {/* Identity */}
-        <div style={{ padding: "16px 16px 14px", borderBottom: "1px solid var(--border)" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
             <div
               style={{
-                width: 40, height: 40, borderRadius: "var(--radius-md)",
-                background: "linear-gradient(135deg,#2563eb,#06b6d4)",
-                display: "flex", alignItems: "center", justifyContent: "center",
-              }}
-            >
-              <Brain size={18} color="white" />
-            </div>
-            <div>
-              <p style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)", margin: 0 }}>Algora Mentor</p>
-              <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                <div className="status-dot status-online" />
-                <span style={{ fontSize: 11, color: "var(--green)" }}>Online</span>
-              </div>
-            </div>
-          </div>
-          <p style={{ fontSize: 12, color: "var(--text-muted)", margin: 0, lineHeight: 1.55 }}>
-            DSA & placement specialist. I ask questions, not give answers.
-          </p>
-        </div>
-
-        {/* Quick actions */}
-        <div style={{ padding: "14px 12px", borderBottom: "1px solid var(--border)" }}>
-          <p className="text-label" style={{ color: "var(--text-muted)", marginBottom: 10 }}>Quick Actions</p>
-          {QUICK.map(({ icon: Icon, label, color }) => (
-            <button
-              key={label}
-              onClick={() => send(label)}
-              style={{
-                width: "100%",
-                display: "flex",
-                alignItems: "center",
-                gap: 9,
-                padding: "8px 10px",
-                marginBottom: 4,
+                width: "28px",
+                height: "28px",
                 borderRadius: "var(--radius-md)",
-                background: "var(--bg-raised)",
-                border: "1px solid var(--border)",
-                color: "var(--text-secondary)",
-                fontSize: 12.5,
-                cursor: "pointer",
-                fontFamily: "inherit",
-                textAlign: "left",
-                transition: "all 0.1s",
-              }}
-              onMouseEnter={(e) => { e.currentTarget.style.background = "var(--bg-subtle)"; e.currentTarget.style.color = "var(--text-primary)"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.background = "var(--bg-raised)"; e.currentTarget.style.color = "var(--text-secondary)"; }}
-            >
-              <div style={{ width: 24, height: 24, borderRadius: "var(--radius-sm)", background: `color-mix(in srgb, ${color} 12%, transparent)`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                <Icon size={12} style={{ color }} />
-              </div>
-              {label}
-            </button>
-          ))}
-        </div>
-
-        {/* Topics */}
-        <div style={{ padding: "14px 12px" }}>
-          <p className="text-label" style={{ color: "var(--text-muted)", marginBottom: 10 }}>Explore Topics</p>
-          {TOPICS.map((t) => (
-            <button
-              key={t}
-              onClick={() => send(`Explain ${t}`)}
-              style={{
-                width: "100%",
+                background: "rgba(0, 212, 255, 0.12)",
                 display: "flex",
                 alignItems: "center",
-                gap: 6,
-                padding: "6px 8px",
-                marginBottom: 1,
-                borderRadius: "var(--radius-sm)",
-                background: "none",
-                border: "none",
-                color: "var(--text-muted)",
-                fontSize: 12,
-                cursor: "pointer",
-                fontFamily: "inherit",
-                textAlign: "left",
+                justifyContent: "center",
+                color: "var(--brand-primary)",
               }}
-              onMouseEnter={(e) => { e.currentTarget.style.background = "var(--bg-subtle)"; e.currentTarget.style.color = "var(--text-primary)"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.background = "none"; e.currentTarget.style.color = "var(--text-muted)"; }}
             >
-              <ChevronRight size={10} style={{ flexShrink: 0, color: "var(--text-disabled)" }} />
-              {t}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* ── Chat ── */}
-      <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", overflow: "hidden" }}>
-        {/* Header */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            padding: "10px 20px",
-            borderBottom: "1px solid var(--border)",
-            background: "var(--bg-surface)",
-          }}
-        >
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <Sparkles size={14} style={{ color: "var(--blue)" }} />
-            <span style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)" }}>Session</span>
-            <span className="badge badge-blue">DP Fundamentals</span>
+              <Brain size={16} />
+            </div>
+            <span style={{ fontSize: "13px", fontWeight: 700, letterSpacing: "-0.01em" }}>
+              AI Mentor
+            </span>
           </div>
           <button
-            className="btn btn-secondary btn-sm"
-            onClick={() => setMsgs([])}
-            style={{ gap: 5 }}
+            id="new-mentor-session-btn"
+            onClick={() => handleNewSession()}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "4px",
+              padding: "5px 9px",
+              background: "var(--brand-primary)",
+              color: "var(--bg-canvas)",
+              border: "none",
+              borderRadius: "var(--radius-md)",
+              fontSize: "12px",
+              fontWeight: 600,
+              cursor: "pointer",
+            }}
           >
-            <RotateCcw size={11} /> New session
+            <Plus size={13} />
+            <span>New Chat</span>
           </button>
         </div>
 
-        {/* Messages */}
-        <div style={{ flex: 1, overflowY: "auto", padding: "20px 20px", display: "flex", flexDirection: "column", gap: 16 }}>
-          {msgs.map((msg, i) => (
-            <div
-              key={i}
-              style={{
-                display: "flex",
-                gap: 10,
-                flexDirection: msg.role === "user" ? "row-reverse" : "row",
-                alignItems: "flex-start",
-              }}
-            >
-              {/* Avatar */}
+        {/* Saved Sessions */}
+        <div style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", gap: "4px" }}>
+          <div
+            style={{
+              fontSize: "11px",
+              fontWeight: 600,
+              color: "var(--text-tertiary)",
+              textTransform: "uppercase",
+              letterSpacing: "0.05em",
+              padding: "4px 8px",
+            }}
+          >
+            History & Sessions
+          </div>
+          {conversations.map((conv) => {
+            const isActive = conv.id === activeConvId;
+            return (
               <div
+                key={conv.id}
+                id={`session-item-${conv.id}`}
+                onClick={() => setActiveConvId(conv.id)}
                 style={{
-                  width: 30,
-                  height: 30,
+                  padding: "9px 10px",
                   borderRadius: "var(--radius-md)",
-                  background: msg.role === "ai"
-                    ? "linear-gradient(135deg,#2563eb,#06b6d4)"
-                    : "linear-gradient(135deg,#2563eb,#7c3aed)",
+                  background: isActive ? "var(--bg-raised)" : "transparent",
+                  border: isActive ? "1px solid var(--border)" : "1px solid transparent",
+                  cursor: "pointer",
                   display: "flex",
                   alignItems: "center",
-                  justifyContent: "center",
-                  color: "white",
-                  fontSize: 10,
-                  fontWeight: 700,
-                  flexShrink: 0,
-                  marginTop: 2,
+                  justifyContent: "space-between",
+                  transition: "background 0.15s ease",
                 }}
               >
-                {msg.role === "ai" ? <Brain size={13} /> : "AS"}
-              </div>
-
-              {/* Bubble */}
-              <div style={{ maxWidth: "72%", display: "flex", flexDirection: "column", gap: 4, alignItems: msg.role === "user" ? "flex-end" : "flex-start" }}>
-                {msg.type === "code" ? (
-                  <div
+                <div style={{ minWidth: 0, flex: 1 }}>
+                  <p
                     style={{
-                      background: "#0d0f1c",
-                      border: "1px solid #1e2236",
-                      borderRadius: "var(--radius-lg)",
+                      fontSize: "12px",
+                      fontWeight: isActive ? 600 : 500,
+                      color: isActive ? "var(--text-primary)" : "var(--text-secondary)",
+                      margin: 0,
+                      whiteSpace: "nowrap",
                       overflow: "hidden",
-                      width: "100%",
-                      maxWidth: 540,
+                      textOverflow: "ellipsis",
                     }}
                   >
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px 14px", background: "#0b0d18", borderBottom: "1px solid #1e2236" }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                        <Code2 size={11} color="#4b527a" />
-                        <span style={{ fontSize: 10.5, color: "#4b527a", fontFamily: "'JetBrains Mono',monospace" }}>Python</span>
+                    {conv.title}
+                  </p>
+                  <span style={{ fontSize: "10px", color: "var(--text-tertiary)" }}>
+                    {conv.topic || "General"} · {conv.messages.length} msgs
+                  </span>
+                </div>
+                <button
+                  onClick={(e) => handleDeleteSession(conv.id, e)}
+                  style={{
+                    background: "none",
+                    border: "none",
+                    color: "var(--text-tertiary)",
+                    cursor: "pointer",
+                    padding: "4px",
+                    borderRadius: "4px",
+                    display: "flex",
+                    alignItems: "center",
+                  }}
+                  title="Delete Session"
+                >
+                  <Trash2 size={12} />
+                </button>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Topic Scaffolding Selector */}
+        <div style={{ borderTop: "1px solid var(--border)", paddingTop: "12px" }}>
+          <div
+            style={{
+              fontSize: "11px",
+              fontWeight: 600,
+              color: "var(--text-tertiary)",
+              textTransform: "uppercase",
+              letterSpacing: "0.05em",
+              marginBottom: "8px",
+              paddingLeft: "4px",
+            }}
+          >
+            Switch Topic Context
+          </div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "4px", maxHeight: "120px", overflowY: "auto" }}>
+            {TOPICS.map((topic) => {
+              const isSelected = selectedTopic === topic;
+              return (
+                <button
+                  key={topic}
+                  onClick={() => setSelectedTopic(topic)}
+                  style={{
+                    fontSize: "11px",
+                    padding: "4px 8px",
+                    borderRadius: "var(--radius-sm)",
+                    background: isSelected ? "rgba(0, 212, 255, 0.12)" : "var(--bg-raised)",
+                    color: isSelected ? "var(--brand-primary)" : "var(--text-secondary)",
+                    border: isSelected ? "1px solid var(--brand-primary)" : "1px solid var(--border)",
+                    cursor: "pointer",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {topic}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </aside>
+
+      {/* MAIN CHAT AREA */}
+      <main
+        id="mentor-chat-container"
+        style={{
+          flex: 1,
+          display: "flex",
+          flexDirection: "column",
+          minWidth: 0,
+          background: "var(--bg-canvas)",
+        }}
+      >
+        {/* Chat Top Header */}
+        <header
+          id="mentor-chat-header"
+          style={{
+            padding: "12px 20px",
+            borderBottom: "1px solid var(--border)",
+            background: "var(--bg-surface)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+            <div>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                <h2 style={{ fontSize: "14px", fontWeight: 700, margin: 0 }}>
+                  {activeConversation?.title || "Mentorship Session"}
+                </h2>
+                <span
+                  style={{
+                    fontSize: "10px",
+                    padding: "2px 7px",
+                    borderRadius: "10px",
+                    background: "rgba(0, 212, 255, 0.1)",
+                    color: "var(--brand-primary)",
+                    border: "1px solid rgba(0, 212, 255, 0.2)",
+                    fontWeight: 600,
+                  }}
+                >
+                  {selectedTopic}
+                </span>
+              </div>
+              <p style={{ fontSize: "11px", color: "var(--text-tertiary)", margin: "2px 0 0" }}>
+                Socratic Method Active: Guiding step-by-step intuition without spoiling code
+              </p>
+            </div>
+          </div>
+
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <button
+              onClick={() => {
+                if (activeConversation) {
+                  setConversations((prev) =>
+                    prev.map((c) =>
+                      c.id === activeConvId
+                        ? {
+                            ...c,
+                            messages: [c.messages[0]],
+                          }
+                        : c
+                    )
+                  );
+                }
+              }}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "5px",
+                padding: "6px 10px",
+                background: "var(--bg-raised)",
+                border: "1px solid var(--border)",
+                borderRadius: "var(--radius-md)",
+                color: "var(--text-secondary)",
+                fontSize: "11px",
+                cursor: "pointer",
+              }}
+              title="Reset to initial greeting"
+            >
+              <RotateCcw size={12} />
+              <span>Clear History</span>
+            </button>
+          </div>
+        </header>
+
+        {/* Message Stream */}
+        <div
+          id="mentor-messages-stream"
+          style={{
+            flex: 1,
+            overflowY: "auto",
+            padding: "24px 28px",
+            display: "flex",
+            flexDirection: "column",
+            gap: "18px",
+          }}
+        >
+          {activeConversation?.messages.map((msg) => {
+            const isUser = msg.role === "user";
+
+            return (
+              <div
+                key={msg.id}
+                id={`message-bubble-${msg.id}`}
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: isUser ? "flex-end" : "flex-start",
+                  gap: "4px",
+                }}
+              >
+                {/* Meta Header */}
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "6px",
+                    fontSize: "11px",
+                    color: "var(--text-tertiary)",
+                    padding: "0 4px",
+                  }}
+                >
+                  {!isUser && (
+                    <span
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "4px",
+                        color: "var(--brand-primary)",
+                        fontWeight: 600,
+                      }}
+                    >
+                      <Sparkles size={11} />
+                      Algora AI Mentor
+                    </span>
+                  )}
+                  <span>{msg.timestamp}</span>
+                </div>
+
+                {/* Content Box */}
+                <div
+                  style={{
+                    maxWidth: "85%",
+                    borderRadius: "var(--radius-md)",
+                    padding: msg.type === "code" ? "0" : "12px 16px",
+                    background: isUser
+                      ? "var(--brand-primary)"
+                      : msg.type === "insight"
+                      ? "rgba(0, 212, 255, 0.06)"
+                      : msg.type === "hint"
+                      ? "rgba(245, 158, 11, 0.08)"
+                      : "var(--bg-surface)",
+                    color: isUser ? "var(--bg-canvas)" : "var(--text-primary)",
+                    border: isUser
+                      ? "none"
+                      : msg.type === "insight"
+                      ? "1px solid rgba(0, 212, 255, 0.2)"
+                      : msg.type === "hint"
+                      ? "1px solid rgba(245, 158, 11, 0.25)"
+                      : "1px solid var(--border)",
+                    fontSize: "13px",
+                    lineHeight: 1.6,
+                    position: "relative",
+                  }}
+                >
+                  {msg.type === "code" ? (
+                    <div style={{ borderRadius: "var(--radius-md)", overflow: "hidden" }}>
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                          padding: "6px 12px",
+                          background: "var(--bg-raised)",
+                          borderBottom: "1px solid var(--border)",
+                          fontSize: "11px",
+                          color: "var(--text-secondary)",
+                        }}
+                      >
+                        <span style={{ fontWeight: 600 }}>{msg.language || "Code Structure"}</span>
+                        <button
+                          onClick={() => handleCopy(msg.id, msg.content)}
+                          style={{
+                            background: "none",
+                            border: "none",
+                            color: "var(--text-secondary)",
+                            cursor: "pointer",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "4px",
+                            fontSize: "11px",
+                          }}
+                        >
+                          {copiedId === msg.id ? <Check size={12} /> : <Copy size={12} />}
+                          <span>{copiedId === msg.id ? "Copied" : "Copy"}</span>
+                        </button>
                       </div>
-                      <button style={{ fontSize: 10, color: "#4b527a", background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 3, fontFamily: "inherit" }}>
-                        <Copy size={10} /> Copy
-                      </button>
+                      <pre
+                        style={{
+                          margin: 0,
+                          padding: "12px 14px",
+                          background: "#080c14",
+                          color: "#e2e8f0",
+                          fontFamily: "var(--font-mono, monospace)",
+                          fontSize: "12px",
+                          overflowX: "auto",
+                          lineHeight: 1.5,
+                        }}
+                      >
+                        <code>{msg.content}</code>
+                      </pre>
                     </div>
-                    <pre style={{ margin: 0, padding: "12px 16px", fontSize: 12, fontFamily: "'JetBrains Mono',monospace", color: "#a9b1d6", lineHeight: 1.7, overflowX: "auto" }}>
-                      {msg.content}
-                    </pre>
-                  </div>
-                ) : msg.type === "insight" ? (
-                  <div
-                    style={{
-                      background: "var(--amber-light)",
-                      border: `1px solid color-mix(in srgb, var(--amber) 25%, transparent)`,
-                      borderRadius: "var(--radius-lg)",
-                      padding: "12px 16px",
-                      maxWidth: 480,
-                    }}
-                  >
-                    <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
-                      <Lightbulb size={13} style={{ color: "var(--amber)" }} />
-                      <span className="text-label" style={{ color: "var(--amber)", fontSize: 10 }}>Key Insight</span>
+                  ) : (
+                    <div>
+                      <div style={{ whiteSpace: "pre-wrap" }}>{msg.content}</div>
+                      {!isUser && (
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "flex-end",
+                            gap: "8px",
+                            marginTop: "8px",
+                            paddingTop: "6px",
+                            borderTop: "1px solid rgba(255, 255, 255, 0.05)",
+                          }}
+                        >
+                          <button
+                            onClick={() => handleFeedback(msg.id, "positive")}
+                            style={{
+                              background: "none",
+                              border: "none",
+                              color: msg.feedback === "positive" ? "var(--green)" : "var(--text-tertiary)",
+                              cursor: "pointer",
+                              padding: "2px 4px",
+                            }}
+                            title="Helpful guidance"
+                          >
+                            <ThumbsUp size={12} />
+                          </button>
+                          <button
+                            onClick={() => handleFeedback(msg.id, "negative")}
+                            style={{
+                              background: "none",
+                              border: "none",
+                              color: msg.feedback === "negative" ? "var(--red)" : "var(--text-tertiary)",
+                              cursor: "pointer",
+                              padding: "2px 4px",
+                            }}
+                            title="Too vague or incorrect"
+                          >
+                            <ThumbsDown size={12} />
+                          </button>
+                          <button
+                            onClick={() => handleCopy(msg.id, msg.content)}
+                            style={{
+                              background: "none",
+                              border: "none",
+                              color: copiedId === msg.id ? "var(--brand-primary)" : "var(--text-tertiary)",
+                              cursor: "pointer",
+                              padding: "2px 4px",
+                            }}
+                            title="Copy text"
+                          >
+                            {copiedId === msg.id ? <Check size={12} /> : <Copy size={12} />}
+                          </button>
+                        </div>
+                      )}
                     </div>
-                    <p style={{ fontSize: 13, color: "var(--text-secondary)", margin: 0, lineHeight: 1.6 }}>{msg.content}</p>
-                  </div>
-                ) : (
-                  <div
-                    style={{
-                      padding: "10px 14px",
-                      borderRadius: msg.role === "user" ? "16px 16px 4px 16px" : "16px 16px 16px 4px",
-                      background: msg.role === "user" ? "var(--blue)" : "var(--bg-surface)",
-                      border: msg.role === "ai" ? "1px solid var(--border)" : "none",
-                      color: msg.role === "user" ? "white" : "var(--text-secondary)",
-                      fontSize: 13,
-                      lineHeight: 1.6,
-                      whiteSpace: "pre-line",
-                    }}
-                  >
-                    {msg.content}
-                  </div>
-                )}
-                {/* Meta */}
-                <div style={{ display: "flex", alignItems: "center", gap: 6, paddingInline: 2 }}>
-                  <span style={{ fontSize: 10.5, color: "var(--text-disabled)" }}>{msg.time}</span>
-                  {msg.role === "ai" && (
-                    <>
-                      <button style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text-disabled)", padding: 2 }}><ThumbsUp size={10} /></button>
-                      <button style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text-disabled)", padding: 2 }}><ThumbsDown size={10} /></button>
-                    </>
                   )}
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
 
-          {typing && (
-            <div style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
-              <div style={{ width: 30, height: 30, borderRadius: "var(--radius-md)", background: "linear-gradient(135deg,#2563eb,#06b6d4)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <Brain size={13} color="white" />
-              </div>
-              <div style={{ padding: "12px 16px", borderRadius: "16px 16px 16px 4px", background: "var(--bg-surface)", border: "1px solid var(--border)", display: "flex", gap: 4, alignItems: "center" }}>
-                {[0, 1, 2].map((j) => (
-                  <div
-                    key={j}
-                    style={{
-                      width: 6, height: 6, borderRadius: "50%",
-                      background: "var(--text-muted)",
-                      animation: `blink 1.2s ${j * 0.2}s ease-in-out infinite`,
-                    }}
-                  />
-                ))}
-              </div>
+          {/* Typing Indicator */}
+          {isTyping && (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+                padding: "10px 14px",
+                background: "var(--bg-surface)",
+                border: "1px solid var(--border)",
+                borderRadius: "var(--radius-md)",
+                width: "fit-content",
+              }}
+            >
+              <Sparkles size={13} color="var(--brand-primary)" className="animate-spin" />
+              <span style={{ fontSize: "12px", color: "var(--text-secondary)" }}>
+                AI Mentor formulating Socratic guidance...
+              </span>
             </div>
           )}
+
           <div ref={bottomRef} />
         </div>
 
-        {/* Input */}
-        <div style={{ padding: "12px 20px", borderTop: "1px solid var(--border)", background: "var(--bg-surface)" }}>
+        {/* BOTTOM QUICK ACTIONS & INPUT BOX */}
+        <div
+          id="mentor-input-container"
+          style={{
+            padding: "14px 24px",
+            borderTop: "1px solid var(--border)",
+            background: "var(--bg-surface)",
+            display: "flex",
+            flexDirection: "column",
+            gap: "10px",
+          }}
+        >
+          {/* 5 Standard Quick Action Buttons */}
+          <div style={{ display: "flex", gap: "8px", overflowX: "auto", paddingBottom: "2px" }}>
+            {QUICK_ACTIONS.map((action) => {
+              const Icon = action.icon;
+              return (
+                <button
+                  key={action.id}
+                  id={`mentor-quick-action-${action.id}`}
+                  onClick={() => handleSend(undefined, action.id)}
+                  disabled={isTyping}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "6px",
+                    padding: "6px 12px",
+                    borderRadius: "var(--radius-md)",
+                    background: "var(--bg-raised)",
+                    border: "1px solid var(--border)",
+                    color: "var(--text-secondary)",
+                    fontSize: "12px",
+                    fontWeight: 500,
+                    cursor: isTyping ? "not-allowed" : "pointer",
+                    whiteSpace: "nowrap",
+                    transition: "all 0.15s ease",
+                  }}
+                >
+                  <Icon size={13} style={{ color: action.color }} />
+                  <span>{action.label}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Textarea + Send Trigger */}
           <div
             style={{
               display: "flex",
-              gap: 10,
+              alignItems: "flex-end",
+              gap: "8px",
               background: "var(--bg-raised)",
               border: "1px solid var(--border)",
-              borderRadius: "var(--radius-xl)",
-              padding: "10px 14px",
+              borderRadius: "var(--radius-md)",
+              padding: "8px 12px",
             }}
           >
             <textarea
+              ref={inputRef}
+              id="mentor-chat-textarea"
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="Ask about algorithms, debug your code, or request an explanation…"
+              onKeyDown={handleKeyDown}
+              placeholder={`Ask a question about ${selectedTopic}, paste code, or ask for a hint...`}
               rows={2}
               style={{
-                flex: 1, resize: "none", background: "transparent",
-                border: "none", outline: "none",
-                fontSize: 13, fontFamily: "inherit",
-                color: "var(--text-primary)", lineHeight: 1.5,
+                flex: 1,
+                background: "transparent",
+                border: "none",
+                outline: "none",
+                color: "var(--text-primary)",
+                fontSize: "13px",
+                resize: "none",
+                fontFamily: "inherit",
+                lineHeight: 1.5,
               }}
-              onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } }}
             />
             <button
-              onClick={() => send()}
+              id="mentor-send-btn"
+              onClick={() => handleSend()}
+              disabled={isTyping || !input.trim()}
               style={{
-                width: 34, height: 34, borderRadius: "var(--radius-md)",
-                background: input.trim() ? "var(--blue)" : "var(--bg-muted)",
-                border: "none", cursor: "pointer",
-                display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, alignSelf: "flex-end",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                width: "34px",
+                height: "34px",
+                borderRadius: "var(--radius-md)",
+                background: input.trim() && !isTyping ? "var(--brand-primary)" : "var(--border)",
+                color: input.trim() && !isTyping ? "var(--bg-canvas)" : "var(--text-tertiary)",
+                border: "none",
+                cursor: input.trim() && !isTyping ? "pointer" : "not-allowed",
+                transition: "all 0.15s ease",
               }}
             >
-              <Send size={13} color={input.trim() ? "white" : "var(--text-disabled)"} />
+              <Send size={15} />
             </button>
           </div>
-          <p style={{ fontSize: 10.5, color: "var(--text-disabled)", textAlign: "center", margin: "6px 0 0" }}>
-            Shift+Enter for newline · Enter to send
-          </p>
         </div>
-      </div>
+      </main>
     </div>
   );
 }

@@ -1,0 +1,393 @@
+import {
+  MentorConversation,
+  MentorMessage,
+  MentorQuickActionType,
+  AnalystReport,
+  SupportedLanguage,
+} from "../types";
+import { PROBLEMS } from "../data/problems";
+
+const MENTOR_STORAGE_KEY = "algora_ai_mentor_conversations_v1";
+const ANALYST_PREFS_KEY = "algora_ai_analyst_preferences_v1";
+
+const DEFAULT_CONVERSATION: MentorConversation = {
+  id: "conv-initial",
+  title: "Dynamic Programming & Edge Cases",
+  topic: "Dynamic Programming",
+  createdAt: new Date(Date.now() - 3600000 * 2).toISOString(),
+  updatedAt: new Date(Date.now() - 1800000).toISOString(),
+  messages: [
+    {
+      id: "msg-1",
+      role: "ai",
+      type: "text",
+      content:
+        "Hello Arjun! I'm your Algora Socratic AI Mentor. My goal is to help you deeply understand problem-solving patterns, debug edge cases, and master data structures without giving away the full code upfront.\n\nWhat are you working on or having trouble with right now?",
+      timestamp: "10:32 AM",
+    },
+    {
+      id: "msg-2",
+      role: "user",
+      type: "text",
+      content:
+        "I understand DP conceptually but keep failing edge cases in harder problems. My recursive approach works, but I miss memoization opportunities and state transitions.",
+      timestamp: "10:33 AM",
+    },
+    {
+      id: "msg-3",
+      role: "ai",
+      type: "text",
+      content:
+        "That's a classic and very normal plateau! If your recursive approach works, you have already conquered the hardest part: breaking the problem into subproblems.\n\nLet me ask you: when you write a recursive function, do you explicitly define what the parameters mean in plain English before writing code? For example, does `dp(i, cap)` mean 'maximum value using items from index `i` with `cap` capacity remaining'?",
+      timestamp: "10:33 AM",
+    },
+    {
+      id: "msg-4",
+      role: "user",
+      type: "text",
+      content: "Not always. I usually just write solve(i) and figure out the transitions as I code.",
+      timestamp: "10:34 AM",
+    },
+    {
+      id: "msg-5",
+      role: "ai",
+      type: "text",
+      content:
+        "That's precisely where subtle edge cases hide. If the state definition is blurry, your memoization key won't capture all variables, leading to incorrect cached results or exponential fallbacks.\n\nHere is a 3-step discipline to practice on your next problem:",
+      timestamp: "10:34 AM",
+    },
+    {
+      id: "msg-6",
+      role: "ai",
+      type: "code",
+      language: "Python",
+      content: `# 1. State Definition (write this as a comment FIRST):
+# "dp(idx, remaining_sum) returns minimum coins needed to form remaining_sum from coins[idx:]"
+
+from functools import lru_cache
+
+@lru_cache(maxsize=None)
+def dp(idx: int, remaining: int) -> int:
+    # 2. Base Cases:
+    if remaining == 0:
+        return 0  # 0 coins needed for sum 0
+    if remaining < 0 or idx >= len(coins):
+        return float('inf')  # invalid state
+
+    # 3. Decision Tree: Take current coin OR skip to next
+    take = 1 + dp(idx, remaining - coins[idx])
+    skip = dp(idx + 1, remaining)
+
+    return min(take, skip)`,
+      timestamp: "10:35 AM",
+    },
+    {
+      id: "msg-7",
+      role: "ai",
+      type: "insight",
+      content:
+        "Key Socratic Rule: The memoization table dimensions must match the number of changing variables in your recursive call stack. If `idx` and `remaining` change, your state is 2D.",
+      timestamp: "10:35 AM",
+    },
+  ],
+};
+
+const DEFAULT_ANALYST_REPORT: AnalystReport = {
+  readinessScore: 78,
+  readinessTier: "Senior Candidate / Top 15%",
+  totalSolved: 62,
+  totalSubmissions: 148,
+  overallAccuracy: 74.2,
+  difficultyStats: {
+    easy: 28,
+    medium: 26,
+    hard: 8,
+    total: 62,
+  },
+  topicMastery: [
+    { topic: "Arrays & Hashing", score: 88, benchmark: 75, solvedCount: 18, totalCount: 20, accuracy: 88, level: "Strong" },
+    { topic: "Two Pointers", score: 82, benchmark: 70, solvedCount: 10, totalCount: 12, accuracy: 82, level: "Strong" },
+    { topic: "Graph Algorithms", score: 90, benchmark: 65, solvedCount: 12, totalCount: 14, accuracy: 90, level: "Strong" },
+    { topic: "Binary Search", score: 74, benchmark: 68, solvedCount: 8, totalCount: 10, accuracy: 74, level: "Proficient" },
+    { topic: "Trees & BST", score: 72, benchmark: 65, solvedCount: 9, totalCount: 12, accuracy: 72, level: "Proficient" },
+    { topic: "Sliding Window", score: 70, benchmark: 65, solvedCount: 7, totalCount: 10, accuracy: 70, level: "Proficient" },
+    { topic: "Dynamic Programming", score: 58, benchmark: 60, solvedCount: 6, totalCount: 15, accuracy: 58, level: "Needs Practice" },
+    { topic: "Backtracking", score: 48, benchmark: 55, solvedCount: 4, totalCount: 10, accuracy: 48, level: "Critical" },
+  ],
+  accuracyTrends: [
+    { period: "W1", accuracy: 62, problemsSolved: 6, practiceMinutes: 240 },
+    { period: "W2", accuracy: 68, problemsSolved: 8, practiceMinutes: 320 },
+    { period: "W3", accuracy: 61, problemsSolved: 5, practiceMinutes: 180 },
+    { period: "W4", accuracy: 75, problemsSolved: 10, practiceMinutes: 410 },
+    { period: "W5", accuracy: 70, problemsSolved: 9, practiceMinutes: 360 },
+    { period: "W6", accuracy: 79, problemsSolved: 12, practiceMinutes: 480 },
+    { period: "W7", accuracy: 73, problemsSolved: 8, practiceMinutes: 300 },
+    { period: "W8", accuracy: 84, problemsSolved: 14, practiceMinutes: 520 },
+  ],
+  languageUsage: [
+    { language: "Python", problemCount: 38, percentage: 61, accuracy: 78, color: "var(--brand-primary)" },
+    { language: "C++", problemCount: 16, percentage: 26, accuracy: 72, color: "var(--blue)" },
+    { language: "Java", problemCount: 6, percentage: 10, accuracy: 68, color: "var(--amber)" },
+    { language: "C", problemCount: 2, percentage: 3, accuracy: 50, color: "var(--violet)" },
+  ],
+  weakAreas: [
+    {
+      topic: "Dynamic Programming (2D Grids)",
+      accuracy: 58,
+      gap: "-16% below target baseline",
+      severity: "Moderate",
+      suggestedAction: "Practice state transition modeling on 1D arrays before advancing to grid paths.",
+    },
+    {
+      topic: "Backtracking & Pruning",
+      accuracy: 48,
+      gap: "-26% below target baseline",
+      severity: "Critical",
+      suggestedAction: "Solve Permutations and N-Queens focusing on when to prune early before recursing.",
+    },
+    {
+      topic: "Monotonic Queue / Stack",
+      accuracy: 52,
+      gap: "-22% below target baseline",
+      severity: "Moderate",
+      suggestedAction: "Focus on Next Greater Element pattern and Daily Temperatures problem.",
+    },
+  ],
+  recommendations: [
+    {
+      id: "rec-1",
+      type: "weakness",
+      topic: "Dynamic Programming",
+      priority: "High",
+      insight: "Your accuracy on 1D DP is 72%, but drops to 44% on 2D grid/subset sum variations.",
+      actionableStep: "Solve 'Coin Change' and 'Climbing Stairs' focusing on space optimization to O(1) memory.",
+      suggestedProblemSlug: "coin-change",
+      suggestedTopicId: "py-dp",
+    },
+    {
+      id: "rec-2",
+      type: "weakness",
+      topic: "Backtracking",
+      priority: "High",
+      insight: "Timeouts occur in 60% of hard recursion tests due to lack of early constraint pruning.",
+      actionableStep: "Identify the base cases and write the pruning condition before expanding child choices.",
+      suggestedTopicId: "cpp-dsa",
+    },
+    {
+      id: "rec-3",
+      type: "strength",
+      topic: "Graph Algorithms (BFS/DFS)",
+      priority: "Stretch",
+      insight: "Top 10% performance on Topological Sort and BFS Shortest Path questions.",
+      actionableStep: "Attempt advanced Dijkstra and Minimum Spanning Tree (Kruskal/Prim) problems.",
+      suggestedTopicId: "py-graphs",
+    },
+    {
+      id: "rec-4",
+      type: "curriculum",
+      topic: "C++ STL Proficiency",
+      priority: "Medium",
+      insight: "85% of your problems were solved in Python. Diversifying into C++ will boost runtime rankings.",
+      actionableStep: "Complete the C++ Modern & STL module in the Learning path.",
+      suggestedTopicId: "cpp-stl",
+    },
+  ],
+};
+
+export class AIService {
+  /**
+   * Load saved conversations from localStorage.
+   */
+  static getConversations(): MentorConversation[] {
+    try {
+      const raw = localStorage.getItem(MENTOR_STORAGE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed;
+        }
+      }
+    } catch {
+      // ignore
+    }
+    return [DEFAULT_CONVERSATION];
+  }
+
+  /**
+   * Save conversations to localStorage.
+   */
+  static saveConversations(conversations: MentorConversation[]): void {
+    try {
+      localStorage.setItem(MENTOR_STORAGE_KEY, JSON.stringify(conversations));
+    } catch {
+      // ignore
+    }
+  }
+
+  /**
+   * Create a new conversation session.
+   */
+  static createConversation(title?: string, topic?: string): MentorConversation {
+    const newConv: MentorConversation = {
+      id: `conv-${Date.now()}`,
+      title: title || (topic ? `${topic} Coaching` : "New Mentorship Session"),
+      topic: topic || "General DSA",
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      messages: [
+        {
+          id: `msg-${Date.now()}`,
+          role: "ai",
+          type: "text",
+          content: `Hi Arjun! I'm your Algora Socratic AI Mentor. Ask me any conceptual question, request a progressive hint, or paste your code so we can analyze edge cases together.`,
+          timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+        },
+      ],
+    };
+    return newConv;
+  }
+
+  /**
+   * Generate Socratic AI response based on message content & action.
+   */
+  static async sendMentorMessage(
+    userText: string,
+    actionType?: MentorQuickActionType,
+    context?: {
+      topic?: string;
+      problemSlug?: string;
+      codeSnippet?: string;
+      language?: SupportedLanguage;
+    }
+  ): Promise<MentorMessage[]> {
+    // Artificial latency for natural feel
+    await new Promise((resolve) => setTimeout(resolve, 600));
+
+    const timestamp = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    const lower = userText.toLowerCase();
+
+    // 1. Quick Action Dispatcher
+    if (actionType === "explain_concept" || lower.includes("explain")) {
+      const topic = context?.topic || "the algorithm";
+      return [
+        {
+          id: `msg-${Date.now()}-1`,
+          role: "ai",
+          type: "text",
+          content: `### Concept Breakdown: ${topic}\n\nLet's break this down into intuitive building blocks rather than memorizing syntax:\n\n1. **Core Intuition**: What fundamental invariant or property does this technique preserve at each step?\n2. **State & Decisions**: What information do you need to know *right now* to make the next optimal move?\n3. **Optimal Substructure**: Does solving smaller subproblems guarantee the correct solution for the whole?`,
+          timestamp,
+        },
+        {
+          id: `msg-${Date.now()}-2`,
+          role: "ai",
+          type: "insight",
+          content: `💡 **Socratic Self-Check**: Before coding, ask yourself: 'If I were doing this with a pencil on paper for a list of 5 items, what exact manual steps would I take?' That human intuition is usually your algorithm.`,
+          timestamp,
+        },
+      ];
+    }
+
+    if (actionType === "give_hint" || lower.includes("hint")) {
+      const targetProb = context?.problemSlug ? PROBLEMS.find((p) => p.slug === context.problemSlug) : null;
+      const hintText = targetProb?.hints?.[0] || "Consider what happens if you process the data from both ends simultaneously or maintain an auxiliary hash map of previously seen values.";
+
+      return [
+        {
+          id: `msg-${Date.now()}-1`,
+          role: "ai",
+          type: "hint",
+          content: `### 🔍 Progressive Hint 1 of 3\n\n${hintText}\n\n**Question to guide your next step:**\nWhat is the time complexity if you use brute-force nested loops versus trading O(N) extra space to achieve O(N) linear time?`,
+          timestamp,
+        },
+      ];
+    }
+
+    if (actionType === "find_mistake" || lower.includes("mistake") || lower.includes("debug") || lower.includes("bug")) {
+      return [
+        {
+          id: `msg-${Date.now()}-1`,
+          role: "ai",
+          type: "text",
+          content: `### 🐛 Debugging Diagnostic\n\nLet's check the most common failure points for this pattern:\n\n1. **Off-by-One in Boundaries**: Did you use \`<=\` vs \`<\` when updating your pointer or iterating indices?\n2. **Empty or Single-Element Inputs**: What happens when the input array has length 0 or 1?\n3. **Integer Overflow / Base Case**: Are you handling negative numbers or zero correctly?\n4. **Mutation During Traversal**: Are you modifying an array while indexing into it?`,
+          timestamp,
+        },
+        {
+          id: `msg-${Date.now()}-2`,
+          role: "ai",
+          type: "insight",
+          content: `Try dry-running your code with input: \`[0]\` or \`[-1, -2]\`. Where does your pointer go out of bounds first?`,
+          timestamp,
+        },
+      ];
+    }
+
+    if (actionType === "improve_solution" || lower.includes("improve") || lower.includes("optimize")) {
+      return [
+        {
+          id: `msg-${Date.now()}-1`,
+          role: "ai",
+          type: "text",
+          content: `### ⚡ Optimization Strategy\n\nTo optimize from a working solution to an optimal interview verdict:\n\n1. **Identify Bottlenecks**: Which line is executed the most times? (e.g., inner loop $O(N^2)$ vs HashMap lookup $O(1)$).\n2. **Space vs Time Tradeoff**: Can you use a Frequency Map, Prefix Sum, or Monotonic Stack to avoid re-scanning the array?\n3. **In-Place Modification**: If space is $O(N)$, can you reuse the input array pointers to achieve $O(1)$ auxiliary space?`,
+          timestamp,
+        },
+      ];
+    }
+
+    if (actionType === "learning_advice" || lower.includes("advice") || lower.includes("roadmap") || lower.includes("study")) {
+      return [
+        {
+          id: `msg-${Date.now()}-1`,
+          role: "ai",
+          type: "remediation",
+          content: `### 🎯 Targeted Learning Path Recommendation\n\nBased on your recent performance metrics:\n\n- **Immediate Priority**: Complete 5 medium **Dynamic Programming** problems (focusing on 1D tabulation).\n- **Secondary Focus**: Strengthen **Backtracking** base-case definitions.\n- **Maintain Strength**: Spend 15 minutes daily on **Graph BFS/DFS** to maintain your high speed.\n\nRecommended problem to solve next: **Coin Change** or **Longest Increasing Subsequence**.`,
+          timestamp,
+        },
+      ];
+    }
+
+    // 2. Generic Socratic Conversation Response
+    return [
+      {
+        id: `msg-${Date.now()}-1`,
+        role: "ai",
+        type: "text",
+        content: `That's a thoughtful question regarding **${context?.topic || "algorithmic problem solving"}**.\n\nLet's reason through it step-by-step:\n1. What is the fundamental constraint you are trying to satisfy?\n2. If you solve it for a small example of size $N=3$, what pattern emerges in the state changes?\n\nTell me what you think the first decision point should be, and we will build the recurrence from there!`,
+        timestamp,
+      },
+    ];
+  }
+
+  /**
+   * Get Analyst Report with customizable filter.
+   */
+  static getAnalystReport(timeRange: "7d" | "30d" | "all" = "30d"): AnalystReport {
+    try {
+      const stored = localStorage.getItem(ANALYST_PREFS_KEY);
+      if (stored) {
+        // can merge user overrides if needed
+      }
+    } catch {
+      // ignore
+    }
+
+    if (timeRange === "7d") {
+      return {
+        ...DEFAULT_ANALYST_REPORT,
+        totalSolved: 14,
+        totalSubmissions: 32,
+        overallAccuracy: 84.0,
+      };
+    }
+
+    if (timeRange === "all") {
+      return {
+        ...DEFAULT_ANALYST_REPORT,
+        totalSolved: 128,
+        totalSubmissions: 290,
+        overallAccuracy: 76.5,
+      };
+    }
+
+    return DEFAULT_ANALYST_REPORT;
+  }
+}
