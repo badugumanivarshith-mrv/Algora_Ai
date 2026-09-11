@@ -10,6 +10,7 @@ import DailyReview from "./pages/DailyReview";
 import Contest from "./pages/Contest";
 import Leaderboard from "./pages/Leaderboard";
 import Faculty from "./pages/Faculty";
+import AdminDashboard from "./pages/admin/AdminDashboard";
 import { ThemeProvider } from "./components/ThemeContext";
 
 function AppShell() {
@@ -47,6 +48,7 @@ export const router = createBrowserRouter([
       { path: "contests", Component: Contest },
       { path: "leaderboard", Component: Leaderboard },
       { path: "faculty", Component: Faculty },
+      { path: "admin", Component: AdminDashboard },
     ],
   },
   // Direct paths for sidebar navigation
@@ -94,5 +96,10 @@ export const router = createBrowserRouter([
     path: "/faculty",
     Component: AppShell,
     children: [{ index: true, Component: Faculty }],
+  },
+  {
+    path: "/admin",
+    Component: AppShell,
+    children: [{ index: true, Component: AdminDashboard }],
   },
 ]);

@@ -1,7 +1,7 @@
 import { useNavigate, useLocation } from "react-router";
 import {
   LayoutDashboard, BookOpen, Code2, Brain, BarChart2, CalendarCheck,
-  Trophy, Users, GraduationCap, Settings, LogOut, ChevronRight,
+  Trophy, Users, GraduationCap, Settings, LogOut, ChevronRight, ShieldCheck,
 } from "lucide-react";
 import AlgoraLogo from "./AlgoraLogo";
 
@@ -15,6 +15,7 @@ const nav = [
   { icon: Trophy,          label: "Contests",   path: "/contests"   },
   { icon: Users,           label: "Leaderboard",path: "/leaderboard"},
   { icon: GraduationCap,   label: "Faculty",    path: "/faculty"    },
+  { icon: ShieldCheck,     label: "Admin CMS",  path: "/admin"      },
 ];
 
 export default function Sidebar() {

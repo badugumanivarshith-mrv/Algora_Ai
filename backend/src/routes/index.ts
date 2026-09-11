@@ -12,6 +12,7 @@ import goalRoutes from "./goalRoutes";
 import recommendationRoutes from "./recommendationRoutes";
 import readinessRoutes from "./readinessRoutes";
 import analyticsRoutes from "./analyticsRoutes";
+import adminRoutes from "./adminRoutes";
 
 const router = Router();
 
@@ -28,6 +29,7 @@ router.use("/goals", goalRoutes);
 router.use("/recommendations", recommendationRoutes);
 router.use("/readiness", readinessRoutes);
 router.use("/analytics", analyticsRoutes);
+router.use("/admin", adminRoutes);
 
 export default router;
 
