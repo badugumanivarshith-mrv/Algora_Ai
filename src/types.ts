@@ -153,7 +153,12 @@ export type MentorQuickActionType =
   | "give_hint"
   | "find_mistake"
   | "improve_solution"
-  | "learning_advice";
+  | "learning_advice"
+  | "build_study_plan"
+  | "analyze_weaknesses"
+  | "recommend_problems"
+  | "contest_prep"
+  | "interview_prep";
 
 export interface MentorMessage {
   id: string;
@@ -417,3 +422,150 @@ export function getRatingTier(rating: number): RatingTier {
   if (rating >= 1300) return "Intermediate";
   return "Beginner";
 }
+
+// ==========================================
+// PHASE 7: ADAPTIVE LEARNING & PERSONALIZATION
+// ==========================================
+
+export type StudyPlanType =
+  | "Beginner Roadmap"
+  | "DSA Mastery"
+  | "Competitive Programming"
+  | "Interview Preparation"
+  | "Company Preparation";
+
+export type StudyPlanDifficulty = "Beginner" | "Intermediate" | "Advanced";
+
+export interface StudyPlanTopicEntity {
+  id: string;
+  planId: string;
+  topicName: string;
+  orderIndex: number;
+  status: "completed" | "in_progress" | "not_started";
+  estimatedHours: number;
+  problemsCount: number;
+  solvedCount: number;
+  milestoneTitle: string;
+  createdAt?: string;
+}
+
+export interface StudyPlanEntity {
+  id: string;
+  userId: string;
+  title: string;
+  planType: StudyPlanType;
+  description: string;
+  targetRoleCompany?: string;
+  difficulty: StudyPlanDifficulty;
+  durationWeeks: number;
+  dailyMinutesTarget: number;
+  progressPct: number;
+  status: "active" | "completed" | "archived";
+  topics?: StudyPlanTopicEntity[];
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export type UserGoalType = "daily" | "weekly" | "monthly";
+export type GoalMetric =
+  | "problems_solved"
+  | "xp_earned"
+  | "topics_completed"
+  | "study_time"
+  | "contest_count";
+
+export interface UserGoalEntity {
+  id: string;
+  userId: string;
+  title: string;
+  goalType: UserGoalType;
+  targetMetric: GoalMetric;
+  targetValue: number;
+  currentValue: number;
+  unit: string;
+  status: "in_progress" | "completed" | "missed";
+  periodStart: string;
+  periodEnd: string;
+  streakCount: number;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface UserGoalProgressEntity {
+  id: string;
+  goalId: string;
+  userId: string;
+  recordedDate: string;
+  incrementValue: number;
+  currentValue: number;
+  notes?: string;
+  createdAt?: string;
+}
+
+export type RecommendationCategory =
+  | "Practice Next"
+  | "Review Again"
+  | "Challenge Yourself"
+  | "Contest Preparation"
+  | "Interview Preparation";
+
+export interface RecommendationEntity {
+  id: string;
+  userId: string;
+  problemId: number;
+  problemSlug: string;
+  problemTitle: string;
+  difficulty: ProblemDifficulty;
+  topic: string;
+  category: RecommendationCategory;
+  reason: string;
+  score: number;
+  actionTaken: "pending" | "solved" | "dismissed";
+  createdAt?: string;
+}
+
+export interface ReadinessScoreEntity {
+  id: string;
+  userId: string;
+  assessmentType: "contest" | "interview";
+  overallScore: number;
+  dsaCoveragePct: number;
+  speedScore: number;
+  accuracyScore: number;
+  difficultyHandling: number;
+  topicCoverage: number;
+  breakdown: Record<string, any>;
+  calculatedAt?: string;
+}
+
+export interface SkillAssessmentEntity {
+  id: string;
+  userId: string;
+  topic: string;
+  masteryScore: number;
+  accuracyPct: number;
+  learningVelocity: number;
+  weakPriority: "Critical" | "High" | "Medium" | "Low";
+  improvementSuggestion: string;
+  assessedAt?: string;
+}
+
+export interface PersonalizationOverview {
+  activePlan: StudyPlanEntity | null;
+  totalPlans: number;
+  todayGoals: UserGoalEntity[];
+  weeklyGoals: UserGoalEntity[];
+  allGoals: UserGoalEntity[];
+  recommendations: RecommendationEntity[];
+  contestReadiness: ReadinessScoreEntity | null;
+  interviewReadiness: ReadinessScoreEntity | null;
+  weakTopics: SkillAssessmentEntity[];
+  todayFocus: {
+    primaryTopic: string;
+    subGoal: string;
+    recommendedProblemsCount: number;
+    estimatedTimeMinutes: number;
+    reviewUrgentCount: number;
+  };
+}
+

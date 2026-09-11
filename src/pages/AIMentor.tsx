@@ -17,6 +17,11 @@ import {
   Compass,
   Zap,
   Check,
+  Target,
+  Trophy,
+  Briefcase,
+  AlertTriangle,
+  Rocket,
 } from "lucide-react";
 import { AIService } from "../services/aiService";
 import { MentorConversation, MentorMessage, MentorQuickActionType } from "../types";
@@ -44,6 +49,11 @@ const QUICK_ACTIONS: {
   { id: "find_mistake", label: "Find Mistake", icon: Bug, color: "var(--red)" },
   { id: "improve_solution", label: "Improve Solution", icon: Code2, color: "var(--violet)" },
   { id: "learning_advice", label: "Learning Path Advice", icon: Compass, color: "var(--green)" },
+  { id: "build_study_plan", label: "Build Study Plan", icon: Target, color: "var(--cyan)" },
+  { id: "analyze_weaknesses", label: "Analyze Weaknesses", icon: AlertTriangle, color: "var(--amber)" },
+  { id: "recommend_problems", label: "Recommend Problems", icon: Rocket, color: "var(--blue)" },
+  { id: "contest_prep", label: "Contest Prep", icon: Trophy, color: "var(--amber)" },
+  { id: "interview_prep", label: "Interview Prep", icon: Briefcase, color: "var(--green)" },
 ];
 
 export default function AIMentor() {

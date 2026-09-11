@@ -248,6 +248,95 @@ export class AIService {
       ];
     }
 
+    if (actionType === "build_study_plan" || lower.includes("study plan") || lower.includes("plan")) {
+      const topic = context?.topic || "Data Structures & Algorithms";
+      return [
+        {
+          id: `msg-${Date.now()}-1`,
+          role: "ai",
+          type: "text",
+          content: `### 🗺️ Adaptive Study Plan Blueprint: ${topic}\n\nHere is a structured, milestone-driven roadmap tailored to your current accuracy profile:\n\n**Phase 1: Foundational Invariants (Week 1)**\n- Master core edge cases, input validation, and boundary conditions.\n- Target: 6 Easy / 4 Medium problems.\n\n**Phase 2: Pattern Recognition & State Modeling (Week 2-3)**\n- Deep dive into state transitions, memoization, and space-saving 1D arrays.\n- Target: 8 Medium problems.\n\n**Phase 3: Timed Execution & Contest Simulation (Week 4)**\n- Solve mixed-topic sets under strict 25-minute timers without external IDE debugging.`,
+          timestamp,
+        },
+        {
+          id: `msg-${Date.now()}-2`,
+          role: "ai",
+          type: "insight",
+          content: `💡 **Socratic Advice**: Don't measure progress purely in hours spent. Track *time-to-first-working-invariant*—how quickly you identify the optimal subproblem structure.`,
+          timestamp,
+        },
+      ];
+    }
+
+    if (actionType === "analyze_weaknesses" || lower.includes("weakness") || lower.includes("weak topic") || lower.includes("gap")) {
+      return [
+        {
+          id: `msg-${Date.now()}-1`,
+          role: "ai",
+          type: "remediation",
+          content: `### 🔍 Diagnostic Weakness Analysis\n\nBased on your error frequency and submission telemetry:\n\n1. **Dynamic Programming (2D Grids)**: 58% accuracy. Main issue: index out of bounds on $(0,0)$ / $(N-1,M-1)$ base cases.\n2. **Backtracking & State Pruning**: 48% accuracy. Main issue: exploring branches that violate problem constraints instead of pruning before recursing.\n3. **Monotonic Stacks**: 52% accuracy. Main issue: forgetting whether to pop strictly smaller ($<$) or non-increasing ($\le$) elements.`,
+          timestamp,
+        },
+        {
+          id: `msg-${Date.now()}-2`,
+          role: "ai",
+          type: "hint",
+          content: `To fix 2D Grid DP immediately, always allocate your DP table with dimension $(N+1) \times (M+1)$ initialized with neutral values. This completely eliminates boundary checks!`,
+          timestamp,
+        },
+      ];
+    }
+
+    if (actionType === "recommend_problems" || lower.includes("recommend") || lower.includes("problem to solve")) {
+      return [
+        {
+          id: `msg-${Date.now()}-1`,
+          role: "ai",
+          type: "remediation",
+          content: `### 🚀 Curated Problem Recommendations\n\nSelected by the adaptive engine to maximize your growth velocity:\n\n1. **Coin Change (Medium)**: Reinforces unbounded knapsack and minimum state transitions.\n2. **Daily Temperatures (Medium)**: Perfect for mastering Monotonic Stack lookup in $O(N)$.\n3. **Course Schedule (Medium)**: Strengthens Cycle Detection and Topological Sort.\n4. **Trapping Rain Water (Hard)**: Challenge yourself on Two-Pointer vs Monotonic Stack duality.`,
+          timestamp,
+        },
+        {
+          id: `msg-${Date.now()}-2`,
+          role: "ai",
+          type: "insight",
+          content: `Start with **Coin Change**. Before writing code, write down the formula for $dp[amount]$ in terms of $dp[amount - coin]$.`,
+          timestamp,
+        },
+      ];
+    }
+
+    if (actionType === "contest_prep" || lower.includes("contest") || lower.includes("speed")) {
+      return [
+        {
+          id: `msg-${Date.now()}-1`,
+          role: "ai",
+          type: "text",
+          content: `### 🏆 Contest Performance Coaching\n\nYour current Contest Readiness is **78/100** (Competitive Tier).\n\n**Key Strategic Directives for Your Next Contest:**\n- **Problem 1 (Easy)**: Spend no more than 6 minutes. Avoid overthinking complexity; basic simulation is fine.\n- **Problem 2 (Medium)**: Identify standard patterns (Sliding Window, Prefix Sum, BFS) within the first 3 minutes.\n- **Problem 3 (Medium/Hard)**: Write a 1-minute brute force check in your head to verify mathematical constraints ($N \le 10^5 \implies O(N \log N)$).\n- **Penalty Avoidance**: Never submit without manually testing negative numbers and single-element edge cases!`,
+          timestamp,
+        },
+      ];
+    }
+
+    if (actionType === "interview_prep" || lower.includes("interview") || lower.includes("company") || lower.includes("faang")) {
+      return [
+        {
+          id: `msg-${Date.now()}-1`,
+          role: "ai",
+          type: "text",
+          content: `### 💼 Tech Interview Readiness Strategy\n\nYour overall Interview Readiness is **84/100** (Product & FAANG-ready on Core DSA).\n\n**4-Step Technical Interview Protocol:**\n1. **Clarification (2-3 min)**: Ask about input bounds, null/empty cases, and duplicate handling.\n2. **High-Level Approach & Complexity (4-5 min)**: State time/space trade-offs BEFORE touching the keyboard.\n3. **Clean Modular Coding (15 min)**: Use descriptive variable names (\`currSum\`, \`leftPtr\`) and extract helper functions.\n4. **Self-Verification (5 min)**: Trace code line-by-line with a sample test case without being prompted by the interviewer.`,
+          timestamp,
+        },
+        {
+          id: `msg-${Date.now()}-2`,
+          role: "ai",
+          type: "insight",
+          content: `💡 **Remember**: In interviews, communication is 50% of the grade. Think out loud, explain *why* you chose a Hash Table over sorting, and discuss trade-offs gracefully.`,
+          timestamp,
+        },
+      ];
+    }
+
     return [
       {
         id: `msg-${Date.now()}-1`,

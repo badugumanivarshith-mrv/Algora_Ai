@@ -49,3 +49,6 @@ export function optionalAuth(req: AuthenticatedRequest, _res: Response, next: Ne
   }
   next();
 }
+
+export const authMiddleware = requireAuth;
+export const optionalAuthMiddleware = optionalAuth;

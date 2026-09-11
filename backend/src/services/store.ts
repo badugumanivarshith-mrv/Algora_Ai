@@ -12,6 +12,13 @@ import {
   ContestSubmissionEntity,
   RatingHistoryEntity,
   XPTransactionEntity,
+  StudyPlanEntity,
+  StudyPlanTopicEntity,
+  UserGoalEntity,
+  UserGoalProgressEntity,
+  RecommendationEntity,
+  ReadinessScoreEntity,
+  SkillAssessmentEntity,
 } from "../types";
 import { hashPassword } from "../utils/crypto";
 
@@ -773,6 +780,495 @@ const SEED_XP_TRANSACTIONS: XPTransactionEntity[] = [
   },
 ];
 
+const SEED_STUDY_PLANS: StudyPlanEntity[] = [
+  {
+    id: "plan-dsa-mastery",
+    userId: "usr-arjun-patel",
+    title: "DSA Mastery & Problem Solving Core",
+    planType: "DSA Mastery",
+    description: "Structured curriculum advancing from core linear data structures through trees, graphs, and dynamic programming.",
+    targetRoleCompany: "General Software Engineer",
+    difficulty: "Intermediate",
+    durationWeeks: 8,
+    dailyMinutesTarget: 45,
+    progressPct: 65,
+    status: "active",
+    createdAt: new Date(Date.now() - 21 * 24 * 3600 * 1000).toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    id: "plan-faang-prep",
+    userId: "usr-arjun-patel",
+    title: "FAANG & Tier-1 Systems Interview Prep",
+    planType: "Interview Preparation",
+    description: "High-frequency problem patterns, concurrency design, and algorithmic optimization requested by Top Tech employers.",
+    targetRoleCompany: "FAANG-style Tech Giants",
+    difficulty: "Advanced",
+    durationWeeks: 12,
+    dailyMinutesTarget: 60,
+    progressPct: 40,
+    status: "active",
+    createdAt: new Date(Date.now() - 14 * 24 * 3600 * 1000).toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    id: "plan-cp-ascent",
+    userId: "usr-arjun-patel",
+    title: "Competitive Programming Rated Ascent",
+    planType: "Competitive Programming",
+    description: "Speed-oriented problem solving, time limit optimization, and math/combinatorics for rated contest circuits.",
+    targetRoleCompany: "Codeforces / ICPC / Algora Grand",
+    difficulty: "Advanced",
+    durationWeeks: 10,
+    dailyMinutesTarget: 50,
+    progressPct: 25,
+    status: "active",
+    createdAt: new Date(Date.now() - 10 * 24 * 3600 * 1000).toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    id: "plan-beginner-dsa",
+    userId: "usr-arjun-patel",
+    title: "Zero-to-One Programming Fundamentals",
+    planType: "Beginner Roadmap",
+    description: "Foundational syntax, time complexity notation, arrays, strings, and standard algorithmic idioms.",
+    targetRoleCompany: "Junior Developer / Intern",
+    difficulty: "Beginner",
+    durationWeeks: 4,
+    dailyMinutesTarget: 30,
+    progressPct: 100,
+    status: "completed",
+    createdAt: new Date(Date.now() - 45 * 24 * 3600 * 1000).toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+];
+
+const SEED_STUDY_PLAN_TOPICS: StudyPlanTopicEntity[] = [
+  // Topics for DSA Mastery
+  {
+    id: "spt-1",
+    planId: "plan-dsa-mastery",
+    topicName: "Arrays, Two Pointers & Hashing",
+    orderIndex: 1,
+    status: "completed",
+    estimatedHours: 6.0,
+    problemsCount: 8,
+    solvedCount: 8,
+    milestoneTitle: "Master O(N) Hash Table Invariants",
+    createdAt: new Date(Date.now() - 20 * 24 * 3600 * 1000).toISOString(),
+  },
+  {
+    id: "spt-2",
+    planId: "plan-dsa-mastery",
+    topicName: "Sliding Window & Monotonic Stack",
+    orderIndex: 2,
+    status: "completed",
+    estimatedHours: 8.0,
+    problemsCount: 10,
+    solvedCount: 10,
+    milestoneTitle: "Optimal Window Shrinking & Stack Next-Greater",
+    createdAt: new Date(Date.now() - 16 * 24 * 3600 * 1000).toISOString(),
+  },
+  {
+    id: "spt-3",
+    planId: "plan-dsa-mastery",
+    topicName: "Trees, Binary Search Trees & BFS/DFS",
+    orderIndex: 3,
+    status: "in_progress",
+    estimatedHours: 10.0,
+    problemsCount: 12,
+    solvedCount: 8,
+    milestoneTitle: "Recursive Tree Traversals & LCA Patterns",
+    createdAt: new Date(Date.now() - 12 * 24 * 3600 * 1000).toISOString(),
+  },
+  {
+    id: "spt-4",
+    planId: "plan-dsa-mastery",
+    topicName: "Dynamic Programming (1D & Knapsack)",
+    orderIndex: 4,
+    status: "in_progress",
+    estimatedHours: 14.0,
+    problemsCount: 15,
+    solvedCount: 6,
+    milestoneTitle: "State Space Recurrence & Space Optimization",
+    createdAt: new Date(Date.now() - 8 * 24 * 3600 * 1000).toISOString(),
+  },
+  {
+    id: "spt-5",
+    planId: "plan-dsa-mastery",
+    topicName: "Graph Algorithms & Shortest Paths",
+    orderIndex: 5,
+    status: "not_started",
+    estimatedHours: 12.0,
+    problemsCount: 12,
+    solvedCount: 0,
+    milestoneTitle: "Topological Sort & Dijkstra Implementations",
+    createdAt: new Date(Date.now() - 4 * 24 * 3600 * 1000).toISOString(),
+  },
+
+  // Topics for FAANG Prep
+  {
+    id: "spt-6",
+    planId: "plan-faang-prep",
+    topicName: "High-Frequency Hash Map & Array Design",
+    orderIndex: 1,
+    status: "completed",
+    estimatedHours: 6.0,
+    problemsCount: 6,
+    solvedCount: 6,
+    milestoneTitle: "LRU Cache & Two Sum Advanced Variants",
+    createdAt: new Date(Date.now() - 14 * 24 * 3600 * 1000).toISOString(),
+  },
+  {
+    id: "spt-7",
+    planId: "plan-faang-prep",
+    topicName: "Tree Serialization & Graph Topologies",
+    orderIndex: 2,
+    status: "in_progress",
+    estimatedHours: 10.0,
+    problemsCount: 10,
+    solvedCount: 4,
+    milestoneTitle: "Alien Dictionary & Tree Node Linking",
+    createdAt: new Date(Date.now() - 10 * 24 * 3600 * 1000).toISOString(),
+  },
+  {
+    id: "spt-8",
+    planId: "plan-faang-prep",
+    topicName: "Dynamic Programming on Strings & Intervals",
+    orderIndex: 3,
+    status: "not_started",
+    estimatedHours: 15.0,
+    problemsCount: 12,
+    solvedCount: 0,
+    milestoneTitle: "Edit Distance & Longest Common Subsequence",
+    createdAt: new Date(Date.now() - 6 * 24 * 3600 * 1000).toISOString(),
+  },
+];
+
+const SEED_USER_GOALS: UserGoalEntity[] = [
+  {
+    id: "goal-daily-solve",
+    userId: "usr-arjun-patel",
+    title: "Solve 3 Medium DSA Problems",
+    goalType: "daily",
+    targetMetric: "problems_solved",
+    targetValue: 3,
+    currentValue: 2,
+    unit: "problems",
+    status: "in_progress",
+    periodStart: new Date(new Date().setHours(0, 0, 0, 0)).toISOString(),
+    periodEnd: new Date(new Date().setHours(23, 59, 59, 999)).toISOString(),
+    streakCount: 7,
+    createdAt: new Date(Date.now() - 7 * 24 * 3600 * 1000).toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    id: "goal-daily-xp",
+    userId: "usr-arjun-patel",
+    title: "Earn 150 Practice XP",
+    goalType: "daily",
+    targetMetric: "xp_earned",
+    targetValue: 150,
+    currentValue: 150,
+    unit: "XP",
+    status: "completed",
+    periodStart: new Date(new Date().setHours(0, 0, 0, 0)).toISOString(),
+    periodEnd: new Date(new Date().setHours(23, 59, 59, 999)).toISOString(),
+    streakCount: 7,
+    createdAt: new Date(Date.now() - 7 * 24 * 3600 * 1000).toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    id: "goal-weekly-topics",
+    userId: "usr-arjun-patel",
+    title: "Master 2 Weak DP Sub-patterns",
+    goalType: "weekly",
+    targetMetric: "topics_completed",
+    targetValue: 2,
+    currentValue: 1,
+    unit: "topics",
+    status: "in_progress",
+    periodStart: new Date(Date.now() - 3 * 24 * 3600 * 1000).toISOString(),
+    periodEnd: new Date(Date.now() + 4 * 24 * 3600 * 1000).toISOString(),
+    streakCount: 4,
+    createdAt: new Date(Date.now() - 3 * 24 * 3600 * 1000).toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    id: "goal-weekly-time",
+    userId: "usr-arjun-patel",
+    title: "Log 180 Minutes of Active Coding",
+    goalType: "weekly",
+    targetMetric: "study_time",
+    targetValue: 180,
+    currentValue: 145,
+    unit: "mins",
+    status: "in_progress",
+    periodStart: new Date(Date.now() - 3 * 24 * 3600 * 1000).toISOString(),
+    periodEnd: new Date(Date.now() + 4 * 24 * 3600 * 1000).toISOString(),
+    streakCount: 3,
+    createdAt: new Date(Date.now() - 3 * 24 * 3600 * 1000).toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    id: "goal-monthly-contests",
+    userId: "usr-arjun-patel",
+    title: "Compete in 4 Algora Live Contests",
+    goalType: "monthly",
+    targetMetric: "contest_count",
+    targetValue: 4,
+    currentValue: 3,
+    unit: "contests",
+    status: "in_progress",
+    periodStart: new Date(Date.now() - 15 * 24 * 3600 * 1000).toISOString(),
+    periodEnd: new Date(Date.now() + 15 * 24 * 3600 * 1000).toISOString(),
+    streakCount: 2,
+    createdAt: new Date(Date.now() - 15 * 24 * 3600 * 1000).toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+];
+
+const SEED_USER_GOAL_PROGRESS: UserGoalProgressEntity[] = [
+  {
+    id: "ugp-1",
+    goalId: "goal-daily-solve",
+    userId: "usr-arjun-patel",
+    recordedDate: new Date().toISOString().split("T")[0],
+    incrementValue: 2,
+    currentValue: 2,
+    notes: "Solved Two Sum & Longest Palindromic Substring",
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: "ugp-2",
+    goalId: "goal-daily-xp",
+    userId: "usr-arjun-patel",
+    recordedDate: new Date().toISOString().split("T")[0],
+    incrementValue: 150,
+    currentValue: 150,
+    notes: "Daily review session + accepted solve",
+    createdAt: new Date().toISOString(),
+  },
+];
+
+const SEED_RECOMMENDATIONS: RecommendationEntity[] = [
+  {
+    id: "rec-1",
+    userId: "usr-arjun-patel",
+    problemId: 2,
+    problemSlug: "longest-palindromic-substring",
+    problemTitle: "Longest Palindromic Substring",
+    difficulty: "Medium",
+    topic: "Two Pointers",
+    category: "Practice Next",
+    reason: "Reinforces 2-pointer center expansion immediately following Two Sum and Palindrome fundamentals.",
+    score: 96,
+    actionTaken: "pending",
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: "rec-2",
+    userId: "usr-arjun-patel",
+    problemId: 5,
+    problemSlug: "climbing-stairs",
+    problemTitle: "Climbing Stairs (State Reduction)",
+    difficulty: "Easy",
+    topic: "Dynamic Programming",
+    category: "Practice Next",
+    reason: "Builds intuitive foundation for recurrence relations before advancing to 2D state spaces.",
+    score: 92,
+    actionTaken: "pending",
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: "rec-3",
+    userId: "usr-arjun-patel",
+    problemId: 4,
+    problemSlug: "merge-intervals",
+    problemTitle: "Merge Intervals",
+    difficulty: "Medium",
+    topic: "Intervals & Sorting",
+    category: "Review Again",
+    reason: "Retention score is 62%. Spaced repetition scheduler flagged interval overlap conditions for refresh.",
+    score: 89,
+    actionTaken: "pending",
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: "rec-4",
+    userId: "usr-arjun-patel",
+    problemId: 3,
+    problemSlug: "valid-parentheses",
+    problemTitle: "Valid Parentheses Stack Invariant",
+    difficulty: "Easy",
+    topic: "Stacks",
+    category: "Review Again",
+    reason: "Quick 2-minute memory refresher to maintain 100% mastery in linear bracket validations.",
+    score: 85,
+    actionTaken: "pending",
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: "rec-5",
+    userId: "usr-arjun-patel",
+    problemId: 6,
+    problemSlug: "trapping-rain-water",
+    problemTitle: "Trapping Rain Water",
+    difficulty: "Hard",
+    topic: "Two Pointers / Monotonic Stack",
+    category: "Challenge Yourself",
+    reason: "High 88% accuracy in Two Pointers makes you ready to tackle this Hard-tier benchmark problem.",
+    score: 94,
+    actionTaken: "pending",
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: "rec-6",
+    userId: "usr-arjun-patel",
+    problemId: 7,
+    problemSlug: "course-schedule-ii",
+    problemTitle: "Course Schedule II",
+    difficulty: "Medium",
+    topic: "Graphs & Topological Sort",
+    category: "Contest Preparation",
+    reason: "Topological Sort with Kahn's algorithm is tested in >40% of Div 2 Contest C/D slots.",
+    score: 91,
+    actionTaken: "pending",
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: "rec-7",
+    userId: "usr-arjun-patel",
+    problemId: 8,
+    problemSlug: "lru-cache",
+    problemTitle: "LRU Cache Design",
+    difficulty: "Medium",
+    topic: "Design & Hash Map",
+    category: "Interview Preparation",
+    reason: "Consistently ranked #1 most frequently asked problem in FAANG-style onsite technical rounds.",
+    score: 98,
+    actionTaken: "pending",
+    createdAt: new Date().toISOString(),
+  },
+];
+
+const SEED_READINESS_SCORES: ReadinessScoreEntity[] = [
+  {
+    id: "rs-contest-arjun",
+    userId: "usr-arjun-patel",
+    assessmentType: "contest",
+    overallScore: 78,
+    dsaCoveragePct: 82,
+    speedScore: 74,
+    accuracyScore: 84,
+    difficultyHandling: 72,
+    topicCoverage: 80,
+    breakdown: {
+      suggestedContestTier: "Div 2 / Weekly Rated Contest",
+      averageSolveSpeedMinutes: 18.5,
+      firstSubmissionAcceptancePct: 76,
+      streakMultiplier: 1.15,
+      strengthAreas: ["Two Pointers", "Binary Search", "Hash Maps", "Prefix Sums"],
+      weakAreas: ["Dynamic Programming (Intervals)", "Bitwise Manipulation", "Shortest Path (Dijkstra)"],
+      recommendedPracticeTopics: ["2D DP Optimization", "Kahn's Topological Sort", "Disjoint Set Union (DSU)"],
+    },
+    calculatedAt: new Date().toISOString(),
+  },
+  {
+    id: "rs-interview-arjun",
+    userId: "usr-arjun-patel",
+    assessmentType: "interview",
+    overallScore: 83,
+    dsaCoveragePct: 86,
+    speedScore: 80,
+    accuracyScore: 88,
+    difficultyHandling: 78,
+    topicCoverage: 85,
+    breakdown: {
+      companyReadiness: {
+        productBased: 88,
+        serviceBased: 96,
+        startup: 85,
+        faangStyle: 76,
+      },
+      topicReadiness: [
+        { topic: "Arrays & Hashing", readiness: 94 },
+        { topic: "Strings & Two Pointers", readiness: 90 },
+        { topic: "Trees & Binary Search", readiness: 82 },
+        { topic: "Graph Traversals", readiness: 78 },
+        { topic: "Dynamic Programming", readiness: 64 },
+        { topic: "System Object Design", readiness: 72 },
+      ],
+      missingTopics: ["Segment Trees", "Advanced 2D Matrix DP", "Monotonic Queue Slopes"],
+      recommendedQuestions: ["LRU Cache", "Course Schedule II", "Trapping Rain Water", "Lowest Common Ancestor"],
+      preparationRoadmap: [
+        "Consolidate 1D and 2D DP Recurrences (Target: 80% accuracy)",
+        "Practice Verbalizing Thought Process & Big-O trade-offs",
+        "Complete 3 Mock Timed 45-Minute Coding Screens",
+      ],
+    },
+    calculatedAt: new Date().toISOString(),
+  },
+];
+
+const SEED_SKILL_ASSESSMENTS: SkillAssessmentEntity[] = [
+  {
+    id: "sa-1",
+    userId: "usr-arjun-patel",
+    topic: "Dynamic Programming",
+    masteryScore: 58,
+    accuracyPct: 52,
+    learningVelocity: 0.85,
+    weakPriority: "Critical",
+    improvementSuggestion: "Break complex recurrences into base cases and subproblem tables before coding. Focus on 0/1 knapsack and string alignment patterns.",
+    assessedAt: new Date().toISOString(),
+  },
+  {
+    id: "sa-2",
+    userId: "usr-arjun-patel",
+    topic: "Intervals & Sorting",
+    masteryScore: 65,
+    accuracyPct: 62,
+    learningVelocity: 0.90,
+    weakPriority: "High",
+    improvementSuggestion: "Revisit interval endpoint overlap invariants and custom comparator sorting functions in Python and C++.",
+    assessedAt: new Date().toISOString(),
+  },
+  {
+    id: "sa-3",
+    userId: "usr-arjun-patel",
+    topic: "Trees & BST",
+    masteryScore: 72,
+    accuracyPct: 74,
+    learningVelocity: 1.15,
+    weakPriority: "Medium",
+    improvementSuggestion: "Strengthen bottom-up post-order recursion for tree diameter and path sum verification.",
+    assessedAt: new Date().toISOString(),
+  },
+  {
+    id: "sa-4",
+    userId: "usr-arjun-patel",
+    topic: "Graphs & BFS/DFS",
+    masteryScore: 78,
+    accuracyPct: 81,
+    learningVelocity: 1.25,
+    weakPriority: "Low",
+    improvementSuggestion: "Solid graph foundations. Advance to cycle detection in directed graphs and Dijkstra's algorithm.",
+    assessedAt: new Date().toISOString(),
+  },
+  {
+    id: "sa-5",
+    userId: "usr-arjun-patel",
+    topic: "Two Pointers & Sliding Window",
+    masteryScore: 88,
+    accuracyPct: 92,
+    learningVelocity: 1.40,
+    weakPriority: "Low",
+    improvementSuggestion: "Excellent velocity and accuracy. Ready for Hard-tier multi-pointer and monotonic queue extensions.",
+    assessedAt: new Date().toISOString(),
+  },
+];
+
 class InMemoryDatabase {
   public users: Map<string, UserEntity> = new Map();
   public profiles: Map<string, ProfileEntity> = new Map();
@@ -787,6 +1283,13 @@ class InMemoryDatabase {
   public contestSubmissions: Map<string, ContestSubmissionEntity> = new Map();
   public ratingsHistory: Map<string, RatingHistoryEntity> = new Map();
   public xpTransactions: Map<string, XPTransactionEntity> = new Map();
+  public studyPlans: Map<string, StudyPlanEntity> = new Map();
+  public studyPlanTopics: Map<string, StudyPlanTopicEntity> = new Map();
+  public userGoals: Map<string, UserGoalEntity> = new Map();
+  public userGoalProgress: Map<string, UserGoalProgressEntity> = new Map();
+  public recommendationHistory: Map<string, RecommendationEntity> = new Map();
+  public readinessScores: Map<string, ReadinessScoreEntity> = new Map();
+  public skillAssessments: Map<string, SkillAssessmentEntity> = new Map();
 
   constructor() {
     this.seed();
@@ -829,6 +1332,27 @@ class InMemoryDatabase {
     for (const xp of SEED_XP_TRANSACTIONS) {
       this.xpTransactions.set(xp.id, { ...xp });
     }
+    for (const sp of SEED_STUDY_PLANS) {
+      this.studyPlans.set(sp.id, { ...sp });
+    }
+    for (const spt of SEED_STUDY_PLAN_TOPICS) {
+      this.studyPlanTopics.set(spt.id, { ...spt });
+    }
+    for (const ug of SEED_USER_GOALS) {
+      this.userGoals.set(ug.id, { ...ug });
+    }
+    for (const ugp of SEED_USER_GOAL_PROGRESS) {
+      this.userGoalProgress.set(ugp.id, { ...ugp });
+    }
+    for (const rec of SEED_RECOMMENDATIONS) {
+      this.recommendationHistory.set(rec.id, { ...rec });
+    }
+    for (const rs of SEED_READINESS_SCORES) {
+      this.readinessScores.set(rs.id, { ...rs });
+    }
+    for (const sa of SEED_SKILL_ASSESSMENTS) {
+      this.skillAssessments.set(sa.id, { ...sa });
+    }
   }
 
   public reset() {
@@ -845,8 +1369,16 @@ class InMemoryDatabase {
     this.contestSubmissions.clear();
     this.ratingsHistory.clear();
     this.xpTransactions.clear();
+    this.studyPlans.clear();
+    this.studyPlanTopics.clear();
+    this.userGoals.clear();
+    this.userGoalProgress.clear();
+    this.recommendationHistory.clear();
+    this.readinessScores.clear();
+    this.skillAssessments.clear();
     this.seed();
   }
 }
 
 export const db = new InMemoryDatabase();
+
