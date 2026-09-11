@@ -282,4 +282,47 @@ export class AdminApi {
       body: JSON.stringify(data),
     });
   }
+
+  // --- Phase 9: AI Telemetry, Observability & Broadcasts ---
+  public static async getAIUsageSummary(): Promise<ApiResponse<any>> {
+    return ApiClient.request<any>("/monitoring/ai-usage");
+  }
+
+  public static async getMonitoringMetrics(): Promise<ApiResponse<any>> {
+    return ApiClient.request<any>("/monitoring/metrics");
+  }
+
+  public static async getDeepHealth(): Promise<ApiResponse<any>> {
+    return ApiClient.request<any>("/monitoring/health-deep");
+  }
+
+  public static async getRecentErrors(): Promise<ApiResponse<any[]>> {
+    return ApiClient.request<any[]>("/monitoring/errors");
+  }
+
+  public static async getJudgeStats(): Promise<ApiResponse<any>> {
+    return ApiClient.request<any>("/monitoring/judge-stats");
+  }
+
+  public static async broadcastAnnouncement(data: { title: string; message: string; link?: string }): Promise<ApiResponse<any>> {
+    return ApiClient.request<any>("/notifications/broadcast", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
+
+  public static async getAnnouncements(): Promise<ApiResponse<any[]>> {
+    return ApiClient.request<any[]>("/notifications/announcements");
+  }
+
+  public static async getUploads(category?: string): Promise<ApiResponse<any[]>> {
+    const url = category ? `/uploads?category=${category}` : "/uploads";
+    return ApiClient.request<any[]>(url);
+  }
+
+  public static async deleteUpload(id: string): Promise<ApiResponse<any>> {
+    return ApiClient.request<any>(`/uploads/${id}`, {
+      method: "DELETE",
+    });
+  }
 }

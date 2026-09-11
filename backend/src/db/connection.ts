@@ -11,6 +11,10 @@ export class Database {
   private static activeMigrationVersion: string = "002";
   private static fallbackStore: Map<string, any[]> = new Map();
 
+  public static isReady(): boolean {
+    return this.pool !== null;
+  }
+
   public static initialize(): void {
     if (this.pool) return;
 

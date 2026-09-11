@@ -13,6 +13,10 @@ import recommendationRoutes from "./recommendationRoutes";
 import readinessRoutes from "./readinessRoutes";
 import analyticsRoutes from "./analyticsRoutes";
 import adminRoutes from "./adminRoutes";
+import aiRoutes from "./aiRoutes";
+import uploadRoutes from "./uploadRoutes";
+import notificationRoutes from "./notificationRoutes";
+import monitoringRoutes from "./monitoringRoutes";
 
 const router = Router();
 
@@ -30,6 +34,9 @@ router.use("/recommendations", recommendationRoutes);
 router.use("/readiness", readinessRoutes);
 router.use("/analytics", analyticsRoutes);
 router.use("/admin", adminRoutes);
+router.use("/ai", aiRoutes);
+router.use("/uploads", uploadRoutes);
+router.use("/notifications", notificationRoutes);
+router.use("/monitoring", monitoringRoutes);
 
 export default router;
-

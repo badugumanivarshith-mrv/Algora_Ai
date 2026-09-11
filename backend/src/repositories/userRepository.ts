@@ -120,6 +120,52 @@ export class UserRepository {
     return user;
   }
 
+  static async update(id: string, updates: Partial<UserEntity>): Promise<UserEntity | null> {
+    const existing = await this.findById(id);
+    if (!existing) return null;
+
+    const updated: UserEntity = {
+      ...existing,
+      ...updates,
+      updatedAt: new Date().toISOString(),
+    };
+
+    const pool = Database.getPool();
+    if (pool) {
+      const setClauses: string[] = [];
+      const values: any[] = [];
+      let idx = 1;
+
+      if (updates.email !== undefined) {
+        setClauses.push(`email = $${idx++}`);
+        values.push(updates.email);
+      }
+      if (updates.username !== undefined) {
+        setClauses.push(`username = $${idx++}`);
+        values.push(updates.username);
+      }
+      if (updates.passwordHash !== undefined) {
+        setClauses.push(`password_hash = $${idx++}`);
+        values.push(updates.passwordHash);
+      }
+      if (updates.role !== undefined) {
+        setClauses.push(`role = $${idx++}`);
+        values.push(updates.role);
+      }
+
+      setClauses.push(`updated_at = $${idx++}`);
+      values.push(updated.updatedAt);
+      values.push(id);
+
+      if (setClauses.length > 0) {
+        await Database.query(`UPDATE users SET ${setClauses.join(", ")} WHERE id = $${idx};`, values);
+      }
+    }
+
+    db.users.set(id, updated);
+    return updated;
+  }
+
   static async count(): Promise<number> {
     const pool = Database.getPool();
     if (pool) {

@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from "express";
+import { MonitoringService } from "../services/monitoringService";
 
 export class ApiError extends Error {
   public statusCode: number;
@@ -27,11 +28,20 @@ export function notFoundHandler(req: Request, res: Response): void {
 
 export function errorHandler(
   err: Error | ApiError,
-  _req: Request,
+  req: Request,
   res: Response,
   _next: NextFunction
 ): void {
   if (err instanceof ApiError) {
+    if (err.statusCode >= 500) {
+      MonitoringService.recordError({
+        message: err.message,
+        stack: err.stack,
+        route: req.originalUrl,
+        statusCode: err.statusCode,
+      });
+    }
+
     res.status(err.statusCode).json({
       success: false,
       error: {
@@ -44,6 +54,14 @@ export function errorHandler(
   }
 
   console.error("Unhandled Internal Server Error:", err);
+
+  MonitoringService.recordError({
+    message: err.message,
+    stack: err.stack,
+    route: req.originalUrl,
+    statusCode: 500,
+  });
+
   res.status(500).json({
     success: false,
     error: {

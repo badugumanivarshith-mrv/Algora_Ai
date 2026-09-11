@@ -453,6 +453,14 @@ export class ProblemCmsRepository {
   public async getVersions(problemId: number): Promise<ProblemVersionEntity[]> {
     return this.inMemoryVersions.get(String(problemId)) || [];
   }
+
+  public static async findBySlug(slug: string): Promise<ProblemCMSEntity | null> {
+    return problemCmsRepository.getBySlug(slug);
+  }
+
+  public static async findById(id: number): Promise<ProblemCMSEntity | null> {
+    return problemCmsRepository.getById(id);
+  }
 }
 
 export const problemCmsRepository = new ProblemCmsRepository();

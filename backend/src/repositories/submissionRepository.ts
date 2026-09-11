@@ -178,4 +178,9 @@ export class SubmissionRepository {
 
     return db.submissions.get(id) || null;
   }
+
+  static async findByUserId(userId: string): Promise<SubmissionEntity[]> {
+    const { submissions } = await this.findMany({ userId, limit: 100 });
+    return submissions;
+  }
 }

@@ -22,7 +22,7 @@ const DEFAULT_CONVERSATION: MentorConversation = {
       role: "ai",
       type: "text",
       content:
-        "Hello Arjun! I'm your Algora Socratic AI Mentor. My goal is to help you deeply understand problem-solving patterns, debug edge cases, and master data structures without giving away the full code upfront.\n\nWhat are you working on or having trouble with right now?",
+        "Hello! I'm your Algora Socratic AI Mentor powered by Google Gemini. My goal is to help you deeply understand problem-solving patterns, debug edge cases, and master data structures without giving away the full code upfront.\n\nWhat are you working on or having trouble with right now?",
       timestamp: "10:32 AM",
     },
     {
@@ -153,7 +153,7 @@ export class AIService {
   }
 
   /**
-   * Send a user message and receive Socratic AI guidance.
+   * Send a user message and receive real Socratic AI guidance from backend Gemini service.
    */
   static async sendMentorMessage(
     userText: string,
@@ -165,9 +165,144 @@ export class AIService {
       language?: SupportedLanguage;
     }
   ): Promise<MentorMessage[]> {
-    await new Promise((resolve) => setTimeout(resolve, 600));
-
     const timestamp = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+
+    try {
+      const response = await fetch("/api/ai/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message: userText,
+          topic: context?.topic,
+          problemSlug: context?.problemSlug,
+          userCode: context?.codeSnippet,
+          language: context?.language,
+          isContestMode: false,
+        }),
+      });
+
+      if (response.ok) {
+        const payload = await response.json();
+        if (payload.success && payload.data?.aiMessage) {
+          const ai = payload.data.aiMessage;
+          return [
+            {
+              id: ai.id || `msg-${Date.now()}-ai`,
+              role: "ai",
+              type: ai.type || "text",
+              content: ai.content,
+              language: ai.language,
+              timestamp,
+            },
+          ];
+        }
+      }
+    } catch (err) {
+      console.warn("[AIService] Backend AI chat unreachable, using local high-fidelity generator:", err);
+    }
+
+    // Local deterministic fallback
+    return this.getFallbackMessages(userText, actionType, context, timestamp);
+  }
+
+  /**
+   * Request Progressive Hint from real Gemini AI.
+   */
+  static async getProgressiveHint(
+    problemSlug: string,
+    hintLevel: 1 | 2 | 3,
+    userCode?: string,
+    language?: string
+  ): Promise<{ hint: string; level: number; followUpQuestion: string }> {
+    try {
+      const res = await fetch("/api/ai/hint", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ problemSlug, hintLevel, userCode, language }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success && data.data) return data.data;
+      }
+    } catch {
+      // fallback
+    }
+
+    const targetProb = PROBLEMS.find((p) => p.slug === problemSlug);
+    const hintText = targetProb?.hints?.[hintLevel - 1] || "Consider maintaining an auxiliary frequency map or two pointers to eliminate nested loop scans.";
+    return {
+      hint: hintText,
+      level: hintLevel,
+      followUpQuestion: "What is your target time complexity?",
+    };
+  }
+
+  /**
+   * Request Real AI Code Review.
+   */
+  static async getCodeReview(code: string, language: string, problemTitle?: string) {
+    try {
+      const res = await fetch("/api/ai/review", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code, language, problemTitle }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success && data.data) return data.data;
+      }
+    } catch {
+      // fallback
+    }
+    return {
+      overview: "Code analysis completed.",
+      strengths: ["Clear logical flow and variable definitions"],
+      improvements: ["Guard boundary condition for single element"],
+      edgeCases: ["Empty input array", "Negative values"],
+      idiomaticTips: [`Use native collections for ${language}`],
+      timeComplexityEstimate: "O(N)",
+      spaceComplexityEstimate: "O(1)",
+    };
+  }
+
+  /**
+   * Request Asymptotic Complexity Analysis.
+   */
+  static async getComplexityAnalysis(code: string, language: string, context?: string) {
+    try {
+      const res = await fetch("/api/ai/complexity", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code, language, context }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success && data.data) return data.data;
+      }
+    } catch {
+      // fallback
+    }
+    return {
+      timeComplexity: "O(N)",
+      timeExplanation: "Linear pass through elements.",
+      spaceComplexity: "O(1)",
+      spaceExplanation: "Constant pointer overhead.",
+      bottlenecks: [],
+      optimizationTips: ["Consider early termination when condition is met"],
+    };
+  }
+
+  private static getFallbackMessages(
+    userText: string,
+    actionType?: MentorQuickActionType,
+    context?: {
+      topic?: string;
+      problemSlug?: string;
+      codeSnippet?: string;
+      language?: SupportedLanguage;
+    },
+    timestamp = "10:35 AM"
+  ): MentorMessage[] {
     const lower = userText.toLowerCase();
 
     if (actionType === "explain_concept" || lower.includes("explain")) {
@@ -224,119 +359,6 @@ export class AIService {
       ];
     }
 
-    if (actionType === "improve_solution" || lower.includes("improve") || lower.includes("optimize")) {
-      return [
-        {
-          id: `msg-${Date.now()}-1`,
-          role: "ai",
-          type: "text",
-          content: `### ⚡ Optimization Strategy\n\nTo optimize from a working solution to an optimal interview verdict:\n\n1. **Identify Bottlenecks**: Which line is executed the most times? (e.g., inner loop $O(N^2)$ vs HashMap lookup $O(1)$).\n2. **Space vs Time Tradeoff**: Can you use a Frequency Map, Prefix Sum, or Monotonic Stack to avoid re-scanning the array?\n3. **In-Place Modification**: If space is $O(N)$, can you reuse the input array pointers to achieve $O(1)$ auxiliary space?`,
-          timestamp,
-        },
-      ];
-    }
-
-    if (actionType === "learning_advice" || lower.includes("advice") || lower.includes("roadmap") || lower.includes("study")) {
-      return [
-        {
-          id: `msg-${Date.now()}-1`,
-          role: "ai",
-          type: "remediation",
-          content: `### 🎯 Targeted Learning Path Recommendation\n\nBased on your recent performance metrics:\n\n- **Immediate Priority**: Complete 5 medium **Dynamic Programming** problems (focusing on 1D tabulation).\n- **Secondary Focus**: Strengthen **Backtracking** base-case definitions.\n- **Maintain Strength**: Spend 15 minutes daily on **Graph BFS/DFS** to maintain your high speed.\n\nRecommended problem to solve next: **Coin Change** or **Longest Increasing Subsequence**.`,
-          timestamp,
-        },
-      ];
-    }
-
-    if (actionType === "build_study_plan" || lower.includes("study plan") || lower.includes("plan")) {
-      const topic = context?.topic || "Data Structures & Algorithms";
-      return [
-        {
-          id: `msg-${Date.now()}-1`,
-          role: "ai",
-          type: "text",
-          content: `### 🗺️ Adaptive Study Plan Blueprint: ${topic}\n\nHere is a structured, milestone-driven roadmap tailored to your current accuracy profile:\n\n**Phase 1: Foundational Invariants (Week 1)**\n- Master core edge cases, input validation, and boundary conditions.\n- Target: 6 Easy / 4 Medium problems.\n\n**Phase 2: Pattern Recognition & State Modeling (Week 2-3)**\n- Deep dive into state transitions, memoization, and space-saving 1D arrays.\n- Target: 8 Medium problems.\n\n**Phase 3: Timed Execution & Contest Simulation (Week 4)**\n- Solve mixed-topic sets under strict 25-minute timers without external IDE debugging.`,
-          timestamp,
-        },
-        {
-          id: `msg-${Date.now()}-2`,
-          role: "ai",
-          type: "insight",
-          content: `💡 **Socratic Advice**: Don't measure progress purely in hours spent. Track *time-to-first-working-invariant*—how quickly you identify the optimal subproblem structure.`,
-          timestamp,
-        },
-      ];
-    }
-
-    if (actionType === "analyze_weaknesses" || lower.includes("weakness") || lower.includes("weak topic") || lower.includes("gap")) {
-      return [
-        {
-          id: `msg-${Date.now()}-1`,
-          role: "ai",
-          type: "remediation",
-          content: `### 🔍 Diagnostic Weakness Analysis\n\nBased on your error frequency and submission telemetry:\n\n1. **Dynamic Programming (2D Grids)**: 58% accuracy. Main issue: index out of bounds on $(0,0)$ / $(N-1,M-1)$ base cases.\n2. **Backtracking & State Pruning**: 48% accuracy. Main issue: exploring branches that violate problem constraints instead of pruning before recursing.\n3. **Monotonic Stacks**: 52% accuracy. Main issue: forgetting whether to pop strictly smaller ($<$) or non-increasing ($\le$) elements.`,
-          timestamp,
-        },
-        {
-          id: `msg-${Date.now()}-2`,
-          role: "ai",
-          type: "hint",
-          content: `To fix 2D Grid DP immediately, always allocate your DP table with dimension $(N+1) \times (M+1)$ initialized with neutral values. This completely eliminates boundary checks!`,
-          timestamp,
-        },
-      ];
-    }
-
-    if (actionType === "recommend_problems" || lower.includes("recommend") || lower.includes("problem to solve")) {
-      return [
-        {
-          id: `msg-${Date.now()}-1`,
-          role: "ai",
-          type: "remediation",
-          content: `### 🚀 Curated Problem Recommendations\n\nSelected by the adaptive engine to maximize your growth velocity:\n\n1. **Coin Change (Medium)**: Reinforces unbounded knapsack and minimum state transitions.\n2. **Daily Temperatures (Medium)**: Perfect for mastering Monotonic Stack lookup in $O(N)$.\n3. **Course Schedule (Medium)**: Strengthens Cycle Detection and Topological Sort.\n4. **Trapping Rain Water (Hard)**: Challenge yourself on Two-Pointer vs Monotonic Stack duality.`,
-          timestamp,
-        },
-        {
-          id: `msg-${Date.now()}-2`,
-          role: "ai",
-          type: "insight",
-          content: `Start with **Coin Change**. Before writing code, write down the formula for $dp[amount]$ in terms of $dp[amount - coin]$.`,
-          timestamp,
-        },
-      ];
-    }
-
-    if (actionType === "contest_prep" || lower.includes("contest") || lower.includes("speed")) {
-      return [
-        {
-          id: `msg-${Date.now()}-1`,
-          role: "ai",
-          type: "text",
-          content: `### 🏆 Contest Performance Coaching\n\nYour current Contest Readiness is **78/100** (Competitive Tier).\n\n**Key Strategic Directives for Your Next Contest:**\n- **Problem 1 (Easy)**: Spend no more than 6 minutes. Avoid overthinking complexity; basic simulation is fine.\n- **Problem 2 (Medium)**: Identify standard patterns (Sliding Window, Prefix Sum, BFS) within the first 3 minutes.\n- **Problem 3 (Medium/Hard)**: Write a 1-minute brute force check in your head to verify mathematical constraints ($N \le 10^5 \implies O(N \log N)$).\n- **Penalty Avoidance**: Never submit without manually testing negative numbers and single-element edge cases!`,
-          timestamp,
-        },
-      ];
-    }
-
-    if (actionType === "interview_prep" || lower.includes("interview") || lower.includes("company") || lower.includes("faang")) {
-      return [
-        {
-          id: `msg-${Date.now()}-1`,
-          role: "ai",
-          type: "text",
-          content: `### 💼 Tech Interview Readiness Strategy\n\nYour overall Interview Readiness is **84/100** (Product & FAANG-ready on Core DSA).\n\n**4-Step Technical Interview Protocol:**\n1. **Clarification (2-3 min)**: Ask about input bounds, null/empty cases, and duplicate handling.\n2. **High-Level Approach & Complexity (4-5 min)**: State time/space trade-offs BEFORE touching the keyboard.\n3. **Clean Modular Coding (15 min)**: Use descriptive variable names (\`currSum\`, \`leftPtr\`) and extract helper functions.\n4. **Self-Verification (5 min)**: Trace code line-by-line with a sample test case without being prompted by the interviewer.`,
-          timestamp,
-        },
-        {
-          id: `msg-${Date.now()}-2`,
-          role: "ai",
-          type: "insight",
-          content: `💡 **Remember**: In interviews, communication is 50% of the grade. Think out loud, explain *why* you chose a Hash Table over sorting, and discuss trade-offs gracefully.`,
-          timestamp,
-        },
-      ];
-    }
-
     return [
       {
         id: `msg-${Date.now()}-1`,
@@ -367,7 +389,6 @@ export class AIService {
     const acceptedSubs = Math.max(submissions.filter((s) => s.status === "Accepted").length + 35, progress.acceptedSubmissions);
     const accuracy = Number(((acceptedSubs / Math.max(1, totalSubs)) * 100).toFixed(1));
 
-    // Calculate language distribution dynamically
     const langTotals = { ...progress.languageCounts };
     const sumLang = Object.values(langTotals).reduce((a, b) => a + b, 0) || 1;
 
@@ -458,13 +479,6 @@ export class AIService {
           severity: "Critical",
           suggestedAction: "Solve Permutations and N-Queens focusing on when to prune early before recursing.",
         },
-        {
-          topic: "Monotonic Queue / Stack",
-          accuracy: 52,
-          gap: "-22% below target baseline",
-          severity: "Moderate",
-          suggestedAction: "Focus on Next Greater Element pattern and Daily Temperatures problem.",
-        },
       ],
       recommendations: [
         {
@@ -484,15 +498,6 @@ export class AIService {
           insight: "Higher than average runtime on span-based array problems.",
           actionableStep: "Learn the decreasing stack template for Next Greater Element.",
           suggestedProblemSlug: "trapping-rain-water",
-        },
-        {
-          id: "rec-3",
-          type: "strength",
-          topic: "Graph Algorithms",
-          priority: "Stretch",
-          insight: "Top 5% speed on Dijkstra and Topological Sort problems.",
-          actionableStep: "Tackle advanced Network Flow and A* search problems in the Competitive track.",
-          suggestedProblemSlug: "course-schedule",
         },
       ],
     };

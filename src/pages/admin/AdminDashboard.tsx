@@ -19,6 +19,10 @@ import {
   Activity,
   Zap,
   Users,
+  Bot,
+  DollarSign,
+  Radio,
+  HeartPulse,
 } from "lucide-react";
 import {
   ProblemCMSEntity,
@@ -37,6 +41,10 @@ import ContestEditorModal from "../../components/admin/ContestEditorModal";
 import AchievementEditorModal from "../../components/admin/AchievementEditorModal";
 import AuditLogViewer from "../../components/admin/AuditLogViewer";
 import SettingsEditor from "../../components/admin/SettingsEditor";
+import AIConfigPanel from "../../components/admin/AIConfigPanel";
+import AIUsagePanel from "../../components/admin/AIUsagePanel";
+import BroadcastPanel from "../../components/admin/BroadcastPanel";
+import SystemHealthPanel from "../../components/admin/SystemHealthPanel";
 
 type AdminTab =
   | "analytics"
@@ -45,6 +53,10 @@ type AdminTab =
   | "curriculum"
   | "contests"
   | "achievements"
+  | "ai_config"
+  | "ai_usage"
+  | "broadcasts"
+  | "health"
   | "settings"
   | "audit"
   | "users";
@@ -359,6 +371,10 @@ export default function AdminDashboard() {
           { key: "curriculum", label: `Curriculum (${curriculum.length})`, icon: Compass },
           { key: "contests", label: `Contests (${contests.length})`, icon: Trophy },
           { key: "achievements", label: `Badges (${achievements.length})`, icon: Award },
+          { key: "ai_config", label: "AI Engine & Prompts", icon: Bot },
+          { key: "ai_usage", label: "AI Cost & Telemetry", icon: DollarSign },
+          { key: "broadcasts", label: "Broadcast Alerts", icon: Radio },
+          { key: "health", label: "System Health", icon: HeartPulse },
           { key: "settings", label: "Platform Config", icon: Settings },
           { key: "audit", label: "Audit Logs", icon: Activity },
           { key: "users", label: `Staff & Roles (${adminsList.length})`, icon: Users },
@@ -1518,6 +1534,18 @@ export default function AdminDashboard() {
             </div>
           </div>
         )}
+
+        {/* 10. AI CONFIGURATION & PROMPT STUDIO */}
+        {activeTab === "ai_config" && <AIConfigPanel />}
+
+        {/* 11. AI USAGE, TELEMETRY & COST ANALYTICS */}
+        {activeTab === "ai_usage" && <AIUsagePanel />}
+
+        {/* 12. NOTIFICATIONS & BROADCAST ANNOUNCEMENTS */}
+        {activeTab === "broadcasts" && <BroadcastPanel />}
+
+        {/* 13. SYSTEM HEALTH & OBSERVABILITY */}
+        {activeTab === "health" && <SystemHealthPanel />}
       </div>
 
       {/* MODALS */}

@@ -1,0 +1,53 @@
+services:
+  algora-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: algora_ai_app
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - CLIENT_URL=http://localhost:3000
+      - DATABASE_URL=postgresql://algora_user:algora_secure_password_2026@postgres:5432/algora_db
+      - JWT_SECRET=algora-super-secret-jwt-key-change-this-in-production-2026
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - algora_network
+    volumes:
+      - app_uploads:/app/public/uploads
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: algora_postgres
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=algora_user
+      - POSTGRES_PASSWORD=algora_secure_password_2026
+      - POSTGRES_DB=algora_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - algora_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U algora_user -d algora_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+networks:
+  algora_network:
+    driver: bridge
+
+volumes:
+  pgdata:
+    driver: local
+  app_uploads:
+    driver: local
