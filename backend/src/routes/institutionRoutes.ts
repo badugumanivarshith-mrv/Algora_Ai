@@ -9,6 +9,11 @@ router.get("/details", (req: Request, res: Response) => {
   res.json({ success: true, institution });
 });
 
+router.get("/overview", (req: Request, res: Response) => {
+  const institution = institutionRepo.getInstitution();
+  res.json({ success: true, institution });
+});
+
 router.get("/departments", (req: Request, res: Response) => {
   const departments = institutionRepo.listDepartments();
   res.json({ success: true, departments });

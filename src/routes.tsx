@@ -11,6 +11,12 @@ import Contest from "./pages/Contest";
 import Leaderboard from "./pages/Leaderboard";
 import Faculty from "./pages/Faculty";
 import AdminDashboard from "./pages/admin/AdminDashboard";
+import Community from "./pages/Community";
+import PlacementHub from "./pages/PlacementHub";
+import InterviewHub from "./pages/InterviewHub";
+import Certifications from "./pages/Certifications";
+import AdaptiveRoadmapV2 from "./pages/AdaptiveRoadmapV2";
+import Profile from "./pages/Profile";
 import { ThemeProvider } from "./components/ThemeContext";
 
 function AppShell() {
@@ -45,13 +51,19 @@ export const router = createBrowserRouter([
       { path: "ai-mentor", Component: AIMentor },
       { path: "ai-analyst", Component: AIAnalyst },
       { path: "daily-review", Component: DailyReview },
+      { path: "adaptive-roadmap", Component: AdaptiveRoadmapV2 },
       { path: "contests", Component: Contest },
       { path: "leaderboard", Component: Leaderboard },
+      { path: "community", Component: Community },
+      { path: "interviews", Component: InterviewHub },
+      { path: "placements", Component: PlacementHub },
+      { path: "certifications", Component: Certifications },
       { path: "faculty", Component: Faculty },
       { path: "admin", Component: AdminDashboard },
+      { path: "profile", Component: Profile },
     ],
   },
-  // Direct paths for sidebar navigation
+  // Direct paths for sidebar navigation and deep links
   {
     path: "/dashboard",
     Component: AppShell,
@@ -83,6 +95,11 @@ export const router = createBrowserRouter([
     children: [{ index: true, Component: DailyReview }],
   },
   {
+    path: "/adaptive-roadmap",
+    Component: AppShell,
+    children: [{ index: true, Component: AdaptiveRoadmapV2 }],
+  },
+  {
     path: "/contests",
     Component: AppShell,
     children: [{ index: true, Component: Contest }],
@@ -93,6 +110,26 @@ export const router = createBrowserRouter([
     children: [{ index: true, Component: Leaderboard }],
   },
   {
+    path: "/community",
+    Component: AppShell,
+    children: [{ index: true, Component: Community }],
+  },
+  {
+    path: "/interviews",
+    Component: AppShell,
+    children: [{ index: true, Component: InterviewHub }],
+  },
+  {
+    path: "/placements",
+    Component: AppShell,
+    children: [{ index: true, Component: PlacementHub }],
+  },
+  {
+    path: "/certifications",
+    Component: AppShell,
+    children: [{ index: true, Component: Certifications }],
+  },
+  {
     path: "/faculty",
     Component: AppShell,
     children: [{ index: true, Component: Faculty }],
@@ -101,5 +138,10 @@ export const router = createBrowserRouter([
     path: "/admin",
     Component: AppShell,
     children: [{ index: true, Component: AdminDashboard }],
+  },
+  {
+    path: "/profile",
+    Component: AppShell,
+    children: [{ index: true, Component: Profile }],
   },
 ]);

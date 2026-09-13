@@ -1,7 +1,9 @@
 import { useState, useEffect, useRef, type ElementType } from "react";
+import { useNavigate } from "react-router";
 import { Bell, Search, Sun, Moon, Sparkles, Command, Flame, Zap, Award, Check, ExternalLink, Radio, RefreshCw } from "lucide-react";
 import { useTheme, type Theme } from "./ThemeContext";
 import { GamificationApi, GamificationProfileResponse } from "../services/gamificationApi";
+import GlobalSearchModal from "./GlobalSearchModal";
 
 interface TopNavProps {
   title?: string;
@@ -25,12 +27,14 @@ const themes: { key: Theme; icon: ElementType; label: string }[] = [
 ];
 
 export default function TopNav({ title, subtitle }: TopNavProps) {
+  const navigate = useNavigate();
   const { theme, setTheme } = useTheme();
   const [profile, setProfile] = useState<GamificationProfileResponse | null>(null);
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [unreadCount, setUnreadCount] = useState<number>(2);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const [isLoadingNotifs, setIsLoadingNotifs] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const notifRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -43,6 +47,15 @@ export default function TopNav({ title, subtitle }: TopNavProps) {
     loadProfile();
     fetchNotifications();
 
+    // Global Cmd+K / Ctrl+K shortcut listener
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setIsSearchOpen((prev) => !prev);
+      }
+    };
+    window.addEventListener("keydown", handleGlobalKeyDown);
+
     // Click outside listener for notification dropdown
     const handleClickOutside = (e: MouseEvent) => {
       if (notifRef.current && !notifRef.current.contains(e.target as Node)) {
@@ -50,7 +63,10 @@ export default function TopNav({ title, subtitle }: TopNavProps) {
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    return () => {
+      window.removeEventListener("keydown", handleGlobalKeyDown);
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
   }, []);
 
   async function fetchNotifications() {
@@ -240,6 +256,7 @@ export default function TopNav({ title, subtitle }: TopNavProps) {
 
       {/* Search pill */}
       <button
+        onClick={() => setIsSearchOpen(true)}
         className="hide-mobile"
         style={{
           display: "flex",
@@ -487,6 +504,8 @@ export default function TopNav({ title, subtitle }: TopNavProps) {
 
       {/* Avatar */}
       <div
+        onClick={() => navigate("/profile")}
+        title="View Profile"
         style={{
           width: 32,
           height: 32,
@@ -502,8 +521,11 @@ export default function TopNav({ title, subtitle }: TopNavProps) {
           cursor: "pointer",
         }}
       >
-        AP
+        AS
       </div>
+
+      {/* Global Search Modal */}
+      <GlobalSearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
     </header>
   );
 }

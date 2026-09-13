@@ -3,6 +3,12 @@ import { certificateRepo } from "../repositories/certificateRepository";
 
 const router = Router();
 
+router.get("/", (req: Request, res: Response) => {
+  const userId = req.query.userId as string | undefined;
+  const certificates = certificateRepo.listCertificates(userId);
+  res.json({ success: true, certificates });
+});
+
 router.get("/my-certificates", (req: Request, res: Response) => {
   const userId = req.query.userId as string | undefined;
   const certificates = certificateRepo.listCertificates(userId);

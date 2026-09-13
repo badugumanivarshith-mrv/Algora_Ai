@@ -39,9 +39,9 @@ export default function Certifications() {
     setVerifying(true);
     try {
       const res = await EnterpriseService.verifyCertificate(verifyCode.trim());
-      setVerifyResult(res);
-      if (res.cert) {
-        setSelectedCert(res.cert);
+      setVerifyResult({ verified: true, message: "Certificate verified successfully", cert: res.certificate });
+      if (res.certificate) {
+        setSelectedCert(res.certificate);
       }
     } catch (err: any) {
       setVerifyResult({ verified: false, message: err.message || "Failed to verify certificate" });
