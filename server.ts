@@ -3,6 +3,7 @@ import express from "express";
 import { createServer as createViteServer } from "vite";
 import { createExpressApp } from "./backend/src/server";
 import { initializeDatabase, Database } from "./backend/src/db";
+import { WebSocketManager } from "./backend/src/realtime/wsManager";
 
 const PORT = 3000;
 
@@ -30,6 +31,9 @@ async function start() {
   const server = app.listen(PORT, "0.0.0.0", () => {
     console.log(`[Algora Server] Running on http://0.0.0.0:${PORT} (${process.env.NODE_ENV || "development"})`);
   });
+
+  // Attach WebSocket infrastructure
+  WebSocketManager.initialize(server);
 
   // Graceful shutdown handling
   const shutdown = async (signal: string) => {

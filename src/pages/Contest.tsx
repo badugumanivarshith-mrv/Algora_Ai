@@ -1,16 +1,18 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
 import {
   Trophy, Clock, Users, Zap, Play, Calendar, ChevronRight, TrendingUp, CheckCircle2,
-  Medal, AlertCircle, Info, Sparkles, Award
+  Medal, AlertCircle, Info, Sparkles, Award, Shield, UserPlus, Plus, Copy
 } from "lucide-react";
 import {
   AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, BarChart, Bar,
 } from "recharts";
 import { Contest as ContestType, ContestLeaderboardEntry, RatingHistoryPoint } from "../types";
 import { GamificationApi, GamificationProfileResponse } from "../services/gamificationApi";
+import { CommunityService, ContestTeamItem } from "../services/communityService";
+import { RealtimeClient } from "../services/realtimeClient";
 
-type Tab = "upcoming" | "live" | "history" | "leaderboard" | "analytics";
+type Tab = "upcoming" | "live" | "history" | "leaderboard" | "teams" | "analytics";
 
 function Tip({ active, payload, label }: any) {
   if (!active || !payload?.length) return null;
@@ -36,6 +38,69 @@ export default function Contest() {
   const [loading, setLoading] = useState(true);
   const [registeringId, setRegisteringId] = useState<string | null>(null);
   const [showNotification, setShowNotification] = useState<string | null>(null);
+
+  // Team Contests state
+  const [teams, setTeams] = useState<ContestTeamItem[]>([]);
+  const [showCreateTeamModal, setShowCreateTeamModal] = useState(false);
+  const [newTeamName, setNewTeamName] = useState("");
+  const [joinTeamCode, setJoinTeamCode] = useState("");
+  const [teamSuccessMsg, setTeamSuccessMsg] = useState("");
+
+  const loadTeams = async (contestId: string) => {
+    try {
+      const res = await CommunityService.listContestTeams(contestId);
+      setTeams(res.teams);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  useEffect(() => {
+    if (tab === "teams" && activeContest) {
+      loadTeams(activeContest.id);
+      RealtimeClient.subscribeRoom(`contest:${activeContest.id}`);
+
+      const unsub1 = RealtimeClient.on("TEAM_REGISTERED", (team: ContestTeamItem) => {
+        setTeams((prev) => [team, ...prev]);
+      });
+      const unsub2 = RealtimeClient.on("TEAM_MEMBER_JOINED", () => {
+        loadTeams(activeContest.id);
+      });
+
+      return () => {
+        unsub1();
+        unsub2();
+        RealtimeClient.unsubscribeRoom(`contest:${activeContest.id}`);
+      };
+    }
+  }, [tab, activeContest]);
+
+  const handleCreateTeam = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!activeContest || !newTeamName.trim()) return;
+
+    const res = await CommunityService.createContestTeam(activeContest.id, newTeamName);
+    setShowCreateTeamModal(false);
+    setNewTeamName("");
+    setTeamSuccessMsg(`Team "${res.team.teamName}" created! Code: ${res.team.teamCode}`);
+    setTimeout(() => setTeamSuccessMsg(""), 5000);
+    loadTeams(activeContest.id);
+  };
+
+  const handleJoinTeam = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!activeContest || !joinTeamCode.trim()) return;
+
+    try {
+      const res = await CommunityService.joinContestTeam(activeContest.id, joinTeamCode.trim().toUpperCase());
+      setJoinTeamCode("");
+      setTeamSuccessMsg(`Successfully joined team "${res.team.teamName}"!`);
+      setTimeout(() => setTeamSuccessMsg(""), 5000);
+      loadTeams(activeContest.id);
+    } catch (err: any) {
+      alert(err.message || "Failed to join team");
+    }
+  };
 
   useEffect(() => {
     async function loadContestData() {
@@ -201,7 +266,7 @@ export default function Contest() {
           width: "fit-content",
         }}
       >
-        {(["upcoming", "live", "history", "leaderboard", "analytics"] as Tab[]).map((t) => (
+        {(["upcoming", "live", "history", "leaderboard", "teams", "analytics"] as Tab[]).map((t) => (
           <button
             key={t}
             id={`tab-btn-${t}`}
@@ -224,7 +289,7 @@ export default function Contest() {
             }}
           >
             {t === "live" && <span className="status-dot status-live" />}
-            {t === "leaderboard" ? "Live Standings" : t.charAt(0).toUpperCase() + t.slice(1)}
+            {t === "leaderboard" ? "Live Standings" : t === "teams" ? "Team Contests" : t.charAt(0).toUpperCase() + t.slice(1)}
           </button>
         ))}
       </div>
@@ -623,6 +688,181 @@ export default function Contest() {
               </div>
             ))}
           </div>
+        </div>
+      )}
+
+      {/* Team Contests Tab */}
+      {tab === "teams" && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          {teamSuccessMsg && (
+            <div style={{ padding: "12px 16px", borderRadius: "var(--radius-md)", background: "color-mix(in srgb, var(--green) 15%, transparent)", border: "1px solid var(--green)", color: "var(--green)", fontSize: 13, fontWeight: 600, display: "flex", alignItems: "center", gap: 8 }}>
+              <CheckCircle2 size={16} /> {teamSuccessMsg}
+            </div>
+          )}
+
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
+            <div>
+              <h3 style={{ fontSize: 16, fontWeight: 700, color: "var(--text-primary)", margin: 0 }}>
+                Collegiate & Group Team Contests
+              </h3>
+              <p style={{ fontSize: 12, color: "var(--text-muted)", margin: "4px 0 0" }}>
+                Form teams of up to 3 coders, collaborate in real-time, and compete on the global team scoreboard
+              </p>
+            </div>
+
+            <div style={{ display: "flex", gap: 10 }}>
+              <button
+                onClick={() => setShowCreateTeamModal(true)}
+                style={{ padding: "8px 16px", borderRadius: "var(--radius-md)", background: "var(--brand)", color: "#fff", border: "none", fontSize: 12, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}
+              >
+                <Plus size={14} /> Create Team
+              </button>
+            </div>
+          </div>
+
+          {/* Join Team by Code Form */}
+          <div className="surface-card" style={{ padding: 16, display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <Shield size={18} style={{ color: "var(--brand)" }} />
+              <div>
+                <div style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)" }}>Have a Team Invite Code?</div>
+                <div style={{ fontSize: 11, color: "var(--text-muted)" }}>Enter your team's 6-character access token to join the squad</div>
+              </div>
+            </div>
+
+            <form onSubmit={handleJoinTeam} style={{ display: "flex", gap: 8 }}>
+              <input
+                type="text"
+                maxLength={8}
+                placeholder="e.g. TM9482"
+                value={joinTeamCode}
+                onChange={(e) => setJoinTeamCode(e.target.value.toUpperCase())}
+                style={{ padding: "6px 12px", borderRadius: "var(--radius-md)", border: "1px solid var(--border)", background: "var(--bg-canvas)", color: "var(--text-primary)", fontSize: 12, fontFamily: "var(--font-mono, monospace)", width: 140 }}
+              />
+              <button
+                type="submit"
+                style={{ padding: "6px 14px", borderRadius: "var(--radius-md)", background: "var(--bg-subtle)", border: "1px solid var(--border)", color: "var(--text-primary)", fontSize: 12, fontWeight: 600, cursor: "pointer" }}
+              >
+                Join Team
+              </button>
+            </form>
+          </div>
+
+          {/* Teams Scoreboard Table */}
+          <div className="surface-card" style={{ overflow: "hidden" }}>
+            <div style={{ padding: "14px 20px", borderBottom: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)" }}>
+                Team Standings & Rosters ({teams.length} Registered Teams)
+              </div>
+            </div>
+
+            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+              <thead>
+                <tr style={{ background: "var(--bg-subtle)", borderBottom: "1px solid var(--border)", color: "var(--text-muted)", fontSize: 11, textTransform: "uppercase" }}>
+                  <th style={{ padding: "10px 16px", textAlign: "left", width: 60 }}>Rank</th>
+                  <th style={{ padding: "10px 16px", textAlign: "left" }}>Team Name & Code</th>
+                  <th style={{ padding: "10px 16px", textAlign: "left" }}>Members</th>
+                  <th style={{ padding: "10px 16px", textAlign: "center", width: 100 }}>Problems Solved</th>
+                  <th style={{ padding: "10px 16px", textAlign: "right", width: 120 }}>Penalty Time</th>
+                </tr>
+              </thead>
+              <tbody>
+                {teams.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} style={{ padding: 32, textAlign: "center", color: "var(--text-muted)" }}>
+                      No teams registered for this contest yet. Create the first team above!
+                    </td>
+                  </tr>
+                ) : (
+                  teams.map((t, idx) => (
+                    <tr key={t.id} style={{ borderBottom: "1px solid var(--border)" }}>
+                      <td style={{ padding: "12px 16px", fontWeight: 700, color: idx < 3 ? "var(--amber)" : "var(--text-muted)" }}>
+                        #{idx + 1}
+                      </td>
+                      <td style={{ padding: "12px 16px" }}>
+                        <div style={{ fontWeight: 600, color: "var(--text-primary)" }}>{t.teamName}</div>
+                        <div style={{ fontSize: 11, color: "var(--text-muted)", fontFamily: "var(--font-mono, monospace)" }}>
+                          Invite Code: <strong style={{ color: "var(--brand)" }}>{t.teamCode}</strong>
+                        </div>
+                      </td>
+                      <td style={{ padding: "12px 16px" }}>
+                        <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                          {t.members.map((m) => (
+                            <span
+                              key={m.userId}
+                              style={{
+                                padding: "2px 8px",
+                                borderRadius: "var(--radius-sm)",
+                                background: m.role === "captain" ? "color-mix(in srgb, var(--brand) 15%, transparent)" : "var(--bg-subtle)",
+                                color: m.role === "captain" ? "var(--brand)" : "var(--text-secondary)",
+                                fontSize: 11,
+                                fontWeight: m.role === "captain" ? 700 : 500,
+                                border: "1px solid var(--border)"
+                              }}
+                            >
+                              {m.role === "captain" ? "👑 " : ""}{m.username}
+                            </span>
+                          ))}
+                        </div>
+                      </td>
+                      <td style={{ padding: "12px 16px", textAlign: "center", fontWeight: 700, color: "var(--green)" }}>
+                        {t.solvedCount}
+                      </td>
+                      <td style={{ padding: "12px 16px", textAlign: "right", fontFamily: "var(--font-mono, monospace)", color: "var(--text-muted)" }}>
+                        {Math.floor(t.penaltySeconds / 60)}m {t.penaltySeconds % 60}s
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Create Team Modal */}
+          {showCreateTeamModal && (
+            <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: 16 }}>
+              <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: "var(--radius-lg)", maxWidth: 440, width: "100%", padding: 24, boxShadow: "var(--shadow-lg)" }}>
+                <h3 style={{ fontSize: 16, fontWeight: 700, color: "var(--text-primary)", margin: "0 0 6px" }}>
+                  Create Contest Team
+                </h3>
+                <p style={{ fontSize: 12, color: "var(--text-muted)", margin: "0 0 16px" }}>
+                  Set your squad name. You'll receive a unique invite code to share with teammates.
+                </p>
+
+                <form onSubmit={handleCreateTeam} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+                  <div>
+                    <label style={{ display: "block", fontSize: 11, fontWeight: 600, color: "var(--text-muted)", marginBottom: 4 }}>
+                      Team Name
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. Algorithmic Titans"
+                      value={newTeamName}
+                      onChange={(e) => setNewTeamName(e.target.value)}
+                      style={{ width: "100%", padding: "8px 12px", borderRadius: "var(--radius-md)", border: "1px solid var(--border)", background: "var(--bg-canvas)", color: "var(--text-primary)", fontSize: 13 }}
+                    />
+                  </div>
+
+                  <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 8 }}>
+                    <button
+                      type="button"
+                      onClick={() => setShowCreateTeamModal(false)}
+                      style={{ padding: "8px 14px", borderRadius: "var(--radius-md)", background: "var(--bg-subtle)", border: "1px solid var(--border)", color: "var(--text-muted)", fontSize: 12, cursor: "pointer" }}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      style={{ padding: "8px 16px", borderRadius: "var(--radius-md)", background: "var(--brand)", color: "#fff", border: "none", fontSize: 12, fontWeight: 600, cursor: "pointer" }}
+                    >
+                      Register Team
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
         </div>
       )}
 

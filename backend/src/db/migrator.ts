@@ -586,6 +586,470 @@ export const MIGRATIONS: Migration[] = [
       DROP TABLE IF EXISTS roles CASCADE;
     `,
   },
+  {
+    version: "009",
+    name: "009_phase9_enhancements",
+    up: `
+      CREATE TABLE IF NOT EXISTS refresh_tokens (
+        id VARCHAR(64) PRIMARY KEY,
+        user_id VARCHAR(64) NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        token_hash VARCHAR(128) NOT NULL UNIQUE,
+        expires_at TIMESTAMPTZ NOT NULL,
+        revoked BOOLEAN DEFAULT FALSE,
+        replaced_by_token VARCHAR(64),
+        ip_address VARCHAR(45),
+        user_agent TEXT,
+        created_at TIMESTAMPTZ DEFAULT NOW(),
+        updated_at TIMESTAMPTZ DEFAULT NOW()
+      );
+      CREATE INDEX IF NOT EXISTS idx_refresh_tokens_user_id ON refresh_tokens(user_id);
+      CREATE INDEX IF NOT EXISTS idx_refresh_tokens_token_hash ON refresh_tokens(token_hash);
+
+      CREATE TABLE IF NOT EXISTS password_resets (
+        id VARCHAR(64) PRIMARY KEY,
+        user_id VARCHAR(64) NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        token_hash VARCHAR(128) NOT NULL UNIQUE,
+        expires_at TIMESTAMPTZ NOT NULL,
+        used BOOLEAN DEFAULT FALSE,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS email_verifications (
+        id VARCHAR(64) PRIMARY KEY,
+        user_id VARCHAR(64) NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        token_hash VARCHAR(128) NOT NULL UNIQUE,
+        expires_at TIMESTAMPTZ NOT NULL,
+        verified BOOLEAN DEFAULT FALSE,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS uploads (
+        id VARCHAR(64) PRIMARY KEY,
+        user_id VARCHAR(64) REFERENCES users(id) ON DELETE SET NULL,
+        filename VARCHAR(255) NOT NULL,
+        original_name VARCHAR(255) NOT NULL,
+        mime_type VARCHAR(100) NOT NULL,
+        size_bytes BIGINT NOT NULL,
+        category VARCHAR(50) NOT NULL,
+        storage_path TEXT NOT NULL,
+        public_url TEXT NOT NULL,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS notifications (
+        id VARCHAR(64) PRIMARY KEY,
+        user_id VARCHAR(64) NOT NULL,
+        type VARCHAR(50) NOT NULL,
+        title VARCHAR(255) NOT NULL,
+        message TEXT NOT NULL,
+        link VARCHAR(255),
+        is_read BOOLEAN DEFAULT FALSE,
+        metadata JSONB DEFAULT '{}'::jsonb,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      );
+      CREATE INDEX IF NOT EXISTS idx_notifications_user_read ON notifications(user_id, is_read);
+      CREATE INDEX IF NOT EXISTS idx_notifications_created ON notifications(created_at DESC);
+
+      CREATE TABLE IF NOT EXISTS ai_conversations (
+        id VARCHAR(64) PRIMARY KEY,
+        user_id VARCHAR(64) NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        topic VARCHAR(100) NOT NULL,
+        title VARCHAR(255) NOT NULL,
+        problem_slug VARCHAR(100),
+        context_data JSONB DEFAULT '{}'::jsonb,
+        created_at TIMESTAMPTZ DEFAULT NOW(),
+        updated_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS ai_messages (
+        id VARCHAR(64) PRIMARY KEY,
+        conversation_id VARCHAR(64) NOT NULL REFERENCES ai_conversations(id) ON DELETE CASCADE,
+        role VARCHAR(20) NOT NULL,
+        type VARCHAR(30) NOT NULL,
+        content TEXT NOT NULL,
+        language VARCHAR(30),
+        token_count INT DEFAULT 0,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS ai_reports (
+        id VARCHAR(64) PRIMARY KEY,
+        user_id VARCHAR(64) NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        report_type VARCHAR(50) NOT NULL,
+        readiness_score INT NOT NULL,
+        readiness_tier VARCHAR(100) NOT NULL,
+        summary TEXT,
+        payload JSONB NOT NULL,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS ai_recommendations (
+        id VARCHAR(64) PRIMARY KEY,
+        user_id VARCHAR(64) NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        recommendation_type VARCHAR(50) NOT NULL,
+        topic VARCHAR(100) NOT NULL,
+        priority VARCHAR(20) NOT NULL,
+        insight TEXT NOT NULL,
+        actionable_step TEXT NOT NULL,
+        suggested_problem_slug VARCHAR(100),
+        status VARCHAR(30) DEFAULT 'active',
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS ai_usage_logs (
+        id VARCHAR(64) PRIMARY KEY,
+        user_id VARCHAR(64),
+        feature VARCHAR(50) NOT NULL,
+        model VARCHAR(50) NOT NULL,
+        prompt_tokens INT NOT NULL,
+        completion_tokens INT NOT NULL,
+        total_tokens INT NOT NULL,
+        estimated_cost_usd NUMERIC(10, 6) NOT NULL,
+        latency_ms INT NOT NULL,
+        status VARCHAR(20) NOT NULL,
+        error_message TEXT,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS audit_events (
+        id VARCHAR(64) PRIMARY KEY,
+        user_id VARCHAR(64),
+        actor_email VARCHAR(255),
+        event_type VARCHAR(50) NOT NULL,
+        target_resource VARCHAR(100),
+        action VARCHAR(50) NOT NULL,
+        details JSONB DEFAULT '{}'::jsonb,
+        ip_address VARCHAR(45),
+        user_agent TEXT,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      );
+    `,
+    down: `
+      DROP TABLE IF EXISTS audit_events CASCADE;
+      DROP TABLE IF EXISTS ai_usage_logs CASCADE;
+      DROP TABLE IF EXISTS ai_recommendations CASCADE;
+      DROP TABLE IF EXISTS ai_reports CASCADE;
+      DROP TABLE IF EXISTS ai_messages CASCADE;
+      DROP TABLE IF EXISTS ai_conversations CASCADE;
+      DROP TABLE IF EXISTS notifications CASCADE;
+      DROP TABLE IF EXISTS uploads CASCADE;
+      DROP TABLE IF EXISTS email_verifications CASCADE;
+      DROP TABLE IF EXISTS password_resets CASCADE;
+      DROP TABLE IF EXISTS refresh_tokens CASCADE;
+    `,
+  },
+  {
+    version: "010",
+    name: "010_collaboration_community_enterprise",
+    up: `
+      CREATE TABLE IF NOT EXISTS discussions (
+        id VARCHAR(64) PRIMARY KEY,
+        user_id VARCHAR(64) NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        author_name VARCHAR(120) NOT NULL,
+        author_avatar TEXT,
+        problem_slug VARCHAR(128),
+        contest_id VARCHAR(64),
+        category VARCHAR(64) NOT NULL DEFAULT 'general',
+        title VARCHAR(255) NOT NULL,
+        content TEXT NOT NULL,
+        tags JSONB NOT NULL DEFAULT '[]'::jsonb,
+        upvotes INT NOT NULL DEFAULT 0,
+        downvotes INT NOT NULL DEFAULT 0,
+        views_count INT NOT NULL DEFAULT 0,
+        reply_count INT NOT NULL DEFAULT 0,
+        is_pinned BOOLEAN NOT NULL DEFAULT FALSE,
+        is_locked BOOLEAN NOT NULL DEFAULT FALSE,
+        accepted_reply_id VARCHAR(64),
+        status VARCHAR(32) NOT NULL DEFAULT 'active',
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS discussion_replies (
+        id VARCHAR(64) PRIMARY KEY,
+        discussion_id VARCHAR(64) NOT NULL REFERENCES discussions(id) ON DELETE CASCADE,
+        user_id VARCHAR(64) NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        author_name VARCHAR(120) NOT NULL,
+        author_avatar TEXT,
+        parent_reply_id VARCHAR(64) REFERENCES discussion_replies(id) ON DELETE CASCADE,
+        content TEXT NOT NULL,
+        code_snippet TEXT,
+        language VARCHAR(32),
+        upvotes INT NOT NULL DEFAULT 0,
+        downvotes INT NOT NULL DEFAULT 0,
+        is_accepted_answer BOOLEAN NOT NULL DEFAULT FALSE,
+        status VARCHAR(32) NOT NULL DEFAULT 'active',
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS discussion_votes (
+        id VARCHAR(64) PRIMARY KEY,
+        user_id VARCHAR(64) NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        target_type VARCHAR(32) NOT NULL,
+        target_id VARCHAR(64) NOT NULL,
+        vote_type VARCHAR(16) NOT NULL,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        CONSTRAINT uq_user_vote UNIQUE (user_id, target_type, target_id)
+      );
+
+      CREATE TABLE IF NOT EXISTS study_groups (
+        id VARCHAR(64) PRIMARY KEY,
+        name VARCHAR(128) NOT NULL,
+        slug VARCHAR(128) UNIQUE NOT NULL,
+        description TEXT NOT NULL,
+        owner_id VARCHAR(64) NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        avatar_url TEXT,
+        is_private BOOLEAN NOT NULL DEFAULT FALSE,
+        invite_code VARCHAR(32) UNIQUE NOT NULL,
+        max_members INT NOT NULL DEFAULT 50,
+        member_count INT NOT NULL DEFAULT 1,
+        target_topic VARCHAR(128) NOT NULL DEFAULT 'General DSA',
+        target_goal VARCHAR(255) NOT NULL DEFAULT 'Solve 50 hard problems together',
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS study_group_members (
+        id VARCHAR(64) PRIMARY KEY,
+        group_id VARCHAR(64) NOT NULL REFERENCES study_groups(id) ON DELETE CASCADE,
+        user_id VARCHAR(64) NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        username VARCHAR(64) NOT NULL,
+        full_name VARCHAR(120) NOT NULL,
+        avatar_url TEXT,
+        role VARCHAR(32) NOT NULL DEFAULT 'member',
+        contribution_score INT NOT NULL DEFAULT 0,
+        problems_solved_in_group INT NOT NULL DEFAULT 0,
+        joined_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        last_active_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        CONSTRAINT uq_group_member UNIQUE (group_id, user_id)
+      );
+
+      CREATE TABLE IF NOT EXISTS study_group_messages (
+        id VARCHAR(64) PRIMARY KEY,
+        group_id VARCHAR(64) NOT NULL REFERENCES study_groups(id) ON DELETE CASCADE,
+        user_id VARCHAR(64) NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        username VARCHAR(64) NOT NULL,
+        avatar_url TEXT,
+        message TEXT NOT NULL,
+        message_type VARCHAR(32) NOT NULL DEFAULT 'text',
+        metadata JSONB NOT NULL DEFAULT '{}'::jsonb,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS study_group_goals (
+        id VARCHAR(64) PRIMARY KEY,
+        group_id VARCHAR(64) NOT NULL REFERENCES study_groups(id) ON DELETE CASCADE,
+        title VARCHAR(255) NOT NULL,
+        description TEXT NOT NULL,
+        target_problems_count INT NOT NULL DEFAULT 20,
+        completed_problems_count INT NOT NULL DEFAULT 0,
+        deadline TIMESTAMPTZ,
+        status VARCHAR(32) NOT NULL DEFAULT 'active',
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS contest_teams (
+        id VARCHAR(64) PRIMARY KEY,
+        contest_id VARCHAR(64) NOT NULL REFERENCES contests(id) ON DELETE CASCADE,
+        team_name VARCHAR(128) NOT NULL,
+        team_code VARCHAR(32) NOT NULL,
+        captain_id VARCHAR(64) NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        captain_username VARCHAR(64) NOT NULL,
+        member_count INT NOT NULL DEFAULT 1,
+        max_members INT NOT NULL DEFAULT 3,
+        total_score INT NOT NULL DEFAULT 0,
+        total_penalty_seconds INT NOT NULL DEFAULT 0,
+        rank INT,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        CONSTRAINT uq_contest_team_name UNIQUE (contest_id, team_name),
+        CONSTRAINT uq_contest_team_code UNIQUE (contest_id, team_code)
+      );
+
+      CREATE TABLE IF NOT EXISTS contest_team_members (
+        id VARCHAR(64) PRIMARY KEY,
+        team_id VARCHAR(64) NOT NULL REFERENCES contest_teams(id) ON DELETE CASCADE,
+        contest_id VARCHAR(64) NOT NULL REFERENCES contests(id) ON DELETE CASCADE,
+        user_id VARCHAR(64) NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        username VARCHAR(64) NOT NULL,
+        role VARCHAR(32) NOT NULL DEFAULT 'member',
+        individual_score INT NOT NULL DEFAULT 0,
+        penalty_seconds INT NOT NULL DEFAULT 0,
+        status VARCHAR(32) NOT NULL DEFAULT 'accepted',
+        joined_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        CONSTRAINT uq_contest_team_user UNIQUE (contest_id, user_id)
+      );
+
+      CREATE TABLE IF NOT EXISTS mentor_profiles (
+        id VARCHAR(64) PRIMARY KEY,
+        user_id VARCHAR(64) UNIQUE NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        headline VARCHAR(255) NOT NULL,
+        company VARCHAR(128) NOT NULL,
+        years_experience INT NOT NULL DEFAULT 3,
+        specialties JSONB NOT NULL DEFAULT '["System Design", "Hard Dynamic Programming", "Behavioral Interview"]'::jsonb,
+        hourly_rate_credits INT NOT NULL DEFAULT 0,
+        bio TEXT NOT NULL,
+        rating NUMERIC(3, 2) NOT NULL DEFAULT 5.0,
+        review_count INT NOT NULL DEFAULT 12,
+        is_available BOOLEAN NOT NULL DEFAULT TRUE,
+        max_active_students INT NOT NULL DEFAULT 5,
+        active_students_count INT NOT NULL DEFAULT 2,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS mentorship_requests (
+        id VARCHAR(64) PRIMARY KEY,
+        mentor_id VARCHAR(64) NOT NULL REFERENCES mentor_profiles(id) ON DELETE CASCADE,
+        student_id VARCHAR(64) NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        student_username VARCHAR(64) NOT NULL,
+        message TEXT NOT NULL,
+        target_role_company VARCHAR(128),
+        status VARCHAR(32) NOT NULL DEFAULT 'pending',
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS mentorship_sessions (
+        id VARCHAR(64) PRIMARY KEY,
+        mentor_id VARCHAR(64) NOT NULL REFERENCES mentor_profiles(id) ON DELETE CASCADE,
+        student_id VARCHAR(64) NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        title VARCHAR(255) NOT NULL,
+        scheduled_at TIMESTAMPTZ NOT NULL,
+        duration_minutes INT NOT NULL DEFAULT 45,
+        meeting_link VARCHAR(255) NOT NULL DEFAULT 'https://meet.algora.ai/session',
+        status VARCHAR(32) NOT NULL DEFAULT 'scheduled',
+        mentor_notes TEXT,
+        student_feedback TEXT,
+        rating INT,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS interview_tracks (
+        id VARCHAR(64) PRIMARY KEY,
+        slug VARCHAR(128) UNIQUE NOT NULL,
+        name VARCHAR(128) NOT NULL,
+        company_tier VARCHAR(64) NOT NULL,
+        description TEXT NOT NULL,
+        icon_name VARCHAR(64) NOT NULL DEFAULT 'Briefcase',
+        question_count INT NOT NULL DEFAULT 40,
+        difficulty VARCHAR(32) NOT NULL DEFAULT 'Hard',
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS interview_questions (
+        id VARCHAR(64) PRIMARY KEY,
+        track_id VARCHAR(64) REFERENCES interview_tracks(id) ON DELETE SET NULL,
+        title VARCHAR(255) NOT NULL,
+        type VARCHAR(32) NOT NULL DEFAULT 'coding',
+        company_tags JSONB NOT NULL DEFAULT '["Google", "Meta"]'::jsonb,
+        difficulty VARCHAR(32) NOT NULL DEFAULT 'Medium',
+        prompt TEXT NOT NULL,
+        rubric JSONB NOT NULL DEFAULT '{}'::jsonb,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS mock_interview_sessions (
+        id VARCHAR(64) PRIMARY KEY,
+        user_id VARCHAR(64) NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        track_slug VARCHAR(128) NOT NULL,
+        interview_type VARCHAR(32) NOT NULL DEFAULT 'coding',
+        company_target VARCHAR(128) NOT NULL DEFAULT 'Google SWE L4',
+        status VARCHAR(32) NOT NULL DEFAULT 'completed',
+        score INT NOT NULL DEFAULT 85,
+        duration_seconds INT NOT NULL DEFAULT 1800,
+        transcript JSONB NOT NULL DEFAULT '[]'::jsonb,
+        ai_feedback JSONB NOT NULL DEFAULT '{}'::jsonb,
+        readiness_rating VARCHAR(64) NOT NULL DEFAULT 'Strong Hire',
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS user_reputation (
+        user_id VARCHAR(64) PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+        reputation_score INT NOT NULL DEFAULT 100,
+        helpful_answers_count INT NOT NULL DEFAULT 0,
+        articles_written INT NOT NULL DEFAULT 0,
+        upvotes_received INT NOT NULL DEFAULT 0,
+        social_links JSONB NOT NULL DEFAULT '{"github": "", "linkedin": "", "twitter": "", "website": ""}'::jsonb,
+        featured_badges JSONB NOT NULL DEFAULT '[]'::jsonb,
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS activity_timeline (
+        id VARCHAR(64) PRIMARY KEY,
+        user_id VARCHAR(64) NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        activity_type VARCHAR(64) NOT NULL,
+        title VARCHAR(255) NOT NULL,
+        description TEXT NOT NULL,
+        link VARCHAR(255),
+        metadata JSONB NOT NULL DEFAULT '{}'::jsonb,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS moderation_reports (
+        id VARCHAR(64) PRIMARY KEY,
+        reporter_id VARCHAR(64) NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        reporter_username VARCHAR(64) NOT NULL,
+        target_type VARCHAR(32) NOT NULL,
+        target_id VARCHAR(64) NOT NULL,
+        target_title VARCHAR(255) NOT NULL,
+        reason VARCHAR(64) NOT NULL,
+        details TEXT,
+        status VARCHAR(32) NOT NULL DEFAULT 'pending',
+        action_taken VARCHAR(64),
+        moderator_id VARCHAR(64) REFERENCES users(id) ON DELETE SET NULL,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        resolved_at TIMESTAMPTZ
+      );
+
+      CREATE TABLE IF NOT EXISTS moderated_users (
+        id VARCHAR(64) PRIMARY KEY,
+        user_id VARCHAR(64) NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        restriction_type VARCHAR(32) NOT NULL,
+        reason TEXT NOT NULL,
+        expires_at TIMESTAMPTZ,
+        issued_by VARCHAR(64) REFERENCES users(id) ON DELETE SET NULL,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS platform_metrics_daily (
+        date DATE PRIMARY KEY,
+        dau INT NOT NULL DEFAULT 0,
+        wau INT NOT NULL DEFAULT 0,
+        mau INT NOT NULL DEFAULT 0,
+        retention_rate_7d NUMERIC(5, 2) NOT NULL DEFAULT 0.0,
+        retention_rate_30d NUMERIC(5, 2) NOT NULL DEFAULT 0.0,
+        engagement_score NUMERIC(5, 2) NOT NULL DEFAULT 0.0,
+        contest_participation_rate NUMERIC(5, 2) NOT NULL DEFAULT 0.0,
+        learning_completion_rate NUMERIC(5, 2) NOT NULL DEFAULT 0.0,
+        ai_query_volume INT NOT NULL DEFAULT 0,
+        discussions_active INT NOT NULL DEFAULT 0,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      );
+    `,
+    down: `
+      DROP TABLE IF EXISTS platform_metrics_daily CASCADE;
+      DROP TABLE IF EXISTS moderated_users CASCADE;
+      DROP TABLE IF EXISTS moderation_reports CASCADE;
+      DROP TABLE IF EXISTS activity_timeline CASCADE;
+      DROP TABLE IF EXISTS user_reputation CASCADE;
+      DROP TABLE IF EXISTS mock_interview_sessions CASCADE;
+      DROP TABLE IF EXISTS interview_questions CASCADE;
+      DROP TABLE IF EXISTS interview_tracks CASCADE;
+      DROP TABLE IF EXISTS mentorship_sessions CASCADE;
+      DROP TABLE IF EXISTS mentorship_requests CASCADE;
+      DROP TABLE IF EXISTS mentor_profiles CASCADE;
+      DROP TABLE IF EXISTS contest_team_members CASCADE;
+      DROP TABLE IF EXISTS contest_teams CASCADE;
+      DROP TABLE IF EXISTS study_group_goals CASCADE;
+      DROP TABLE IF EXISTS study_group_messages CASCADE;
+      DROP TABLE IF EXISTS study_group_members CASCADE;
+      DROP TABLE IF EXISTS study_groups CASCADE;
+      DROP TABLE IF EXISTS discussion_votes CASCADE;
+      DROP TABLE IF EXISTS discussion_replies CASCADE;
+      DROP TABLE IF EXISTS discussions CASCADE;
+    `,
+  },
 ];
 
 export class Migrator {
@@ -595,7 +1059,7 @@ export class Migrator {
     let currentVersion = "000";
 
     if (!pool) {
-      Database.setMigrationVersion("005");
+      Database.setMigrationVersion("010");
       return {
         applied: [
           "001_initial_schema",
@@ -603,8 +1067,10 @@ export class Migrator {
           "003_gamification_and_contests",
           "004_adaptive_learning",
           "005_admin_cms",
+          "009_phase9_enhancements",
+          "010_collaboration_community_enterprise",
         ],
-        currentVersion: "005",
+        currentVersion: "010",
       };
     }
 

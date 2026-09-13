@@ -23,6 +23,7 @@ import {
   DollarSign,
   Radio,
   HeartPulse,
+  ShieldAlert,
 } from "lucide-react";
 import {
   ProblemCMSEntity,
@@ -45,6 +46,8 @@ import AIConfigPanel from "../../components/admin/AIConfigPanel";
 import AIUsagePanel from "../../components/admin/AIUsagePanel";
 import BroadcastPanel from "../../components/admin/BroadcastPanel";
 import SystemHealthPanel from "../../components/admin/SystemHealthPanel";
+import CommunityModerationPanel from "../../components/admin/CommunityModerationPanel";
+import PlatformAnalyticsPanel from "../../components/admin/PlatformAnalyticsPanel";
 
 type AdminTab =
   | "analytics"
@@ -53,6 +56,8 @@ type AdminTab =
   | "curriculum"
   | "contests"
   | "achievements"
+  | "moderation"
+  | "platform_analytics"
   | "ai_config"
   | "ai_usage"
   | "broadcasts"
@@ -371,6 +376,8 @@ export default function AdminDashboard() {
           { key: "curriculum", label: `Curriculum (${curriculum.length})`, icon: Compass },
           { key: "contests", label: `Contests (${contests.length})`, icon: Trophy },
           { key: "achievements", label: `Badges (${achievements.length})`, icon: Award },
+          { key: "moderation", label: "Moderation Queue", icon: ShieldAlert },
+          { key: "platform_analytics", label: "Platform Telemetry", icon: Activity },
           { key: "ai_config", label: "AI Engine & Prompts", icon: Bot },
           { key: "ai_usage", label: "AI Cost & Telemetry", icon: DollarSign },
           { key: "broadcasts", label: "Broadcast Alerts", icon: Radio },
@@ -1534,6 +1541,12 @@ export default function AdminDashboard() {
             </div>
           </div>
         )}
+
+        {/* MODERATION QUEUE */}
+        {activeTab === "moderation" && <CommunityModerationPanel />}
+
+        {/* PLATFORM TELEMETRY & ANALYTICS */}
+        {activeTab === "platform_analytics" && <PlatformAnalyticsPanel />}
 
         {/* 10. AI CONFIGURATION & PROMPT STUDIO */}
         {activeTab === "ai_config" && <AIConfigPanel />}

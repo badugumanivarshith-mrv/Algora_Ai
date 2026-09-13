@@ -17,6 +17,12 @@ import aiRoutes from "./aiRoutes";
 import uploadRoutes from "./uploadRoutes";
 import notificationRoutes from "./notificationRoutes";
 import monitoringRoutes from "./monitoringRoutes";
+import communityRoutes from "./communityRoutes";
+import institutionRoutes from "./institutionRoutes";
+import placementRoutes from "./placementRoutes";
+import certificateRoutes from "./certificateRoutes";
+import searchRoutes from "./searchRoutes";
+import recommendationV2Routes from "./recommendationV2Routes";
 
 const router = Router();
 
@@ -31,6 +37,7 @@ router.use("/daily-review", dailyReviewRoutes);
 router.use("/study-plans", studyPlanRoutes);
 router.use("/goals", goalRoutes);
 router.use("/recommendations", recommendationRoutes);
+router.use("/recommendations/v2", recommendationV2Routes);
 router.use("/readiness", readinessRoutes);
 router.use("/analytics", analyticsRoutes);
 router.use("/admin", adminRoutes);
@@ -38,5 +45,12 @@ router.use("/ai", aiRoutes);
 router.use("/uploads", uploadRoutes);
 router.use("/notifications", notificationRoutes);
 router.use("/monitoring", monitoringRoutes);
+router.use("/community", communityRoutes);
+router.use("/institutions", institutionRoutes);
+router.use("/faculty", institutionRoutes);
+router.use("/classrooms", institutionRoutes);
+router.use("/placements", placementRoutes);
+router.use("/certificates", certificateRoutes);
+router.use("/search", searchRoutes);
 
 export default router;
