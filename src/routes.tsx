@@ -17,6 +17,11 @@ import InterviewHub from "./pages/InterviewHub";
 import Certifications from "./pages/Certifications";
 import AdaptiveRoadmapV2 from "./pages/AdaptiveRoadmapV2";
 import Profile from "./pages/Profile";
+import { AIProblemGenerator } from "./pages/ai/AIProblemGenerator";
+import { AIQuizGenerator } from "./pages/ai/AIQuizGenerator";
+import { AIAssignmentGenerator } from "./pages/ai/AIAssignmentGenerator";
+import { AIInterviewGenerator } from "./pages/ai/AIInterviewGenerator";
+import { AIContestGenerator } from "./pages/ai/AIContestGenerator";
 import { ThemeProvider } from "./components/ThemeContext";
 
 function AppShell() {
@@ -61,6 +66,11 @@ export const router = createBrowserRouter([
       { path: "faculty", Component: Faculty },
       { path: "admin", Component: AdminDashboard },
       { path: "profile", Component: Profile },
+      { path: "ai-generator/problem", Component: AIProblemGenerator },
+      { path: "ai-generator/quiz", Component: AIQuizGenerator },
+      { path: "ai-generator/assignment", Component: AIAssignmentGenerator },
+      { path: "ai-generator/interview", Component: AIInterviewGenerator },
+      { path: "ai-generator/contest", Component: AIContestGenerator },
     ],
   },
   // Direct paths for sidebar navigation and deep links

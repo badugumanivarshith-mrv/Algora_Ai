@@ -37,6 +37,16 @@ const navSections: NavSection[] = [
     ],
   },
   {
+    title: "AI Generation Studio",
+    items: [
+      { icon: Sparkles, label: "AI Problems", path: "/ai-generator/problem", badge: "v2.1" },
+      { icon: Sparkles, label: "AI Quizzes", path: "/ai-generator/quiz", badge: "v2.1" },
+      { icon: Sparkles, label: "AI Assignments", path: "/ai-generator/assignment", badge: "v2.1" },
+      { icon: Sparkles, label: "AI Interviews", path: "/ai-generator/interview", badge: "v2.1" },
+      { icon: Sparkles, label: "AI Contests", path: "/ai-generator/contest", badge: "v2.1" },
+    ],
+  },
+  {
     title: "Career & Enterprise",
     items: [
       { icon: Briefcase,       label: "Interviews", path: "/interviews", badge: "AI" },

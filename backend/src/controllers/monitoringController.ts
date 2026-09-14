@@ -7,6 +7,7 @@ import { executionQueue } from "../services/execution/executionQueue";
 import { RedisManager } from "../redis/redisClient";
 import { RedisJudgeQueue } from "../redis/judgeQueue";
 import { BackupService } from "../services/backupService";
+import { ReliabilityService } from "../services/reliabilityService";
 
 export class MonitoringController {
   static async getApiMetrics(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -172,6 +173,15 @@ export class MonitoringController {
       }
       const result = await BackupService.restoreBackup(backupId);
       res.status(result.success ? 200 : 500).json(result);
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  static async getReliabilityReport(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const report = await ReliabilityService.getReliabilityReport();
+      res.status(200).json({ success: true, data: report });
     } catch (err) {
       next(err);
     }

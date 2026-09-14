@@ -9,6 +9,7 @@ router.get("/ai-usage", MonitoringController.getAIUsage);
 router.get("/judge-stats", MonitoringController.getJudgeStats);
 router.get("/errors", MonitoringController.getRecentErrors);
 router.get("/health-deep", MonitoringController.healthDeep);
+router.get("/reliability", MonitoringController.getReliabilityReport);
 router.get("/redis", MonitoringController.getRedisStats);
 router.get("/cache", MonitoringController.getCacheStats);
 router.get("/oauth", OAuthController.getMonitoringMetrics);

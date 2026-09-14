@@ -40,6 +40,21 @@ export class GeminiAIProvider implements IAIProvider {
     return Boolean(process.env.GEMINI_API_KEY);
   }
 
+  public async generateRawText(prompt: string, systemInstruction?: string): Promise<string> {
+    const client = this.getClient();
+    if (!client) {
+      throw new Error("Gemini AI API key is not configured. Please set GEMINI_API_KEY.");
+    }
+    const { response } = await this.generateWithFallback(client, {
+      contents: prompt,
+      config: {
+        systemInstruction,
+        temperature: 0.7,
+      },
+    });
+    return response.text || "";
+  }
+
   /**
    * Helper to execute Gemini generation with model fallback and automatic retry
    * to gracefully handle 503 (High Demand / Spikes) and 429 (Rate Limits).

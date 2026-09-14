@@ -1169,6 +1169,90 @@ export const MIGRATIONS: Migration[] = [
       DROP TABLE IF EXISTS oauth_accounts CASCADE;
     `,
   },
+  {
+    version: "013",
+    name: "013_ai_generated_learning",
+    up: `
+      CREATE TABLE IF NOT EXISTS generated_problems (
+        id VARCHAR(64) PRIMARY KEY,
+        user_id VARCHAR(64) REFERENCES users(id) ON DELETE SET NULL,
+        language VARCHAR(32) NOT NULL,
+        topic VARCHAR(64) NOT NULL,
+        difficulty VARCHAR(32) NOT NULL,
+        learning_level VARCHAR(32) NOT NULL,
+        title VARCHAR(255) NOT NULL,
+        problem_statement TEXT NOT NULL,
+        constraints TEXT NOT NULL,
+        input_format TEXT NOT NULL,
+        output_format TEXT NOT NULL,
+        sample_inputs JSONB NOT NULL DEFAULT '[]'::jsonb,
+        sample_outputs JSONB NOT NULL DEFAULT '[]'::jsonb,
+        explanation TEXT NOT NULL,
+        tags JSONB NOT NULL DEFAULT '[]'::jsonb,
+        estimated_time VARCHAR(64) NOT NULL,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS generated_quizzes (
+        id VARCHAR(64) PRIMARY KEY,
+        user_id VARCHAR(64) REFERENCES users(id) ON DELETE SET NULL,
+        topic VARCHAR(64) NOT NULL,
+        difficulty VARCHAR(32) NOT NULL,
+        title VARCHAR(255) NOT NULL,
+        questions JSONB NOT NULL DEFAULT '[]'::jsonb,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS generated_assignments (
+        id VARCHAR(64) PRIMARY KEY,
+        user_id VARCHAR(64) REFERENCES users(id) ON DELETE SET NULL,
+        topic VARCHAR(64) NOT NULL,
+        difficulty VARCHAR(32) NOT NULL,
+        objective TEXT NOT NULL,
+        requirements JSONB NOT NULL DEFAULT '[]'::jsonb,
+        tasks JSONB NOT NULL DEFAULT '[]'::jsonb,
+        evaluation_criteria JSONB NOT NULL DEFAULT '[]'::jsonb,
+        expected_completion_time VARCHAR(64) NOT NULL,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS generated_interviews (
+        id VARCHAR(64) PRIMARY KEY,
+        user_id VARCHAR(64) REFERENCES users(id) ON DELETE SET NULL,
+        round_type VARCHAR(64) NOT NULL,
+        difficulty VARCHAR(32) NOT NULL,
+        questions JSONB NOT NULL DEFAULT '[]'::jsonb,
+        evaluation_guidelines TEXT NOT NULL,
+        scoring_rubric JSONB NOT NULL DEFAULT '[]'::jsonb,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS generated_contests (
+        id VARCHAR(64) PRIMARY KEY,
+        user_id VARCHAR(64) REFERENCES users(id) ON DELETE SET NULL,
+        name VARCHAR(255) NOT NULL,
+        description TEXT NOT NULL,
+        duration_minutes INTEGER NOT NULL,
+        problem_set JSONB NOT NULL DEFAULT '[]'::jsonb,
+        difficulty_mix VARCHAR(64) NOT NULL,
+        scoring_rules TEXT NOT NULL,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_gen_problems_user ON generated_problems(user_id);
+      CREATE INDEX IF NOT EXISTS idx_gen_quizzes_user ON generated_quizzes(user_id);
+      CREATE INDEX IF NOT EXISTS idx_gen_assignments_user ON generated_assignments(user_id);
+      CREATE INDEX IF NOT EXISTS idx_gen_interviews_user ON generated_interviews(user_id);
+      CREATE INDEX IF NOT EXISTS idx_gen_contests_user ON generated_contests(user_id);
+    `,
+    down: `
+      DROP TABLE IF EXISTS generated_contests CASCADE;
+      DROP TABLE IF EXISTS generated_interviews CASCADE;
+      DROP TABLE IF EXISTS generated_assignments CASCADE;
+      DROP TABLE IF EXISTS generated_quizzes CASCADE;
+      DROP TABLE IF EXISTS generated_problems CASCADE;
+    `,
+  },
 ];
 
 export class Migrator {
@@ -1178,7 +1262,7 @@ export class Migrator {
     let currentVersion = "000";
 
     if (!pool) {
-      Database.setMigrationVersion("012");
+      Database.setMigrationVersion("013");
       return {
         applied: [
           "001_initial_schema",
@@ -1190,8 +1274,9 @@ export class Migrator {
           "010_collaboration_community_enterprise",
           "011_judge_execution_schema",
           "012_oauth_identity_platform",
+          "013_ai_generated_learning",
         ],
-        currentVersion: "012",
+        currentVersion: "013",
       };
     }
 
