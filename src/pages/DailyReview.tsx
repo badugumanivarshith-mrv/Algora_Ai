@@ -1,577 +1,571 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
 import {
-  AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell,
-} from "recharts";
-import {
-  Flame, Clock, Target, TrendingUp, TrendingDown, CheckCircle2,
-  XCircle, AlertCircle, ChevronRight, Zap, Code2, Brain, Calendar,
-  Sparkles, Check, HelpCircle, ArrowRight, RotateCcw, Award
+  Flame, Clock, Target, TrendingUp, CheckCircle2,
+  AlertCircle, ChevronRight, Zap, Code2, Brain, Calendar,
+  Sparkles, Check, BookOpen, Layers, RefreshCw, HelpCircle, Award
 } from "lucide-react";
-import { DailyReviewQueue, DailyReviewQuestion } from "../types";
-import { GamificationApi } from "../services/gamificationApi";
-
-const timeline = [
-  { t: "9AM", p: 1 }, { t: "10AM", p: 0 }, { t: "11AM", p: 2 }, { t: "12PM", p: 0 },
-  { t: "2PM", p: 3 }, { t: "4PM", p: 2 }, { t: "6PM", p: 1 }, { t: "8PM", p: 2 },
-];
-
-const pie = [
-  { name: "Easy", value: 3, color: "var(--green)" },
-  { name: "Medium", value: 6, color: "var(--amber)" },
-  { name: "Hard", value: 2, color: "var(--red)" },
-];
-
-const recentSolved = [
-  { title: "Two Sum", diff: "Easy", status: "Accepted", topics: ["Arrays", "Hash"], dur: "4m", time: "9:14 AM" },
-  { title: "Valid Parentheses", diff: "Easy", status: "Accepted", topics: ["Stack"], dur: "3m", time: "9:28 AM" },
-  { title: "Merge Intervals", diff: "Medium", status: "Accepted", topics: ["Arrays", "Sorting"], dur: "22m", time: "11:02 AM" },
-  { title: "Search in Rotated Array", diff: "Medium", status: "Wrong Answer", topics: ["Binary Search"], dur: "18m", time: "11:35 AM" },
-  { title: "Maximum Subarray", diff: "Medium", status: "Accepted", topics: ["DP", "Arrays"], dur: "9m", time: "2:10 PM" },
-  { title: "Jump Game", diff: "Medium", status: "Accepted", topics: ["Greedy"], dur: "14m", time: "2:30 PM" },
-  { title: "Clone Graph", diff: "Medium", status: "Accepted", topics: ["Graphs", "BFS"], dur: "20m", time: "2:55 PM" },
-  { title: "Word Break", diff: "Medium", status: "TLE", topics: ["DP", "Strings"], dur: "35m", time: "4:20 PM" },
-  { title: "Subsets", diff: "Medium", status: "Accepted", topics: ["Backtracking"], dur: "16m", time: "4:58 PM" },
-  { title: "Trapping Rain Water", diff: "Hard", status: "Wrong Answer", topics: ["Two Pointers"], dur: "40m", time: "6:10 PM" },
-  { title: "LRU Cache", diff: "Hard", status: "Accepted", topics: ["Design", "Hash"], dur: "28m", time: "8:20 PM" },
-];
-
-function Tip({ active, payload, label }: any) {
-  if (!active || !payload?.length) return null;
-  return (
-    <div style={{ background: "var(--bg-raised)", border: "1px solid var(--border)", borderRadius: "var(--radius-md)", padding: "8px 12px", boxShadow: "var(--shadow-md)", fontSize: 11 }}>
-      <p style={{ fontWeight: 600, color: "var(--text-primary)", margin: "0 0 4px" }}>{label}</p>
-      {payload.map((p: any) => (
-        <div key={p.dataKey} style={{ color: "var(--text-muted)" }}>Problems: <span style={{ color: p.stroke, fontWeight: 600 }}>{p.value}</span></div>
-      ))}
-    </div>
-  );
-}
+import {
+  LearningMemoryApi, MemoryRecord, RetentionRecord, ReviewItem,
+  Flashcard, RevisionNotes, LearningStreak, DailyReport
+} from "../services/learningMemoryApi";
 
 export default function DailyReview() {
   const navigate = useNavigate();
   const today = new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
 
-  const [reviewQueueData, setReviewQueueData] = useState<DailyReviewQueue | null>(null);
-  const [currentQuestionIdx, setCurrentQuestionIdx] = useState(0);
-  const [selectedOption, setSelectedOption] = useState<number | null>(null);
-  const [isAnswerRevealed, setIsAnswerRevealed] = useState(false);
-  const [userAnswers, setUserAnswers] = useState<Record<number, number>>({});
-  const [completedReview, setCompletedReview] = useState(false);
-  const [earnedXP, setEarnedXP] = useState(0);
-  const [streakDays, setStreakDays] = useState(7);
-  const [submitting, setSubmitting] = useState(false);
+  const [activeTab, setActiveTab] = useState<"today" | "retention" | "flashcards" | "notes" | "report">("today");
+
+  const [report, setReport] = useState<DailyReport | null>(null);
+  const [reviews, setReviews] = useState<ReviewItem[]>([]);
+  const [memory, setMemory] = useState<{ records: MemoryRecord[]; topicMastery: Record<string, number>; overallConfidence: number } | null>(null);
+  const [retention, setRetention] = useState<{ retentionRecords: RetentionRecord[]; overallRetention: number; revisionCompletionPercentage: number } | null>(null);
+  const [streak, setStreak] = useState<LearningStreak | null>(null);
+
+  // Flashcards state
+  const [flashcardTopic, setFlashcardTopic] = useState("Graphs");
+  const [flashcards, setFlashcards] = useState<Flashcard[]>([]);
+  const [activeCardIndex, setActiveCardIndex] = useState(0);
+  const [showAnswer, setShowAnswer] = useState(false);
+  const [generatingCards, setGeneratingCards] = useState(false);
+
+  // Notes state
+  const [notesTopic, setNotesTopic] = useState("Graphs & BFS/DFS");
+  const [notes, setNotes] = useState<RevisionNotes[]>([]);
+  const [generatingNotes, setGeneratingNotes] = useState(false);
+
+  // Loading indicator
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function loadDailyQueue() {
-      const data = await GamificationApi.getDailyReviewQueue();
-      if (data) {
-        setReviewQueueData(data);
-        setStreakDays(data.streakDays || 7);
+    async function initData() {
+      setLoading(true);
+      try {
+        const [rep, revs, mem, ret, strk] = await Promise.all([
+          LearningMemoryApi.getDailyReport(),
+          LearningMemoryApi.getDailyReviews(),
+          LearningMemoryApi.getMemoryOverview(),
+          LearningMemoryApi.getRetentionOverview(),
+          LearningMemoryApi.getStreak(),
+        ]);
+        setReport(rep);
+        setReviews(revs);
+        setMemory(mem);
+        setRetention(ret);
+        setStreak(strk);
+      } catch (err) {
+        console.error("Failed loading memory data", err);
+      } finally {
+        setLoading(false);
       }
     }
-    loadDailyQueue();
+    initData();
   }, []);
 
-  const queue = reviewQueueData?.queue || [];
-  const currentQuestion: DailyReviewQuestion | undefined = queue[currentQuestionIdx];
-
-  const handleSelectOption = (idx: number) => {
-    if (isAnswerRevealed) return;
-    setSelectedOption(idx);
-    setIsAnswerRevealed(true);
-    setUserAnswers((prev) => ({ ...prev, [currentQuestionIdx]: idx }));
-  };
-
-  const handleNextQuestion = () => {
-    if (currentQuestionIdx < queue.length - 1) {
-      setCurrentQuestionIdx((i) => i + 1);
-      setSelectedOption(userAnswers[currentQuestionIdx + 1] ?? null);
-      setIsAnswerRevealed(userAnswers[currentQuestionIdx + 1] !== undefined);
-    } else {
-      handleFinishReview();
-    }
-  };
-
-  const handleFinishReview = async () => {
-    setSubmitting(true);
-    let correctCount = 0;
-    queue.forEach((q, idx) => {
-      if (userAnswers[idx] === q.correctIndex) {
-        correctCount += 1;
+  const handleCompleteReview = async (reviewId: string) => {
+    try {
+      const res = await LearningMemoryApi.markReviewComplete(reviewId);
+      setReviews((prev) =>
+        prev.map((r) => (r.id === reviewId ? { ...r, status: "completed", completedAt: new Date().toISOString() } : r))
+      );
+      if (res.streak) {
+        setStreak(res.streak);
       }
-    });
-
-    const result = await GamificationApi.completeDailyReview(correctCount, queue.length);
-    if (result) {
-      setEarnedXP(result.xpEarned || 150);
-      setStreakDays(result.streakDays || streakDays + 1);
-    } else {
-      setEarnedXP(150);
-      setStreakDays((s) => s + 1);
+    } catch (err) {
+      console.error(err);
     }
-    setCompletedReview(true);
-    setSubmitting(false);
   };
 
-  const restartReview = () => {
-    setUserAnswers({});
-    setCurrentQuestionIdx(0);
-    setSelectedOption(null);
-    setIsAnswerRevealed(false);
-    setCompletedReview(false);
+  const handleGenerateFlashcards = async () => {
+    setGeneratingCards(true);
+    try {
+      const cards = await LearningMemoryApi.generateFlashcards(flashcardTopic, 4, "Medium");
+      setFlashcards(cards);
+      setActiveCardIndex(0);
+      setShowAnswer(false);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setGeneratingCards(false);
+    }
+  };
+
+  const handleGenerateNotes = async () => {
+    setGeneratingNotes(true);
+    try {
+      const newNotes = await LearningMemoryApi.generateRevisionNotes(notesTopic, "Medium", "Intermediate");
+      setNotes((prev) => [newNotes, ...prev]);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setGeneratingNotes(false);
+    }
   };
 
   return (
-    <div style={{ padding: 24, maxWidth: 1280, margin: "0 auto", display: "flex", flexDirection: "column", gap: 20 }}>
-      {/* Header */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+    <div style={{ padding: 24, maxWidth: 1280, margin: "0 auto", display: "flex", flexDirection: "column", gap: 24 }}>
+      {/* Top Banner & Header */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 16 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
           <div
             style={{
-              width: 44,
-              height: 44,
-              borderRadius: "var(--radius-md)",
-              background: "linear-gradient(135deg,#f59e0b,#ef4444)",
+              width: 48,
+              height: 48,
+              borderRadius: "var(--radius-lg, 12px)",
+              background: "linear-gradient(135deg, #f59e0b, #ef4444)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              boxShadow: "var(--shadow-sm)",
+              boxShadow: "0 4px 12px rgba(239,68,68,0.25)",
             }}
           >
-            <Flame size={20} color="white" />
+            <Brain size={24} color="white" />
           </div>
           <div>
-            <p style={{ fontSize: 11.5, color: "var(--text-muted)", margin: 0 }}>{today}</p>
-            <h2 style={{ fontSize: 22, fontWeight: 800, color: "var(--text-primary)", margin: 0, letterSpacing: "-0.02em" }}>
-              Daily Spaced Repetition Review
-            </h2>
+            <p style={{ fontSize: 12, color: "var(--text-muted)", margin: 0, fontWeight: 500 }}>{today}</p>
+            <h1 style={{ fontSize: 24, fontWeight: 800, color: "var(--text-primary)", margin: 0, letterSpacing: "-0.02em" }}>
+              AI Daily Review & Learning Memory
+            </h1>
           </div>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <span className="badge badge-amber" style={{ fontSize: 12, padding: "5px 12px", display: "flex", alignItems: "center", gap: 5 }}>
-            <Flame size={14} style={{ color: "var(--red)" }} /> {streakDays} Day Streak Active
-          </span>
-          <button className="btn btn-secondary btn-sm" onClick={() => navigate("/workspace")} style={{ gap: 5 }}>
-            <Code2 size={13} /> Code Workspace
+
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <div
+            style={{
+              background: "rgba(245, 158, 11, 0.12)",
+              border: "1px solid rgba(245, 158, 11, 0.3)",
+              padding: "6px 14px",
+              borderRadius: 20,
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
+              fontSize: 13,
+              fontWeight: 700,
+              color: "#f59e0b",
+            }}
+          >
+            <Flame size={16} fill="#f59e0b" />
+            <span>{streak?.currentStreak || 7} Day Streak ({streak?.totalXp || 1850} XP)</span>
+          </div>
+
+          <button className="btn btn-secondary btn-sm" onClick={() => navigate("/workspace")} style={{ gap: 6 }}>
+            <Code2 size={14} /> Code Workspace
           </button>
         </div>
       </div>
 
-      {/* Metrics Bar */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 14 }}>
+      {/* Navigation Tabs */}
+      <div style={{ display: "flex", gap: 8, borderBottom: "1px solid var(--border)", paddingBottom: 12, overflowX: "auto" }}>
         {[
-          { label: "Today's Solved", value: "11", sub: "vs 6 yesterday", icon: Code2, color: "var(--blue)" },
-          { label: "Retention Index", value: `${reviewQueueData?.overallRetentionScore || 72}%`, sub: "Spaced mastery metric", icon: Target, color: "var(--green)" },
-          { label: "Spaced Queue", value: `${queue.length} Due`, sub: "5 flash checkpoints", icon: Brain, color: "var(--violet)" },
-          { label: "Streak Bonus", value: "+150 XP", sub: `Flame reward on completion`, icon: Zap, color: "var(--amber)" },
-        ].map(({ label, value, sub, icon: Icon, color }) => (
-          <div key={label} className="surface-card" style={{ padding: 20 }}>
-            <div
-              style={{
-                width: 34,
-                height: 34,
-                borderRadius: "var(--radius-md)",
-                background: `color-mix(in srgb, ${color} 12%, transparent)`,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                marginBottom: 14,
-              }}
+          { id: "today", label: "Today's Review Queue", icon: Clock },
+          { id: "retention", label: "Retention Analytics", icon: Target },
+          { id: "flashcards", label: "AI Flashcards", icon: Layers },
+          { id: "notes", label: "Revision Cheat Sheets", icon: BookOpen },
+          { id: "report", label: "AI Daily Report", icon: Sparkles },
+        ].map((tab) => {
+          const Icon = tab.icon;
+          const isActive = activeTab === tab.id;
+          return (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id as any)}
+              className={`btn btn-sm ${isActive ? "btn-primary" : "btn-secondary"}`}
+              style={{ gap: 6, borderRadius: 20 }}
             >
-              <Icon size={16} style={{ color }} />
-            </div>
-            <div style={{ fontSize: 26, fontWeight: 800, color: "var(--text-primary)", letterSpacing: "-0.03em" }}>{value}</div>
-            <div style={{ fontSize: 12, color: "var(--text-muted)", margin: "3px 0 0" }}>{label}</div>
-            <div style={{ fontSize: 11, color: "var(--green)", marginTop: 4, fontWeight: 600 }}>{sub}</div>
-          </div>
-        ))}
+              <Icon size={14} />
+              {tab.label}
+            </button>
+          );
+        })}
       </div>
 
-      {/* Interactive Flashcard / Concept Checkpoint Card */}
-      <div
-        className="surface-card"
-        style={{
-          padding: 24,
-          border: "2px solid color-mix(in srgb, var(--violet) 35%, transparent)",
-          background: "linear-gradient(180deg, var(--bg-surface) 0%, color-mix(in srgb, var(--violet) 4%, transparent) 100%)",
-        }}
-      >
-        {!completedReview && currentQuestion ? (
-          <div>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <span className="badge badge-violet" style={{ fontWeight: 700 }}>
-                  Question {currentQuestionIdx + 1} of {queue.length}
-                </span>
-                <span className="badge badge-neutral">{currentQuestion.topic}</span>
-                <span
-                  className={`badge ${
-                    currentQuestion.difficulty === "Easy"
-                      ? "diff-easy"
-                      : currentQuestion.difficulty === "Medium"
-                      ? "diff-medium"
-                      : "diff-hard"
-                  }`}
-                >
-                  {currentQuestion.difficulty}
-                </span>
-              </div>
-              <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: "var(--text-muted)" }}>
-                <span>Retention: {currentQuestion.retentionScore}%</span>
-                <span>·</span>
-                <span>Practiced {currentQuestion.lastPracticedDaysAgo}d ago</span>
-              </div>
-            </div>
+      {loading ? (
+        <div style={{ padding: 60, textAlign: "center", color: "var(--text-muted)" }}>
+          <RefreshCw className="animate-spin" size={28} style={{ margin: "0 auto 12px" }} />
+          <p style={{ margin: 0 }}>Syncing learning memory & retention scores...</p>
+        </div>
+      ) : (
+        <>
+          {/* TAB 1: TODAY'S REVIEW QUEUE */}
+          {activeTab === "today" && (
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 340px", gap: 20 }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                  <h3 style={{ fontSize: 18, fontWeight: 700, margin: 0 }}>Scheduled Spaced Repetitions</h3>
+                  <span className="badge badge-amber" style={{ fontSize: 12 }}>
+                    {reviews.filter((r) => r.status === "pending").length} Pending Today
+                  </span>
+                </div>
 
-            <h3 style={{ fontSize: 17, fontWeight: 700, color: "var(--text-primary)", margin: "0 0 12px", lineHeight: 1.4 }}>
-              {currentQuestion.prompt}
-            </h3>
-
-            {currentQuestion.codeSnippet && (
-              <pre
-                style={{
-                  background: "var(--bg-subtle)",
-                  border: "1px solid var(--border)",
-                  borderRadius: "var(--radius-md)",
-                  padding: "12px 16px",
-                  fontSize: 12.5,
-                  fontFamily: "'JetBrains Mono',monospace",
-                  color: "var(--text-primary)",
-                  overflowX: "auto",
-                  margin: "0 0 16px",
-                }}
-              >
-                <code>{currentQuestion.codeSnippet}</code>
-              </pre>
-            )}
-
-            {/* Options */}
-            <div style={{ display: "flex", flexDirection: "column", gap: 10, margin: "16px 0 20px" }}>
-              {currentQuestion.options.map((opt, oIdx) => {
-                const isSelected = selectedOption === oIdx;
-                const isCorrect = oIdx === currentQuestion.correctIndex;
-                let bg = "var(--bg-surface)";
-                let borderColor = "var(--border)";
-
-                if (isAnswerRevealed) {
-                  if (isCorrect) {
-                    bg = "color-mix(in srgb, var(--green) 12%, transparent)";
-                    borderColor = "var(--green)";
-                  } else if (isSelected && !isCorrect) {
-                    bg = "color-mix(in srgb, var(--red) 12%, transparent)";
-                    borderColor = "var(--red)";
-                  }
-                } else if (isSelected) {
-                  bg = "var(--bg-subtle)";
-                  borderColor = "var(--blue)";
-                }
-
-                return (
-                  <button
-                    key={oIdx}
-                    id={`review-opt-${oIdx}`}
-                    onClick={() => handleSelectOption(oIdx)}
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 12,
-                      padding: "12px 18px",
-                      borderRadius: "var(--radius-md)",
-                      border: `1px solid ${borderColor}`,
-                      background: bg,
-                      color: "var(--text-primary)",
-                      textAlign: "left",
-                      fontSize: 13.5,
-                      fontWeight: 500,
-                      cursor: isAnswerRevealed ? "default" : "pointer",
-                      fontFamily: "inherit",
-                      transition: "all 0.15s ease",
-                    }}
-                  >
-                    <span
+                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                  {reviews.map((item) => (
+                    <div
+                      key={item.id}
+                      className="surface-card"
                       style={{
-                        width: 24,
-                        height: 24,
-                        borderRadius: "50%",
-                        border: "1px solid var(--border-strong)",
+                        padding: 16,
                         display: "flex",
                         alignItems: "center",
-                        justifyContent: "center",
-                        fontSize: 12,
-                        fontWeight: 700,
-                        color: "var(--text-muted)",
-                        flexShrink: 0,
+                        justifyContent: "space-between",
+                        opacity: item.status === "completed" ? 0.6 : 1,
+                        borderLeft: item.status === "completed" ? "4px solid var(--green)" : "4px solid #f59e0b",
                       }}
                     >
-                      {String.fromCharCode(65 + oIdx)}
-                    </span>
-                    <span style={{ flex: 1 }}>{opt}</span>
-                    {isAnswerRevealed && isCorrect && <CheckCircle2 size={16} style={{ color: "var(--green)" }} />}
-                    {isAnswerRevealed && isSelected && !isCorrect && <XCircle size={16} style={{ color: "var(--red)" }} />}
-                  </button>
-                );
-              })}
-            </div>
+                      <div style={{ display: "flex", flexDirection: "column", gap: 4, flex: 1 }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                          <span
+                            className="badge"
+                            style={{
+                              background: "rgba(99,102,241,0.12)",
+                              color: "var(--primary)",
+                              fontSize: 11,
+                            }}
+                          >
+                            {item.topic}
+                          </span>
+                          <span className="badge badge-secondary" style={{ fontSize: 11 }}>
+                            {item.itemType}
+                          </span>
+                          <span style={{ fontSize: 11, color: "var(--text-muted)" }}>
+                            Priority Score: {item.priorityScore}/100
+                          </span>
+                        </div>
+                        <h4 style={{ fontSize: 15, fontWeight: 600, margin: "4px 0 2px" }}>{item.itemTitle}</h4>
+                        <p style={{ fontSize: 12, color: "var(--text-muted)", margin: 0 }}>
+                          <span style={{ fontWeight: 600, color: "var(--amber)" }}>Reason:</span> {item.reason}
+                        </p>
+                      </div>
 
-            {/* Explanation when answered */}
-            {isAnswerRevealed && (
-              <div
-                style={{
-                  padding: "14px 18px",
-                  borderRadius: "var(--radius-md)",
-                  background: "var(--bg-subtle)",
-                  border: "1px solid var(--border)",
-                  marginBottom: 16,
-                }}
-              >
-                <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4, fontWeight: 700, fontSize: 13, color: "var(--blue)" }}>
-                  <Brain size={14} /> Spaced Memory Insight
-                </div>
-                <p style={{ fontSize: 12.5, color: "var(--text-secondary)", margin: 0, lineHeight: 1.5 }}>
-                  {currentQuestion.explanation}
-                </p>
-              </div>
-            )}
-
-            {/* Footer Navigation */}
-            <div style={{ display: "flex", justifyContent: "flex-end", gap: 10 }}>
-              {isAnswerRevealed && (
-                <button
-                  id="next-review-btn"
-                  className="btn btn-primary btn-sm"
-                  onClick={handleNextQuestion}
-                  disabled={submitting}
-                  style={{ gap: 6 }}
-                >
-                  {currentQuestionIdx < queue.length - 1 ? (
-                    <>
-                      Next Question <ArrowRight size={14} />
-                    </>
-                  ) : (
-                    <>
-                      Complete Spaced Review <Check size={14} />
-                    </>
-                  )}
-                </button>
-              )}
-            </div>
-          </div>
-        ) : (
-          <div style={{ textAlign: "center", padding: "30px 20px" }}>
-            <div
-              style={{
-                width: 56,
-                height: 56,
-                borderRadius: "50%",
-                background: "color-mix(in srgb, var(--green) 15%, transparent)",
-                display: "inline-flex",
-                alignItems: "center",
-                justifyContent: "center",
-                color: "var(--green)",
-                marginBottom: 14,
-              }}
-            >
-              <Award size={28} />
-            </div>
-            <h3 style={{ fontSize: 20, fontWeight: 800, color: "var(--text-primary)", margin: "0 0 6px" }}>
-              Daily Review Complete!
-            </h3>
-            <p style={{ fontSize: 13.5, color: "var(--text-muted)", margin: "0 0 16px" }}>
-              You earned <strong style={{ color: "var(--amber)" }}>+{earnedXP} XP</strong> and your streak extended to{" "}
-              <strong style={{ color: "var(--red)" }}>{streakDays} days</strong>!
-            </p>
-            <div style={{ display: "flex", justifyContent: "center", gap: 10 }}>
-              <button className="btn btn-secondary btn-sm" onClick={restartReview} style={{ gap: 5 }}>
-                <RotateCcw size={13} /> Retake Queue
-              </button>
-              <button className="btn btn-primary btn-sm" onClick={() => navigate("/workspace")} style={{ gap: 5 }}>
-                <Code2 size={13} /> Jump to Problem Explorer
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Weak Topics & Actions */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 14 }}>
-        <div className="surface-card" style={{ padding: 20 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 14 }}>
-            <TrendingUp size={14} style={{ color: "var(--green)" }} />
-            <h3 style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)", margin: 0 }}>Strong Concepts</h3>
-          </div>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-            {["Two Pointers", "Hash Maps", "Stacks", "Arrays"].map((t) => (
-              <span
-                key={t}
-                style={{
-                  padding: "5px 10px",
-                  borderRadius: "var(--radius-full)",
-                  fontSize: 11.5,
-                  fontWeight: 500,
-                  background: "var(--green-light)",
-                  color: "var(--green)",
-                  border: "1px solid color-mix(in srgb, var(--green) 25%, transparent)",
-                }}
-              >
-                ✓ {t}
-              </span>
-            ))}
-          </div>
-        </div>
-
-        <div className="surface-card" style={{ padding: 20 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 14 }}>
-            <TrendingDown size={14} style={{ color: "var(--red)" }} />
-            <h3 style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)", margin: 0 }}>Targeted Weak Topics</h3>
-          </div>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-            {(reviewQueueData?.weakTopics || [
-              { topic: "Dynamic Programming", masteryScore: 54 },
-              { topic: "Binary Search", masteryScore: 62 },
-              { topic: "Intervals & Sorting", masteryScore: 68 },
-            ]).map((t) => (
-              <span
-                key={t.topic}
-                style={{
-                  padding: "5px 10px",
-                  borderRadius: "var(--radius-full)",
-                  fontSize: 11.5,
-                  fontWeight: 500,
-                  background: "var(--red-light)",
-                  color: "var(--red)",
-                  border: "1px solid color-mix(in srgb, var(--red) 25%, transparent)",
-                }}
-              >
-                ↓ {t.topic} ({t.masteryScore}%)
-              </span>
-            ))}
-          </div>
-        </div>
-
-        <div className="surface-card" style={{ padding: 20 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 14 }}>
-            <Brain size={14} style={{ color: "var(--blue)" }} />
-            <h3 style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)", margin: 0 }}>Suggested Focus</h3>
-          </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            {[
-              { title: "Dynamic Programming memoization patterns", color: "var(--red)" },
-              { title: "Binary search on rotated arrays boundary tests", color: "var(--amber)" },
-              { title: "Interval sorting by start vs end heuristics", color: "var(--blue)" },
-            ].map((item, idx) => (
-              <div key={idx} style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
-                <span
-                  style={{
-                    width: 18,
-                    height: 18,
-                    borderRadius: "50%",
-                    background: `color-mix(in srgb, ${item.color} 12%, transparent)`,
-                    color: item.color,
-                    fontSize: 10,
-                    fontWeight: 700,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    flexShrink: 0,
-                    marginTop: 1,
-                  }}
-                >
-                  {idx + 1}
-                </span>
-                <p style={{ fontSize: 12, color: "var(--text-secondary)", margin: 0, lineHeight: 1.4 }}>{item.title}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Activity Timeline & Charts */}
-      <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 14 }}>
-        <div className="surface-card" style={{ padding: 22 }}>
-          <h3 style={{ fontSize: 13.5, fontWeight: 600, color: "var(--text-primary)", margin: "0 0 3px" }}>Coding Activity Timeline</h3>
-          <p style={{ fontSize: 12, color: "var(--text-muted)", margin: "0 0 16px" }}>Submissions and reviews by hour</p>
-          <ResponsiveContainer width="100%" height={170}>
-            <AreaChart data={timeline} margin={{ top: 4, right: 4, bottom: 0, left: -22 }}>
-              <defs>
-                <linearGradient id="tg" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="var(--blue)" stopOpacity={0.2} />
-                  <stop offset="100%" stopColor="var(--blue)" stopOpacity={0} />
-                </linearGradient>
-              </defs>
-              <XAxis dataKey="t" tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
-              <Tooltip content={<Tip />} />
-              <Area type="monotone" dataKey="p" stroke="var(--blue)" strokeWidth={2} fill="url(#tg)" dot={false} activeDot={{ r: 4, fill: "var(--blue)" }} />
-            </AreaChart>
-          </ResponsiveContainer>
-        </div>
-
-        <div className="surface-card" style={{ padding: 22, display: "flex", flexDirection: "column" }}>
-          <h3 style={{ fontSize: 13.5, fontWeight: 600, color: "var(--text-primary)", margin: "0 0 3px" }}>Difficulty Split</h3>
-          <p style={{ fontSize: 12, color: "var(--text-muted)", margin: "0 0 8px" }}>11 problems total</p>
-          <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <ResponsiveContainer width="100%" height={140}>
-              <PieChart>
-                <Pie data={pie} cx="50%" cy="50%" innerRadius={42} outerRadius={62} paddingAngle={3} dataKey="value">
-                  {pie.map((e, i) => <Cell key={i} fill={e.color} />)}
-                </Pie>
-                <Tooltip contentStyle={{ background: "var(--bg-raised)", border: "1px solid var(--border)", borderRadius: 8, fontSize: 11 }} />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-          {pie.map(({ name, value, color }) => (
-            <div key={name} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 5 }}>
-              <span style={{ display: "flex", alignItems: "center", gap: 7, fontSize: 12, color: "var(--text-secondary)" }}>
-                <span style={{ width: 8, height: 8, borderRadius: 2, background: color, flexShrink: 0 }} />{name}
-              </span>
-              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--text-primary)" }}>{value}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Problems table */}
-      <div className="surface-card" style={{ overflow: "hidden" }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px", borderBottom: "1px solid var(--border)" }}>
-          <h3 style={{ fontSize: 13.5, fontWeight: 600, color: "var(--text-primary)", margin: 0 }}>Recent Practice History</h3>
-          <span className="badge badge-blue">{recentSolved.length} attempted</span>
-        </div>
-        <div className="divide-theme">
-          {recentSolved.map(({ title, diff, status, topics, dur, time }) => (
-            <div key={title + time} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 20px" }}>
-              <div style={{ flexShrink: 0 }}>
-                {status === "Accepted" ? (
-                  <CheckCircle2 size={14} style={{ color: "var(--green)" }} />
-                ) : status === "Wrong Answer" ? (
-                  <XCircle size={14} style={{ color: "var(--red)" }} />
-                ) : (
-                  <AlertCircle size={14} style={{ color: "var(--amber)" }} />
-                )}
-              </div>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <p style={{ fontSize: 13, fontWeight: 500, color: "var(--text-primary)", margin: "0 0 2px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                  {title}
-                </p>
-                <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
-                  {topics.map((t) => (
-                    <span key={t} className="badge badge-neutral" style={{ fontSize: 10 }}>
-                      {t}
-                    </span>
+                      <div style={{ display: "flex", alignItems: "center", gap: 12, marginLeft: 16 }}>
+                        <div style={{ fontSize: 12, color: "var(--text-muted)", textAlign: "right" }}>
+                          <Clock size={12} style={{ display: "inline", marginRight: 4 }} />
+                          {item.estimatedMinutes} mins
+                        </div>
+                        {item.status === "completed" ? (
+                          <span style={{ color: "var(--green)", fontSize: 13, fontWeight: 600, display: "flex", alignItems: "center", gap: 4 }}>
+                            <CheckCircle2 size={16} /> Completed (+50 XP)
+                          </span>
+                        ) : (
+                          <button
+                            className="btn btn-primary btn-sm"
+                            onClick={() => handleCompleteReview(item.id)}
+                            style={{ gap: 4 }}
+                          >
+                            <Check size={14} /> Review Done
+                          </button>
+                        )}
+                      </div>
+                    </div>
                   ))}
                 </div>
               </div>
-              <span className={`badge ${diff === "Easy" ? "diff-easy" : diff === "Medium" ? "diff-medium" : "diff-hard"}`} style={{ flexShrink: 0 }}>
-                {diff}
-              </span>
-              <span style={{ fontSize: 11, color: "var(--text-muted)", flexShrink: 0, display: "flex", alignItems: "center", gap: 3 }}>
-                <Clock size={10} /> {dur}
-              </span>
-              <span style={{ fontSize: 11, color: "var(--text-muted)", flexShrink: 0 }}>{time}</span>
+
+              {/* Right Sidebar: Streak & Spaced Schedule */}
+              <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                <div className="surface-card" style={{ padding: 20 }}>
+                  <h4 style={{ fontSize: 15, fontWeight: 700, margin: "0 0 12px", display: "flex", alignItems: "center", gap: 8 }}>
+                    <Calendar size={16} color="var(--primary)" /> Spaced Repetition Schedule
+                  </h4>
+                  <p style={{ fontSize: 12, color: "var(--text-muted)", marginBottom: 14 }}>
+                    Automatic intervals based on Ebbinghaus forgetting curve memory decay.
+                  </p>
+
+                  <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                    {[
+                      { interval: "Day 1", desc: "Immediate 24h review post-solve", status: "Completed" },
+                      { interval: "Day 3", desc: "First consolidation checkpoint", status: "Active Today" },
+                      { interval: "Day 7", desc: "Weekly retention validation", status: "Upcoming" },
+                      { interval: "Day 14", desc: "Fortnightly long-term memory", status: "Scheduled" },
+                      { interval: "Day 30", desc: "Permanent mastery threshold", status: "Scheduled" },
+                    ].map((step, idx) => (
+                      <div
+                        key={idx}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                          padding: "8px 12px",
+                          borderRadius: "var(--radius-sm, 6px)",
+                          background: step.status === "Active Today" ? "rgba(245,158,11,0.1)" : "var(--bg-subtle, rgba(255,255,255,0.03))",
+                          border: step.status === "Active Today" ? "1px solid rgba(245,158,11,0.3)" : "1px solid transparent",
+                        }}
+                      >
+                        <div>
+                          <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)" }}>{step.interval}</div>
+                          <div style={{ fontSize: 11, color: "var(--text-muted)" }}>{step.desc}</div>
+                        </div>
+                        <span
+                          className={`badge ${
+                            step.status === "Completed"
+                              ? "badge-green"
+                              : step.status === "Active Today"
+                              ? "badge-amber"
+                              : "badge-secondary"
+                          }`}
+                          style={{ fontSize: 10 }}
+                        >
+                          {step.status}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="surface-card" style={{ padding: 20, background: "linear-gradient(135deg, rgba(99,102,241,0.1), rgba(168,85,247,0.1))" }}>
+                  <h4 style={{ fontSize: 15, fontWeight: 700, margin: "0 0 8px", display: "flex", alignItems: "center", gap: 8 }}>
+                    <Zap size={16} color="var(--primary)" /> Streak & Gamification
+                  </h4>
+                  <p style={{ fontSize: 12, color: "var(--text-muted)", margin: "0 0 12px" }}>
+                    Complete daily reviews to maintain your streak and earn double XP bonuses.
+                  </p>
+                  <div style={{ fontSize: 24, fontWeight: 800, color: "#f59e0b", display: "flex", alignItems: "center", gap: 8 }}>
+                    <Flame size={28} /> {streak?.currentStreak || 7} Days Active
+                  </div>
+                  <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 6 }}>
+                    Longest Record: <strong>{streak?.longestStreak || 14} Days</strong>
+                  </div>
+                </div>
+              </div>
             </div>
-          ))}
-        </div>
-      </div>
+          )}
+
+          {/* TAB 2: RETENTION ANALYTICS */}
+          {activeTab === "retention" && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }}>
+                <div className="surface-card" style={{ padding: 20 }}>
+                  <p style={{ fontSize: 12, color: "var(--text-muted)", margin: "0 0 4px" }}>Overall Retention %</p>
+                  <h2 style={{ fontSize: 28, fontWeight: 800, color: "var(--green)", margin: 0 }}>
+                    {retention?.overallRetention || 78}%
+                  </h2>
+                  <p style={{ fontSize: 11, color: "var(--text-muted)", margin: "6px 0 0" }}>Measured via 30-day Ebbinghaus curve</p>
+                </div>
+
+                <div className="surface-card" style={{ padding: 20 }}>
+                  <p style={{ fontSize: 12, color: "var(--text-muted)", margin: "0 0 4px" }}>Revision Completion</p>
+                  <h2 style={{ fontSize: 28, fontWeight: 800, color: "var(--primary)", margin: 0 }}>
+                    {retention?.revisionCompletionPercentage || 85}%
+                  </h2>
+                  <p style={{ fontSize: 11, color: "var(--text-muted)", margin: "6px 0 0" }}>Daily Spaced Repetitions completed</p>
+                </div>
+
+                <div className="surface-card" style={{ padding: 20 }}>
+                  <p style={{ fontSize: 12, color: "var(--text-muted)", margin: "0 0 4px" }}>Overall Memory Confidence</p>
+                  <h2 style={{ fontSize: 28, fontWeight: 800, color: "#f59e0b", margin: 0 }}>
+                    {memory?.overallConfidence || 75}/100
+                  </h2>
+                  <p style={{ fontSize: 11, color: "var(--text-muted)", margin: "6px 0 0" }}>Aggregated across 5 core DSA modules</p>
+                </div>
+              </div>
+
+              {/* Topic Mastery Breakdown */}
+              <div className="surface-card" style={{ padding: 20 }}>
+                <h3 style={{ fontSize: 16, fontWeight: 700, margin: "0 0 16px" }}>Topic Memory & Mastery Breakdown</h3>
+                <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+                  {[
+                    { topic: "Arrays & Strings", mastery: 88, status: "High Retention" },
+                    { topic: "Trees & BST", mastery: 74, status: "Good Retention" },
+                    { topic: "Graphs & BFS/DFS", mastery: 61, status: "Review Scheduled" },
+                    { topic: "Dynamic Programming", mastery: 28, status: "Critical Decay" },
+                  ].map((item) => (
+                    <div key={item.topic} style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, fontWeight: 600 }}>
+                        <span>{item.topic}</span>
+                        <span>{item.mastery}% Mastery</span>
+                      </div>
+                      <div style={{ height: 8, background: "var(--bg-subtle, rgba(255,255,255,0.06))", borderRadius: 4, overflow: "hidden" }}>
+                        <div
+                          style={{
+                            height: "100%",
+                            width: `${item.mastery}%`,
+                            background:
+                              item.mastery >= 80
+                                ? "var(--green)"
+                                : item.mastery >= 60
+                                ? "#f59e0b"
+                                : "var(--red)",
+                            borderRadius: 4,
+                            transition: "width 0.4s ease",
+                          }}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 3: AI FLASHCARDS */}
+          {activeTab === "flashcards" && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+              <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+                <input
+                  type="text"
+                  className="input"
+                  value={flashcardTopic}
+                  onChange={(e) => setFlashcardTopic(e.target.value)}
+                  placeholder="Topic (e.g. Graphs, Dynamic Programming)"
+                  style={{ maxWidth: 300 }}
+                />
+                <button
+                  className="btn btn-primary"
+                  onClick={handleGenerateFlashcards}
+                  disabled={generatingCards}
+                  style={{ gap: 6 }}
+                >
+                  {generatingCards ? <RefreshCw className="animate-spin" size={14} /> : <Sparkles size={14} />}
+                  Generate AI Flashcards
+                </button>
+              </div>
+
+              {flashcards.length > 0 ? (
+                <div className="surface-card" style={{ padding: 32, textAlign: "center", maxWidth: 640, margin: "0 auto", width: "100%" }}>
+                  <span className="badge badge-amber" style={{ marginBottom: 12 }}>
+                    Card {activeCardIndex + 1} of {flashcards.length} • {flashcards[activeCardIndex].difficulty}
+                  </span>
+
+                  <h3 style={{ fontSize: 18, fontWeight: 700, margin: "16px 0 24px" }}>
+                    {flashcards[activeCardIndex].question}
+                  </h3>
+
+                  {showAnswer ? (
+                    <div style={{ padding: 16, background: "rgba(99,102,241,0.1)", borderRadius: 8, marginBottom: 24, textAlign: "left" }}>
+                      <p style={{ fontSize: 14, fontWeight: 600, color: "var(--primary)", margin: "0 0 6px" }}>Answer:</p>
+                      <p style={{ fontSize: 13, margin: 0, color: "var(--text-primary)" }}>{flashcards[activeCardIndex].answer}</p>
+                      {flashcards[activeCardIndex].hint && (
+                        <p style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 8 }}>
+                          💡 <em>Hint: {flashcards[activeCardIndex].hint}</em>
+                        </p>
+                      )}
+                    </div>
+                  ) : (
+                    <button className="btn btn-secondary" onClick={() => setShowAnswer(true)} style={{ marginBottom: 24 }}>
+                      Reveal Answer
+                    </button>
+                  )}
+
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <button
+                      className="btn btn-secondary btn-sm"
+                      disabled={activeCardIndex === 0}
+                      onClick={() => {
+                        setActiveCardIndex((i) => i - 1);
+                        setShowAnswer(false);
+                      }}
+                    >
+                      Previous
+                    </button>
+
+                    <button
+                      className="btn btn-primary btn-sm"
+                      disabled={activeCardIndex === flashcards.length - 1}
+                      onClick={() => {
+                        setActiveCardIndex((i) => i + 1);
+                        setShowAnswer(false);
+                      }}
+                    >
+                      Next Card
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="surface-card" style={{ padding: 40, textAlign: "center", color: "var(--text-muted)" }}>
+                  <Layers size={32} style={{ margin: "0 auto 12px" }} />
+                  <p style={{ margin: 0 }}>Click "Generate AI Flashcards" to create custom spaced repetition cards for {flashcardTopic}.</p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* TAB 4: REVISION NOTES */}
+          {activeTab === "notes" && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+              <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+                <input
+                  type="text"
+                  className="input"
+                  value={notesTopic}
+                  onChange={(e) => setNotesTopic(e.target.value)}
+                  placeholder="Topic (e.g. Graphs & BFS/DFS)"
+                  style={{ maxWidth: 300 }}
+                />
+                <button
+                  className="btn btn-primary"
+                  onClick={handleGenerateNotes}
+                  disabled={generatingNotes}
+                  style={{ gap: 6 }}
+                >
+                  {generatingNotes ? <RefreshCw className="animate-spin" size={14} /> : <BookOpen size={14} />}
+                  Generate Concept Cheat Sheet
+                </button>
+              </div>
+
+              {notes.length > 0 ? (
+                <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                  {notes.map((n) => (
+                    <div key={n.id} className="surface-card" style={{ padding: 20 }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+                        <h3 style={{ fontSize: 16, fontWeight: 700, margin: 0 }}>{n.topic}</h3>
+                        <span className="badge badge-amber">{n.difficulty} • {n.learningLevel}</span>
+                      </div>
+                      <p style={{ fontSize: 13, color: "var(--text-muted)", marginBottom: 16 }}>{n.summary}</p>
+                      <h4 style={{ fontSize: 13, fontWeight: 700, color: "var(--primary)", margin: "0 0 8px" }}>Concept Cheat Sheet:</h4>
+                      <ul style={{ margin: 0, paddingLeft: 20, fontSize: 13, color: "var(--text-primary)", display: "flex", flexDirection: "column", gap: 6 }}>
+                        {n.cheatSheet.map((item, idx) => (
+                          <li key={idx}>{item}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="surface-card" style={{ padding: 40, textAlign: "center", color: "var(--text-muted)" }}>
+                  <BookOpen size={32} style={{ margin: "0 auto 12px" }} />
+                  <p style={{ margin: 0 }}>No revision notes generated yet. Click generate above to create an AI cheat sheet.</p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* TAB 5: AI DAILY REPORT */}
+          {activeTab === "report" && (
+            <div className="surface-card" style={{ padding: 24, maxWidth: 800, margin: "0 auto", width: "100%" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
+                <Sparkles size={24} color="#f59e0b" />
+                <h2 style={{ fontSize: 20, fontWeight: 800, margin: 0 }}>{report?.greeting || "Good Morning Arjun!"}</h2>
+              </div>
+
+              <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                <div style={{ padding: 16, background: "rgba(245,158,11,0.08)", border: "1px solid rgba(245,158,11,0.2)", borderRadius: 8 }}>
+                  <h4 style={{ fontSize: 14, fontWeight: 700, margin: "0 0 6px", color: "#f59e0b" }}>AI Coach Advice</h4>
+                  <p style={{ fontSize: 13, margin: 0, color: "var(--text-primary)" }}>{report?.aiAdvice}</p>
+                </div>
+
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+                  <div style={{ padding: 16, background: "var(--bg-subtle, rgba(255,255,255,0.03))", borderRadius: 8 }}>
+                    <h4 style={{ fontSize: 13, fontWeight: 700, margin: "0 0 8px" }}>Yesterday's Accomplishments</h4>
+                    <ul style={{ margin: 0, paddingLeft: 18, fontSize: 12, color: "var(--text-muted)" }}>
+                      <li>Problems Solved: {report?.yesterdaySummary.problemsSolved || 4}</li>
+                      <li>XP Earned: +{report?.yesterdaySummary.xpEarned || 250} XP</li>
+                      <li>Topics Covered: {report?.yesterdaySummary.topicsStudied.join(", ")}</li>
+                    </ul>
+                  </div>
+
+                  <div style={{ padding: 16, background: "var(--bg-subtle, rgba(255,255,255,0.03))", borderRadius: 8 }}>
+                    <h4 style={{ fontSize: 13, fontWeight: 700, margin: "0 0 8px" }}>Weak Areas to Reinforce</h4>
+                    <ul style={{ margin: 0, paddingLeft: 18, fontSize: 12, color: "var(--red)" }}>
+                      {report?.weakAreas.map((w, idx) => (
+                        <li key={idx}>{w}</li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </>
+      )}
     </div>
   );
 }

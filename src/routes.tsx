@@ -16,6 +16,9 @@ import PlacementHub from "./pages/PlacementHub";
 import InterviewHub from "./pages/InterviewHub";
 import Certifications from "./pages/Certifications";
 import AdaptiveRoadmapV2 from "./pages/AdaptiveRoadmapV2";
+import CompanyPrep from "./pages/CompanyPrep";
+import VoiceMentor from "./pages/VoiceMentor";
+import { CollaborationWorkspace } from "./pages/CollaborationWorkspace";
 import Profile from "./pages/Profile";
 import { AIProblemGenerator } from "./pages/ai/AIProblemGenerator";
 import { AIQuizGenerator } from "./pages/ai/AIQuizGenerator";
@@ -57,6 +60,9 @@ export const router = createBrowserRouter([
       { path: "ai-analyst", Component: AIAnalyst },
       { path: "daily-review", Component: DailyReview },
       { path: "adaptive-roadmap", Component: AdaptiveRoadmapV2 },
+      { path: "company-prep", Component: CompanyPrep },
+      { path: "voice-mentor", Component: VoiceMentor },
+      { path: "collaboration", Component: CollaborationWorkspace },
       { path: "contests", Component: Contest },
       { path: "leaderboard", Component: Leaderboard },
       { path: "community", Component: Community },
@@ -153,5 +159,10 @@ export const router = createBrowserRouter([
     path: "/profile",
     Component: AppShell,
     children: [{ index: true, Component: Profile }],
+  },
+  {
+    path: "/collaboration",
+    Component: AppShell,
+    children: [{ index: true, Component: CollaborationWorkspace }],
   },
 ]);

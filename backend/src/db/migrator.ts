@@ -1253,6 +1253,425 @@ export const MIGRATIONS: Migration[] = [
       DROP TABLE IF EXISTS generated_problems CASCADE;
     `,
   },
+  {
+    version: "014",
+    name: "014_adaptive_ai_learning",
+    up: `
+      CREATE TABLE IF NOT EXISTS adaptive_skill_profiles (
+        id VARCHAR(128) PRIMARY KEY,
+        user_id VARCHAR(128) NOT NULL,
+        overall_skill_level VARCHAR(64) NOT NULL DEFAULT 'Intermediate',
+        topic_mastery JSONB NOT NULL DEFAULT '{}',
+        updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS adaptive_weakness_logs (
+        id VARCHAR(128) PRIMARY KEY,
+        user_id VARCHAR(128) NOT NULL,
+        topic VARCHAR(128) NOT NULL,
+        weakness_type VARCHAR(64) NOT NULL,
+        severity VARCHAR(32) NOT NULL DEFAULT 'Medium',
+        details TEXT,
+        created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS adaptive_learning_paths (
+        id VARCHAR(128) PRIMARY KEY,
+        user_id VARCHAR(128) NOT NULL,
+        target_goal VARCHAR(128) NOT NULL,
+        weeks JSONB NOT NULL DEFAULT '[]',
+        created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS adaptive_daily_reviews (
+        id VARCHAR(128) PRIMARY KEY,
+        user_id VARCHAR(128) NOT NULL,
+        topic VARCHAR(128) NOT NULL,
+        item_title VARCHAR(255) NOT NULL,
+        item_type VARCHAR(64) NOT NULL DEFAULT 'Problem',
+        scheduled_for TIMESTAMPTZ NOT NULL,
+        retention_score INTEGER NOT NULL DEFAULT 50,
+        status VARCHAR(32) NOT NULL DEFAULT 'pending',
+        last_reviewed_at TIMESTAMPTZ
+      );
+
+      CREATE TABLE IF NOT EXISTS adaptive_study_plans (
+        id VARCHAR(128) PRIMARY KEY,
+        user_id VARCHAR(128) NOT NULL,
+        placement_goal VARCHAR(128) NOT NULL,
+        available_hours_per_week INTEGER NOT NULL DEFAULT 10,
+        daily_plan JSONB NOT NULL DEFAULT '[]',
+        weekly_plan JSONB NOT NULL DEFAULT '[]',
+        monthly_plan JSONB NOT NULL DEFAULT '[]',
+        created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_adap_skill_user ON adaptive_skill_profiles(user_id);
+      CREATE INDEX IF NOT EXISTS idx_adap_weakness_user ON adaptive_weakness_logs(user_id);
+      CREATE INDEX IF NOT EXISTS idx_adap_path_user ON adaptive_learning_paths(user_id);
+      CREATE INDEX IF NOT EXISTS idx_adap_review_user ON adaptive_daily_reviews(user_id);
+      CREATE INDEX IF NOT EXISTS idx_adap_study_user ON adaptive_study_plans(user_id);
+    `,
+    down: `
+      DROP TABLE IF EXISTS adaptive_study_plans CASCADE;
+      DROP TABLE IF EXISTS adaptive_daily_reviews CASCADE;
+      DROP TABLE IF EXISTS adaptive_learning_paths CASCADE;
+      DROP TABLE IF EXISTS adaptive_weakness_logs CASCADE;
+      DROP TABLE IF EXISTS adaptive_skill_profiles CASCADE;
+    `,
+  },
+  {
+    version: "015",
+    name: "015_learning_memory_system",
+    up: `
+      CREATE TABLE IF NOT EXISTS learning_memory (
+        id VARCHAR(128) PRIMARY KEY,
+        user_id VARCHAR(128) NOT NULL,
+        topic VARCHAR(128) NOT NULL,
+        problems_solved INTEGER NOT NULL DEFAULT 0,
+        problems_failed INTEGER NOT NULL DEFAULT 0,
+        quiz_score INTEGER NOT NULL DEFAULT 0,
+        contest_score INTEGER NOT NULL DEFAULT 0,
+        interview_score INTEGER NOT NULL DEFAULT 0,
+        hint_count INTEGER NOT NULL DEFAULT 0,
+        ai_interactions_count INTEGER NOT NULL DEFAULT 0,
+        confidence_score INTEGER NOT NULL DEFAULT 50,
+        updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS learning_retention (
+        id VARCHAR(128) PRIMARY KEY,
+        user_id VARCHAR(128) NOT NULL,
+        topic VARCHAR(128) NOT NULL,
+        retention_percentage INTEGER NOT NULL DEFAULT 100,
+        overall_retention INTEGER NOT NULL DEFAULT 80,
+        revision_completion_percentage INTEGER NOT NULL DEFAULT 0,
+        last_reviewed TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+        next_review_date TIMESTAMPTZ NOT NULL,
+        review_attempts INTEGER NOT NULL DEFAULT 0,
+        success_rate INTEGER NOT NULL DEFAULT 100,
+        updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS learning_reviews (
+        id VARCHAR(128) PRIMARY KEY,
+        user_id VARCHAR(128) NOT NULL,
+        topic VARCHAR(128) NOT NULL,
+        item_title VARCHAR(255) NOT NULL,
+        item_type VARCHAR(64) NOT NULL DEFAULT 'Revision',
+        priority_score INTEGER NOT NULL DEFAULT 50,
+        estimated_minutes INTEGER NOT NULL DEFAULT 15,
+        reason TEXT,
+        scheduled_for TIMESTAMPTZ NOT NULL,
+        status VARCHAR(32) NOT NULL DEFAULT 'pending',
+        completed_at TIMESTAMPTZ
+      );
+
+      CREATE TABLE IF NOT EXISTS learning_flashcards (
+        id VARCHAR(128) PRIMARY KEY,
+        user_id VARCHAR(128) NOT NULL,
+        topic VARCHAR(128) NOT NULL,
+        question TEXT NOT NULL,
+        answer TEXT NOT NULL,
+        hint TEXT,
+        difficulty VARCHAR(32) NOT NULL DEFAULT 'Medium',
+        created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS learning_revision_notes (
+        id VARCHAR(128) PRIMARY KEY,
+        user_id VARCHAR(128) NOT NULL,
+        topic VARCHAR(128) NOT NULL,
+        difficulty VARCHAR(32) NOT NULL DEFAULT 'Medium',
+        learning_level VARCHAR(32) NOT NULL DEFAULT 'Intermediate',
+        summary TEXT NOT NULL,
+        cheat_sheet JSONB NOT NULL DEFAULT '[]',
+        created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS learning_streaks (
+        id VARCHAR(128) PRIMARY KEY,
+        user_id VARCHAR(128) NOT NULL,
+        current_streak INTEGER NOT NULL DEFAULT 1,
+        longest_streak INTEGER NOT NULL DEFAULT 1,
+        daily_review_completed BOOLEAN NOT NULL DEFAULT false,
+        weekly_review_completed BOOLEAN NOT NULL DEFAULT false,
+        total_xp INTEGER NOT NULL DEFAULT 150,
+        last_activity_date TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_mem_user ON learning_memory(user_id);
+      CREATE INDEX IF NOT EXISTS idx_ret_user ON learning_retention(user_id);
+      CREATE INDEX IF NOT EXISTS idx_rev_user ON learning_reviews(user_id);
+      CREATE INDEX IF NOT EXISTS idx_fc_user ON learning_flashcards(user_id);
+      CREATE INDEX IF NOT EXISTS idx_rn_user ON learning_revision_notes(user_id);
+      CREATE INDEX IF NOT EXISTS idx_strk_user ON learning_streaks(user_id);
+    `,
+    down: `
+      DROP TABLE IF EXISTS learning_streaks CASCADE;
+      DROP TABLE IF EXISTS learning_revision_notes CASCADE;
+      DROP TABLE IF EXISTS learning_flashcards CASCADE;
+      DROP TABLE IF EXISTS learning_reviews CASCADE;
+      DROP TABLE IF EXISTS learning_retention CASCADE;
+      DROP TABLE IF EXISTS learning_memory CASCADE;
+    `,
+  },
+  {
+    version: "016",
+    name: "016_company_prep_hub",
+    up: `
+      CREATE TABLE IF NOT EXISTS company_tracks (
+        id VARCHAR(128) PRIMARY KEY,
+        company_id VARCHAR(64) UNIQUE NOT NULL,
+        name VARCHAR(128) NOT NULL,
+        category VARCHAR(64) NOT NULL DEFAULT 'MAANG',
+        overview TEXT NOT NULL,
+        hiring_process JSONB NOT NULL DEFAULT '[]',
+        interview_pattern JSONB NOT NULL DEFAULT '[]',
+        recommended_topics JSONB NOT NULL DEFAULT '[]',
+        base_difficulty VARCHAR(32) NOT NULL DEFAULT 'Hard',
+        created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS company_roadmaps (
+        id VARCHAR(128) PRIMARY KEY,
+        company_id VARCHAR(64) NOT NULL,
+        week_number INTEGER NOT NULL,
+        title VARCHAR(255) NOT NULL,
+        topics JSONB NOT NULL DEFAULT '[]',
+        estimated_hours INTEGER NOT NULL DEFAULT 10,
+        created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS company_problem_mappings (
+        id VARCHAR(128) PRIMARY KEY,
+        problem_id VARCHAR(128) NOT NULL,
+        title VARCHAR(255) NOT NULL,
+        company_id VARCHAR(64) NOT NULL,
+        frequency INTEGER NOT NULL DEFAULT 80,
+        importance VARCHAR(32) NOT NULL DEFAULT 'High',
+        difficulty VARCHAR(32) NOT NULL DEFAULT 'Medium',
+        topics JSONB NOT NULL DEFAULT '[]',
+        created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS company_interview_patterns (
+        id VARCHAR(128) PRIMARY KEY,
+        company_id VARCHAR(64) NOT NULL,
+        round_number INTEGER NOT NULL,
+        round_name VARCHAR(128) NOT NULL,
+        round_type VARCHAR(64) NOT NULL,
+        description TEXT NOT NULL,
+        duration_minutes INTEGER NOT NULL DEFAULT 60,
+        key_focus JSONB NOT NULL DEFAULT '[]',
+        created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS company_user_readiness (
+        id VARCHAR(128) PRIMARY KEY,
+        user_id VARCHAR(128) NOT NULL,
+        company_id VARCHAR(64) NOT NULL,
+        readiness_score INTEGER NOT NULL DEFAULT 65,
+        strengths JSONB NOT NULL DEFAULT '[]',
+        weaknesses JSONB NOT NULL DEFAULT '[]',
+        improvement_areas JSONB NOT NULL DEFAULT '[]',
+        updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS company_prep_plans (
+        id VARCHAR(128) PRIMARY KEY,
+        user_id VARCHAR(128) NOT NULL,
+        company_id VARCHAR(64) NOT NULL,
+        target_date VARCHAR(64) NOT NULL,
+        available_hours_per_week INTEGER NOT NULL DEFAULT 15,
+        daily_plan JSONB NOT NULL DEFAULT '[]',
+        weekly_plan JSONB NOT NULL DEFAULT '[]',
+        monthly_plan JSONB NOT NULL DEFAULT '[]',
+        created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_c_track_comp ON company_tracks(company_id);
+      CREATE INDEX IF NOT EXISTS idx_c_map_comp ON company_problem_mappings(company_id);
+      CREATE INDEX IF NOT EXISTS idx_c_map_prob ON company_problem_mappings(problem_id);
+      CREATE INDEX IF NOT EXISTS idx_c_readiness_user ON company_user_readiness(user_id);
+      CREATE INDEX IF NOT EXISTS idx_c_readiness_comp ON company_user_readiness(company_id);
+      CREATE INDEX IF NOT EXISTS idx_c_plan_user ON company_prep_plans(user_id);
+      CREATE INDEX IF NOT EXISTS idx_c_plan_comp ON company_prep_plans(company_id);
+    `,
+    down: `
+      DROP TABLE IF EXISTS company_prep_plans CASCADE;
+      DROP TABLE IF EXISTS company_user_readiness CASCADE;
+      DROP TABLE IF EXISTS company_interview_patterns CASCADE;
+      DROP TABLE IF EXISTS company_problem_mappings CASCADE;
+      DROP TABLE IF EXISTS company_roadmaps CASCADE;
+      DROP TABLE IF EXISTS company_tracks CASCADE;
+    `,
+  },
+  {
+    version: "017",
+    name: "017_voice_ai_mentor",
+    up: `
+      CREATE TABLE IF NOT EXISTS voice_sessions (
+        id VARCHAR(128) PRIMARY KEY,
+        user_id VARCHAR(128) NOT NULL,
+        session_type VARCHAR(64) NOT NULL DEFAULT 'Mentor',
+        language VARCHAR(32) NOT NULL DEFAULT 'English',
+        started_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+        ended_at TIMESTAMPTZ,
+        duration_seconds INTEGER NOT NULL DEFAULT 0,
+        created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS voice_messages (
+        id VARCHAR(128) PRIMARY KEY,
+        session_id VARCHAR(128) NOT NULL,
+        role VARCHAR(32) NOT NULL DEFAULT 'user',
+        transcript TEXT NOT NULL,
+        ai_response TEXT NOT NULL,
+        created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS voice_analytics (
+        id VARCHAR(128) PRIMARY KEY,
+        user_id VARCHAR(128) UNIQUE NOT NULL,
+        total_sessions INTEGER NOT NULL DEFAULT 0,
+        total_minutes INTEGER NOT NULL DEFAULT 0,
+        interview_sessions INTEGER NOT NULL DEFAULT 0,
+        review_sessions INTEGER NOT NULL DEFAULT 0,
+        learning_sessions INTEGER NOT NULL DEFAULT 0,
+        updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS voice_interview_sessions (
+        id VARCHAR(128) PRIMARY KEY,
+        user_id VARCHAR(128) NOT NULL,
+        company VARCHAR(64) NOT NULL,
+        round_type VARCHAR(64) NOT NULL,
+        score INTEGER NOT NULL DEFAULT 0,
+        communication_score INTEGER NOT NULL DEFAULT 0,
+        technical_score INTEGER NOT NULL DEFAULT 0,
+        created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS voice_learning_sessions (
+        id VARCHAR(128) PRIMARY KEY,
+        user_id VARCHAR(128) NOT NULL,
+        topic VARCHAR(128) NOT NULL,
+        completion_percentage INTEGER NOT NULL DEFAULT 0,
+        created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_v_sess_user ON voice_sessions(user_id);
+      CREATE INDEX IF NOT EXISTS idx_v_msg_sess ON voice_messages(session_id);
+      CREATE INDEX IF NOT EXISTS idx_v_an_user ON voice_analytics(user_id);
+      CREATE INDEX IF NOT EXISTS idx_v_int_user ON voice_interview_sessions(user_id);
+      CREATE INDEX IF NOT EXISTS idx_v_lrn_user ON voice_learning_sessions(user_id);
+    `,
+    down: `
+      DROP TABLE IF EXISTS voice_learning_sessions CASCADE;
+      DROP TABLE IF EXISTS voice_interview_sessions CASCADE;
+      DROP TABLE IF EXISTS voice_analytics CASCADE;
+      DROP TABLE IF EXISTS voice_messages CASCADE;
+      DROP TABLE IF EXISTS voice_sessions CASCADE;
+    `,
+  },
+  {
+    version: "018",
+    name: "018_live_collaboration_system",
+    up: `
+      CREATE TABLE IF NOT EXISTS collaboration_rooms (
+        id VARCHAR(128) PRIMARY KEY,
+        name VARCHAR(256) NOT NULL,
+        room_type VARCHAR(64) NOT NULL DEFAULT 'Practice',
+        host_user_id VARCHAR(128) NOT NULL,
+        problem_id VARCHAR(128),
+        company VARCHAR(64),
+        language VARCHAR(32) NOT NULL DEFAULT 'typescript',
+        current_code TEXT DEFAULT '',
+        driver_user_id VARCHAR(128),
+        navigator_user_id VARCHAR(128),
+        is_active BOOLEAN DEFAULT TRUE,
+        created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS collaboration_participants (
+        id VARCHAR(128) PRIMARY KEY,
+        room_id VARCHAR(128) NOT NULL,
+        user_id VARCHAR(128) NOT NULL,
+        user_name VARCHAR(128) NOT NULL,
+        role VARCHAR(32) NOT NULL DEFAULT 'Participant',
+        cursor_position JSONB DEFAULT '{}',
+        joined_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS collaboration_messages (
+        id VARCHAR(128) PRIMARY KEY,
+        room_id VARCHAR(128) NOT NULL,
+        user_id VARCHAR(128) NOT NULL,
+        user_name VARCHAR(128) NOT NULL,
+        message TEXT NOT NULL,
+        message_type VARCHAR(32) NOT NULL DEFAULT 'text',
+        created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS collaboration_code_history (
+        id VARCHAR(128) PRIMARY KEY,
+        room_id VARCHAR(128) NOT NULL,
+        user_id VARCHAR(128) NOT NULL,
+        code_snippet TEXT NOT NULL,
+        action_type VARCHAR(64) NOT NULL DEFAULT 'type',
+        created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS collaboration_whiteboards (
+        id VARCHAR(128) PRIMARY KEY,
+        room_id VARCHAR(128) NOT NULL,
+        shapes_json JSONB DEFAULT '[]',
+        updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS collaboration_sessions (
+        id VARCHAR(128) PRIMARY KEY,
+        room_id VARCHAR(128) NOT NULL,
+        host_id VARCHAR(128) NOT NULL,
+        duration_seconds INTEGER DEFAULT 0,
+        ended_at TIMESTAMPTZ,
+        created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS collaboration_analytics (
+        id VARCHAR(128) PRIMARY KEY,
+        user_id VARCHAR(128) UNIQUE NOT NULL,
+        sessions_participated INTEGER DEFAULT 0,
+        time_collaborating_minutes INTEGER DEFAULT 0,
+        pair_sessions INTEGER DEFAULT 0,
+        interview_sessions INTEGER DEFAULT 0,
+        problems_solved_together INTEGER DEFAULT 0,
+        ai_interactions INTEGER DEFAULT 0,
+        updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_collab_rooms_host ON collaboration_rooms(host_user_id);
+      CREATE INDEX IF NOT EXISTS idx_collab_part_room ON collaboration_participants(room_id);
+      CREATE INDEX IF NOT EXISTS idx_collab_part_user ON collaboration_participants(user_id);
+      CREATE INDEX IF NOT EXISTS idx_collab_msg_room ON collaboration_messages(room_id);
+      CREATE INDEX IF NOT EXISTS idx_collab_code_room ON collaboration_code_history(room_id);
+      CREATE INDEX IF NOT EXISTS idx_collab_wb_room ON collaboration_whiteboards(room_id);
+      CREATE INDEX IF NOT EXISTS idx_collab_sess_room ON collaboration_sessions(room_id);
+      CREATE INDEX IF NOT EXISTS idx_collab_an_user ON collaboration_analytics(user_id);
+    `,
+    down: `
+      DROP TABLE IF EXISTS collaboration_analytics CASCADE;
+      DROP TABLE IF EXISTS collaboration_sessions CASCADE;
+      DROP TABLE IF EXISTS collaboration_whiteboards CASCADE;
+      DROP TABLE IF EXISTS collaboration_code_history CASCADE;
+      DROP TABLE IF EXISTS collaboration_messages CASCADE;
+      DROP TABLE IF EXISTS collaboration_participants CASCADE;
+      DROP TABLE IF EXISTS collaboration_rooms CASCADE;
+    `,
+  },
 ];
 
 export class Migrator {
@@ -1262,7 +1681,7 @@ export class Migrator {
     let currentVersion = "000";
 
     if (!pool) {
-      Database.setMigrationVersion("013");
+      Database.setMigrationVersion("017");
       return {
         applied: [
           "001_initial_schema",
@@ -1275,8 +1694,12 @@ export class Migrator {
           "011_judge_execution_schema",
           "012_oauth_identity_platform",
           "013_ai_generated_learning",
+          "014_adaptive_ai_learning",
+          "015_learning_memory_system",
+          "016_company_prep_hub",
+          "017_voice_ai_mentor",
         ],
-        currentVersion: "013",
+        currentVersion: "017",
       };
     }
 

@@ -25,9 +25,19 @@ import certificateRoutes from "./certificateRoutes";
 import searchRoutes from "./searchRoutes";
 import recommendationV2Routes from "./recommendationV2Routes";
 import judgeRoutes from "./judgeRoutes";
+import { adaptiveLearningRoutes } from "./adaptiveLearningRoutes";
+import { learningMemoryRoutes } from "./learningMemoryRoutes";
+import { companyPrepRoutes } from "./companyPrepRoutes";
+import { voiceMentorRoutes } from "./voiceMentorRoutes";
+import { collaborationRoutes } from "./collaborationRoutes";
 
 const router = Router();
 
+router.use("/collaboration", collaborationRoutes);
+router.use("/voice", voiceMentorRoutes);
+router.use("/company", companyPrepRoutes);
+router.use("/memory", learningMemoryRoutes);
+router.use("/adaptive", adaptiveLearningRoutes);
 router.use("/judge", judgeRoutes);
 router.use("/health", healthRoutes);
 router.use("/auth", authRoutes);

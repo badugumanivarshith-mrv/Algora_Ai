@@ -2,7 +2,7 @@ import { useNavigate, useLocation } from "react-router";
 import {
   LayoutDashboard, BookOpen, Code2, Brain, BarChart2, CalendarCheck,
   Trophy, Users, GraduationCap, Settings, LogOut, ChevronRight, ShieldCheck,
-  MessageSquare, Briefcase, Target, Award, Sparkles, User,
+  MessageSquare, Briefcase, Target, Award, Sparkles, User, Building2, Mic,
 } from "lucide-react";
 import AlgoraLogo from "./AlgoraLogo";
 
@@ -22,9 +22,11 @@ const navSections: NavSection[] = [
       { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
       { icon: BookOpen,        label: "Learning",   path: "/learning" },
       { icon: Code2,           label: "Workspace",  path: "/workspace" },
+      { icon: Users,           label: "Live Collab", path: "/collaboration", badge: "v3.1" },
       { icon: Brain,           label: "AI Mentor",  path: "/ai-mentor" },
+      { icon: Mic,             label: "Voice Mentor", path: "/voice-mentor", badge: "v3.0" },
       { icon: BarChart2,       label: "AI Analyst", path: "/ai-analyst" },
-      { icon: CalendarCheck,   label: "Daily Review", path: "/daily-review" },
+      { icon: CalendarCheck,   label: "Daily Review", path: "/daily-review", badge: "v2.3" },
       { icon: Sparkles,        label: "Adaptive Path", path: "/adaptive-roadmap", badge: "v2" },
     ],
   },
@@ -49,6 +51,7 @@ const navSections: NavSection[] = [
   {
     title: "Career & Enterprise",
     items: [
+      { icon: Building2,       label: "Company Prep", path: "/company-prep", badge: "v2.4" },
       { icon: Briefcase,       label: "Interviews", path: "/interviews", badge: "AI" },
       { icon: Target,          label: "Placement Hub", path: "/placements" },
       { icon: Award,           label: "Certificates", path: "/certifications" },
