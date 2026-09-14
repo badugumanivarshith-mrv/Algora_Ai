@@ -13,6 +13,7 @@ import { notFoundHandler, errorHandler } from "./middleware/error";
 import { MonitoringService } from "./services/monitoringService";
 
 import { enforceHttpsAndSecureHeaders } from "./middleware/networking";
+import { sanitizeRequestPayload, preventInjectionAttacks, enforceSessionValidation } from "./middleware/security";
 
 export function createExpressApp() {
   const app = express();
@@ -60,6 +61,11 @@ export function createExpressApp() {
   // Body Parsing
   app.use(express.json({ limit: "15mb" }));
   app.use(express.urlencoded({ extended: true, limit: "15mb" }));
+
+  // Request Payload Sanitization & Injection Prevention Filters
+  app.use(sanitizeRequestPayload);
+  app.use(preventInjectionAttacks);
+  app.use(enforceSessionValidation);
 
   // Static Assets for uploaded files
   app.use("/uploads", express.static(path.join(process.cwd(), "public", "uploads")));

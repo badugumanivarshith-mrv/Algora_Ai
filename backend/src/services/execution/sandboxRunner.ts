@@ -48,6 +48,30 @@ export class SandboxRunner {
     try {
       const lang = options.language.toLowerCase().trim() as SupportedLanguage;
 
+      // Static code safety verification to guard against sandbox escapes and abuse
+      const safetyCheck = this.auditCodeSafety(lang, options.code);
+      if (!safetyCheck.safe) {
+        return {
+          verdict: "Runtime Error",
+          executionTimeMs: 0,
+          memoryMb: 0,
+          errorMessage: `[Security Violation] Code blocked: ${safetyCheck.reason}`,
+          testCasesPassed: 0,
+          testCasesTotal: options.testCases.length,
+          testCaseResults: options.testCases.map((tc) => ({
+            id: tc.id,
+            passed: false,
+            input: tc.input,
+            expectedOutput: tc.expectedOutput,
+            actualOutput: "",
+            runtimeMs: 0,
+            memoryMb: 0,
+            verdict: "Runtime Error",
+            stderr: `[Security Violation] ${safetyCheck.reason}`,
+          })),
+        };
+      }
+
       // 1. Compile Phase (if applicable)
       const compileRes = await this.compileCode(sandboxDir, lang, options.code);
       if (compileRes.error) {
@@ -603,6 +627,68 @@ public class Solution {
 `;
     }
     return code;
+  }
+
+  /**
+   * Static Code Security Analysis (AST and regex-based sandbox escaping audit)
+   */
+  private auditCodeSafety(lang: SupportedLanguage, code: string): { safe: boolean; reason?: string } {
+    const normalized = code.toLowerCase();
+
+    // 1. Python Sanity Check
+    if (lang === "python" || lang === "python3") {
+      const blockedKeywords = [
+        "subprocess", "os.", "sys.", "shutil", "ctypes", "socket", "urllib", "requests",
+        "eval(", "exec(", "__import__", "builtins", "__builtins__", "getattr", "setattr",
+        "pty", "platform", "open(", "io.open", ".write(", ".read("
+      ];
+      for (const kw of blockedKeywords) {
+        if (normalized.includes(kw)) {
+          return { safe: false, reason: `Unsafe system keyword detected: "${kw}". Filesystem, network, and subprocess access are restricted.` };
+        }
+      }
+    }
+
+    // 2. JavaScript / TypeScript Check
+    if (lang === "javascript" || lang === "typescript") {
+      const blockedKeywords = [
+        "require(", "import ", "fs.", "child_process", "cluster", "net.", "http.", "https.",
+        "eval(", "function(", "global.", "process.", "window.", "document.", "constructor"
+      ];
+      for (const kw of blockedKeywords) {
+        if (normalized.includes(kw)) {
+          return { safe: false, reason: `Unsafe system construct detected: "${kw}". Module imports, filesystem access, and runtime code evaluations are restricted.` };
+        }
+      }
+    }
+
+    // 3. C / C++ Check
+    if (lang === "c" || lang === "cpp" || lang === "c++") {
+      const blockedPatterns = [
+        "#include <unistd.h>", "#include <sys/", "#include <dirent.h>", "#include <fstream>",
+        "system(", "fork(", "exec", "popen", "kill(", "socket("
+      ];
+      for (const kw of blockedPatterns) {
+        if (normalized.includes(kw)) {
+          return { safe: false, reason: `Unsafe C/C++ system header or API detected: "${kw}". Process control and system library imports are restricted.` };
+        }
+      }
+    }
+
+    // 4. Java Check
+    if (lang === "java") {
+      const blockedKeywords = [
+        "processbuilder", "runtime.getruntime", "java.io.file", "java.net", "java.lang.reflect",
+        "class.forname"
+      ];
+      for (const kw of blockedKeywords) {
+        if (normalized.includes(kw)) {
+          return { safe: false, reason: `Unsafe Java system class or API detected: "${kw}". Reflected invocations, network sockets, and file operations are restricted.` };
+        }
+      }
+    }
+
+    return { safe: true };
   }
 }
 
