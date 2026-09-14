@@ -12,6 +12,8 @@ import apiRoutes from "./routes";
 import { notFoundHandler, errorHandler } from "./middleware/error";
 import { MonitoringService } from "./services/monitoringService";
 
+import { enforceHttpsAndSecureHeaders } from "./middleware/networking";
+
 export function createExpressApp() {
   const app = express();
 
@@ -27,6 +29,9 @@ export function createExpressApp() {
 
   // Trust reverse proxies (Cloud Run / Nginx)
   app.set("trust proxy", 1);
+
+  // Force HTTPS & secure transport headers in staging/production
+  app.use(enforceHttpsAndSecureHeaders);
 
   // Security headers with Helmet
   app.use(

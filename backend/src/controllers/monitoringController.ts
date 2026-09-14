@@ -6,6 +6,7 @@ import { executionJobRepository } from "../repositories/executionJobRepository";
 import { executionQueue } from "../services/execution/executionQueue";
 import { RedisManager } from "../redis/redisClient";
 import { RedisJudgeQueue } from "../redis/judgeQueue";
+import { BackupService } from "../services/backupService";
 
 export class MonitoringController {
   static async getApiMetrics(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -144,5 +145,36 @@ export class MonitoringController {
     }
   }
 
+  static async getBackupStatus(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const history = BackupService.getBackupHistory();
+      res.status(200).json({ success: true, data: { history } });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  static async triggerBackup(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const backup = await BackupService.triggerBackup();
+      res.status(200).json({ success: true, data: backup });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  static async restoreBackup(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const { backupId } = req.body;
+      if (!backupId) {
+        res.status(400).json({ success: false, error: "backupId is required" });
+        return;
+      }
+      const result = await BackupService.restoreBackup(backupId);
+      res.status(result.success ? 200 : 500).json(result);
+    } catch (err) {
+      next(err);
+    }
+  }
 }
 

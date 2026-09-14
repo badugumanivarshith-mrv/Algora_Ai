@@ -1,5 +1,23 @@
 import { Request, Response, NextFunction } from "express";
 import { MonitoringService } from "../services/monitoringService";
+import { config } from "../config/env";
+import * as Sentry from "@sentry/node";
+
+// Graceful Sentry Initialization for Production Error Tracking
+let isSentryInitialized = false;
+if (config.sentryDsn) {
+  try {
+    Sentry.init({
+      dsn: config.sentryDsn,
+      environment: config.nodeEnv,
+      tracesSampleRate: 1.0,
+    });
+    isSentryInitialized = true;
+    console.log("[Sentry] Production Error Tracking initialized successfully.");
+  } catch (err: any) {
+    console.error(`[Sentry] Failed to initialize: ${err.message}`);
+  }
+}
 
 export class ApiError extends Error {
   public statusCode: number;
@@ -32,6 +50,18 @@ export function errorHandler(
   res: Response,
   _next: NextFunction
 ): void {
+  // Capture to Sentry if initialized
+  if (isSentryInitialized) {
+    Sentry.withScope((scope) => {
+      scope.setSDKProcessingMetadata({ request: req });
+      if (err instanceof ApiError) {
+        scope.setExtra("code", err.code);
+        scope.setExtra("details", err.details);
+      }
+      Sentry.captureException(err);
+    });
+  }
+
   if (err instanceof ApiError) {
     if (err.statusCode >= 500) {
       MonitoringService.recordError({
@@ -70,3 +100,4 @@ export function errorHandler(
     },
   });
 }
+

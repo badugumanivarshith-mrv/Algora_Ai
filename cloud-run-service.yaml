@@ -1,0 +1,133 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: algora-ai-prod
+  namespace: algora-ai-platform-2026
+  labels:
+    cloud.googleapis.com/location: asia-southeast1
+    app: algora-ai
+    tier: fullstack
+spec:
+  template:
+    metadata:
+      annotations:
+        # Enable VPC Access Connector for Serverless Redis and Private Cloud SQL IPs
+        run.googleapis.com/vpc-access-connector: projects/algora-ai-platform-2026/locations/asia-southeast1/connectors/algora-vpc-connector
+        run.googleapis.com/vpc-access-egress: all-traffic
+        # Autoscaling Configuration
+        run.googleapis.com/client-name: gcloud
+        autoscaling.knative.dev/minScale: '1'
+        autoscaling.knative.dev/maxScale: '20'
+        autoscaling.knative.dev/window: 60s
+    spec:
+      containerConcurrency: 80
+      timeoutSeconds: 300
+      serviceAccountName: algora-cloudrun-executor@algora-ai-platform-2026.iam.gserviceaccount.com
+      containers:
+        - image: gcr.io/algora-ai-platform-2026/algora-ai-prod:latest
+          name: algora-fullstack-app
+          ports:
+            - name: http1
+              containerPort: 3000
+          resources:
+            limits:
+              cpu: 2000m
+              memory: 2Gi
+            requests:
+              cpu: 1000m
+              memory: 1Gi
+          env:
+            - name: NODE_ENV
+              value: production
+            - name: PORT
+              value: '3000'
+            - name: CLIENT_URL
+              value: https://algora.edu
+            - name: APP_URL
+              value: https://algora.edu
+            - name: STORAGE_PROVIDER
+              value: s3
+            - name: EMAIL_PROVIDER
+              value: resend
+            - name: USE_SECRET_MANAGER
+              value: 'true'
+            - name: GOOGLE_CLOUD_PROJECT
+              value: algora-ai-platform-2026
+            
+            # Dynamic References to Google Secret Manager Secrets
+            - name: JWT_SECRET
+              valueSource:
+                secretKeyRef:
+                  name: JWT_SECRET
+                  key: latest
+            - name: DATABASE_URL
+              valueSource:
+                secretKeyRef:
+                  name: DATABASE_URL
+                  key: latest
+            - name: REDIS_URL
+              valueSource:
+                secretKeyRef:
+                  name: REDIS_URL
+                  key: latest
+            - name: GEMINI_API_KEY
+              valueSource:
+                secretKeyRef:
+                  name: GEMINI_API_KEY
+                  key: latest
+            - name: GOOGLE_CLIENT_ID
+              valueSource:
+                secretKeyRef:
+                  name: GOOGLE_CLIENT_ID
+                  key: latest
+            - name: GOOGLE_CLIENT_SECRET
+              valueSource:
+                secretKeyRef:
+                  name: GOOGLE_CLIENT_SECRET
+                  key: latest
+            - name: GITHUB_CLIENT_ID
+              valueSource:
+                secretKeyRef:
+                  name: GITHUB_CLIENT_ID
+                  key: latest
+            - name: GITHUB_CLIENT_SECRET
+              valueSource:
+                secretKeyRef:
+                  name: GITHUB_CLIENT_SECRET
+                  key: latest
+            - name: AWS_ACCESS_KEY_ID
+              valueSource:
+                secretKeyRef:
+                  name: AWS_ACCESS_KEY_ID
+                  key: latest
+            - name: AWS_SECRET_ACCESS_KEY
+              valueSource:
+                secretKeyRef:
+                  name: AWS_SECRET_ACCESS_KEY
+                  key: latest
+            - name: RESEND_API_KEY
+              valueSource:
+                secretKeyRef:
+                  name: RESEND_API_KEY
+                  key: latest
+            - name: SENTRY_DSN
+              valueSource:
+                secretKeyRef:
+                  name: SENTRY_DSN
+                  key: latest
+
+          startupProbe:
+            httpGet:
+              path: /api/health-deep
+              port: 3000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            failureThreshold: 3
+
+          livenessProbe:
+            httpGet:
+              path: /api/health-deep
+              port: 3000
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 3

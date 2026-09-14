@@ -13,6 +13,12 @@ router.get("/redis", MonitoringController.getRedisStats);
 router.get("/cache", MonitoringController.getCacheStats);
 router.get("/oauth", OAuthController.getMonitoringMetrics);
 
+// Production backup and recovery routes
+router.get("/backup/status", MonitoringController.getBackupStatus);
+router.post("/backup/trigger", MonitoringController.triggerBackup);
+router.post("/backup/restore", MonitoringController.restoreBackup);
+
 export default router;
+
 
 

@@ -11,12 +11,16 @@ test.describe("Authentication and User Identity Flows", () => {
     await page.goto("/");
     await expect(page).toHaveTitle(/Algora/i);
 
-    // Click "Get started" button in the navbar to open registration
-    const getStartedButton = page.locator("nav").getByRole("button", { name: /Get started/i });
-    await getStartedButton.click();
+    // Open Sign In modal (which is extremely stable on all screen sizes)
+    const signInButton = page.locator("nav button").filter({ hasText: "Sign in" });
+    await signInButton.click();
 
-    // Verify modal is visible
-    await expect(page.locator("h2", { hasText: "Create your Algora account" })).toBeVisible();
+    // Switch to Sign Up mode dynamically using the modal's internal toggle button
+    await page.click('button:has-text("Sign up")');
+
+    // Verify registration mode header is active and visible
+    const modalHeading = page.locator("h2").filter({ hasText: "Create your Algora account" });
+    await expect(modalHeading).toBeVisible();
 
     // Fill registration inputs
     await page.fill('input[placeholder="you@example.com"]', testEmail);
@@ -30,15 +34,17 @@ test.describe("Authentication and User Identity Flows", () => {
     await page.waitForURL("**/dashboard");
     await expect(page).toHaveURL(/.*dashboard/);
 
-    // Verify that the Sidebar navigation contains Dashboard elements
-    await expect(page.getByText("Dashboard", { exact: true })).toBeVisible();
+    // Verify that the Dashboard elements are visible safely
+    await expect(page.locator("h1", { hasText: "Dashboard" })).toBeVisible();
     await expect(page.getByText("My Profile", { exact: true })).toBeVisible();
   });
 
   test("should logout from the active session successfully", async ({ page }) => {
-    // Navigate directly to dashboard, ensuring local storage contains our token/user mock or register
     await page.goto("/");
-    await page.locator("nav").getByRole("button", { name: /Get started/i }).click();
+
+    // Open Auth modal and switch to registration mode to create a temp user
+    await page.locator("nav button").filter({ hasText: "Sign in" }).click();
+    await page.click('button:has-text("Sign up")');
 
     const tempEmail = `logout_user_${Date.now()}@algora.edu`;
     const tempUser = `logout_user_${Date.now()}`;
@@ -55,14 +61,14 @@ test.describe("Authentication and User Identity Flows", () => {
 
     // Confirm that the page navigates back to the landing page '/'
     await page.waitForURL("/");
-    await expect(page.locator("nav").getByRole("button", { name: /Sign in/i })).toBeVisible();
+    await expect(page.locator("nav button").filter({ hasText: "Sign in" })).toBeVisible();
   });
 
   test("should login successfully with registered credentials", async ({ page }) => {
     await page.goto("/");
 
     // Click "Sign in" button in the navbar
-    const signInButton = page.locator("nav").getByRole("button", { name: /Sign in/i });
+    const signInButton = page.locator("nav button").filter({ hasText: "Sign in" });
     await signInButton.click();
 
     // Verify modal is visible
@@ -78,6 +84,8 @@ test.describe("Authentication and User Identity Flows", () => {
     // Wait for redirect to dashboard
     await page.waitForURL("**/dashboard");
     await expect(page).toHaveURL(/.*dashboard/);
-    await expect(page.getByText("Dashboard", { exact: true })).toBeVisible();
+    await expect(page.locator("h1", { hasText: "Dashboard" })).toBeVisible();
   });
 });
+
+

@@ -6,15 +6,44 @@ import { initializeDatabase, Database } from "./backend/src/db";
 import { WebSocketManager } from "./backend/src/realtime/wsManager";
 import { RedisManager } from "./backend/src/redis/redisClient";
 import { RedisPubSubManager } from "./backend/src/redis/pubsub";
+import { validateEnvironment } from "./backend/src/config/env";
+import { SecretsService } from "./backend/src/services/secretsService";
 
 const PORT = 3000;
 
 async function start() {
+  // Dynamically load Google Secret Manager production secrets on container boot
+  await SecretsService.loadProductionSecrets();
+
+  // Execute environment validation and startup checks
+  const envValidation = validateEnvironment();
+  
+  console.log(`\n--- [Algora Environment Validation] ---`);
+  if (envValidation.errors.length > 0) {
+    console.error(`❌ Validation failed with ${envValidation.errors.length} errors:`);
+    envValidation.errors.forEach(err => console.error(`   - ${err}`));
+    
+    // Critical validation failure halts boot in non-dev environments
+    if (process.env.NODE_ENV === "production" || process.env.NODE_ENV === "staging") {
+      console.error("❌ Safe production boot checks failed. Halting application server.");
+      process.exit(1);
+    }
+  } else {
+    console.log("✅ All required production/staging environment configurations validated.");
+  }
+
+  if (envValidation.warnings.length > 0) {
+    console.warn(`⚠️  Configuration warnings detected (${envValidation.warnings.length}):`);
+    envValidation.warnings.forEach(warn => console.warn(`   - ${warn}`));
+  }
+  console.log(`----------------------------------------\n`);
+
   // Initialize Database, Migrations, and Seeds
   await initializeDatabase();
 
   // Initialize Redis Connection Manager
   await RedisManager.initialize();
+
 
   const app = createExpressApp();
 
