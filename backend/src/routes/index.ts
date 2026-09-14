@@ -23,9 +23,11 @@ import placementRoutes from "./placementRoutes";
 import certificateRoutes from "./certificateRoutes";
 import searchRoutes from "./searchRoutes";
 import recommendationV2Routes from "./recommendationV2Routes";
+import judgeRoutes from "./judgeRoutes";
 
 const router = Router();
 
+router.use("/judge", judgeRoutes);
 router.use("/health", healthRoutes);
 router.use("/auth", authRoutes);
 router.use("/users", userRoutes);

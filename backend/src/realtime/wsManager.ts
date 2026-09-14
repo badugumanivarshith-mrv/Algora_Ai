@@ -1,6 +1,7 @@
 import { WebSocket, WebSocketServer } from "ws";
 import { IncomingMessage, Server as HttpServer } from "http";
 import { logger } from "../utils/logger";
+import { RedisPubSubManager, PubSubMessage } from "../redis/pubsub";
 
 export interface WSMessagePayload {
   type: string;
@@ -26,6 +27,23 @@ export class WebSocketManager {
   public static initialize(server: HttpServer): void {
     if (this.wss) return;
 
+    // Initialize Redis PubSub listeners
+    RedisPubSubManager.initialize().catch((err) => {
+      logger.warn(`[WebSocket] Redis PubSub initialization warning: ${err.message}`);
+    });
+
+    // Handle incoming messages from other cluster instances
+    RedisPubSubManager.onMessage((msg: PubSubMessage) => {
+      // If message came from another node, deliver to matching local connections
+      if (msg.targetType === "broadcast") {
+        this.localBroadcastAll(msg.eventType, msg.data);
+      } else if (msg.targetType === "room" && msg.targetIdentifier) {
+        this.localBroadcast(msg.targetIdentifier, msg.eventType, msg.data);
+      } else if (msg.targetType === "user" && msg.targetIdentifier) {
+        this.localBroadcast(`user:${msg.targetIdentifier}`, msg.eventType, msg.data);
+      }
+    });
+
     this.wss = new WebSocketServer({
       server,
       path: "/ws",
@@ -43,7 +61,7 @@ export class WebSocketManager {
       this.subscribeRoom(ws, "global");
       this.subscribeRoom(ws, "presence");
 
-      logger.info(`[WebSocket] New client connected. Total clients: ${this.clients.size}`);
+      logger.info(`[WebSocket] New client connected. Total clients on this node: ${this.clients.size}`);
 
       // Send initial welcome & presence state
       this.send(ws, {
@@ -93,7 +111,7 @@ export class WebSocketManager {
       }
     }, 30000);
 
-    logger.info("[WebSocket] Real-time engine initialized on path /ws");
+    logger.info("[WebSocket] Real-time engine initialized on path /ws with Redis Pub/Sub scaling");
   }
 
   private static handleClientMessage(ws: WebSocket, payload: WSMessagePayload): void {
@@ -108,6 +126,10 @@ export class WebSocketManager {
           client.username = payload.data.username || "User";
           client.avatarUrl = payload.data.avatarUrl;
           this.subscribeRoom(ws, `user:${client.userId}`);
+
+          // Register in distributed presence store
+          RedisPubSubManager.recordUserOnline(client.userId, client.username, client.avatarUrl).catch(() => {});
+
           this.broadcast("presence", "USER_ONLINE", {
             userId: client.userId,
             username: client.username,
@@ -136,7 +158,7 @@ export class WebSocketManager {
 
       case "GROUP_CHAT_MESSAGE":
         if (payload.room && payload.data) {
-          // Broadcast to group members
+          // Broadcast to group members across cluster
           this.broadcast(payload.room, "GROUP_CHAT_MESSAGE", {
             ...payload.data,
             timestamp: new Date().toISOString(),
@@ -203,6 +225,7 @@ export class WebSocketManager {
       this.clients.delete(ws);
 
       if (leavingUserId) {
+        RedisPubSubManager.recordUserOffline(leavingUserId).catch(() => {});
         this.broadcast("presence", "USER_OFFLINE", {
           userId: leavingUserId,
           username: leavingUsername,
@@ -210,7 +233,7 @@ export class WebSocketManager {
         });
       }
     }
-    logger.info(`[WebSocket] Client disconnected. Total active: ${this.clients.size}`);
+    logger.info(`[WebSocket] Client disconnected. Total active on node: ${this.clients.size}`);
   }
 
   public static send(ws: WebSocket, payload: WSMessagePayload): void {
@@ -219,7 +242,20 @@ export class WebSocketManager {
     }
   }
 
+  /**
+   * Broadcasts to all subscribers of a room across all cluster instances
+   */
   public static broadcast(room: string, eventType: string, data: any): void {
+    // 1. Deliver to local node clients
+    this.localBroadcast(room, eventType, data);
+    // 2. Publish to Redis Pub/Sub for other nodes
+    RedisPubSubManager.publishToRoom(room, eventType, data).catch(() => {});
+  }
+
+  /**
+   * Local delivery only (to prevent infinite loops on pubsub receipt)
+   */
+  private static localBroadcast(room: string, eventType: string, data: any): void {
     const subscribers = this.roomSubscribers.get(room);
     if (!subscribers || subscribers.size === 0) return;
 
@@ -237,11 +273,23 @@ export class WebSocketManager {
     }
   }
 
+  /**
+   * Sends targeted event to a specific user across cluster
+   */
   public static sendToUser(userId: string, eventType: string, data: any): void {
-    this.broadcast(`user:${userId}`, eventType, data);
+    this.localBroadcast(`user:${userId}`, eventType, data);
+    RedisPubSubManager.publishToUser(userId, eventType, data).catch(() => {});
   }
 
+  /**
+   * Broadcasts to all connected clients across entire cluster
+   */
   public static broadcastAll(eventType: string, data: any): void {
+    this.localBroadcastAll(eventType, data);
+    RedisPubSubManager.publishBroadcast(eventType, data).catch(() => {});
+  }
+
+  private static localBroadcastAll(eventType: string, data: any): void {
     const msg = JSON.stringify({
       type: eventType,
       data,
@@ -259,3 +307,4 @@ export class WebSocketManager {
     return this.clients.size;
   }
 }
+

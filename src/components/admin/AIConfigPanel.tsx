@@ -2,8 +2,8 @@ import React, { useState } from "react";
 import { Bot, Save, ShieldAlert, Cpu, Sparkles, Check } from "lucide-react";
 
 export default function AIConfigPanel() {
-  const [model, setModel] = useState("gemini-2.5-flash");
-  const [reasoningModel, setReasoningModel] = useState("gemini-2.5-pro");
+  const [model, setModel] = useState("gemini-3.6-flash");
+  const [reasoningModel, setReasoningModel] = useState("gemini-3.7-flash");
   const [temperature, setTemperature] = useState(0.4);
   const [maxTokens, setMaxTokens] = useState(2048);
   const [preventFullSolutions, setPreventFullSolutions] = useState(true);
@@ -118,8 +118,8 @@ Your core teaching philosophy:
                 fontSize: 13,
               }}
             >
-              <option value="gemini-2.5-flash">Gemini 2.5 Flash (Ultra Fast, Low Latency)</option>
-              <option value="gemini-2.5-pro">Gemini 2.5 Pro (Deep Reasoning)</option>
+              <option value="gemini-3.6-flash">Gemini 3.6 Flash (Ultra Fast, Recommended)</option>
+              <option value="gemini-3.7-flash">Gemini 3.7 Flash (Deep Reasoning)</option>
             </select>
           </div>
 
@@ -140,8 +140,8 @@ Your core teaching philosophy:
                 fontSize: 13,
               }}
             >
-              <option value="gemini-2.5-pro">Gemini 2.5 Pro (Highest Code Synthesis Depth)</option>
-              <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
+              <option value="gemini-3.7-flash">Gemini 3.7 Flash (Highest Code Synthesis Depth)</option>
+              <option value="gemini-3.6-flash">Gemini 3.6 Flash</option>
             </select>
           </div>
 

@@ -7,6 +7,8 @@ import {
 } from "lucide-react";
 import AlgoraLogo from "../components/AlgoraLogo";
 import { useTheme, type Theme } from "../components/ThemeContext";
+import AuthModal from "../components/auth/AuthModal";
+
 
 /* ─── Mini reusable components ─── */
 
@@ -380,6 +382,19 @@ export default function Landing() {
   const navigate = useNavigate();
   const { theme, setTheme } = useTheme();
   const [activeTestimonial, setActiveTestimonial] = useState(0);
+  const [isAuthOpen, setIsAuthOpen] = useState(false);
+  const [authMode, setAuthMode] = useState<"login" | "register">("login");
+
+  const openLogin = () => {
+    setAuthMode("login");
+    setIsAuthOpen(true);
+  };
+
+  const openRegister = () => {
+    setAuthMode("register");
+    setIsAuthOpen(true);
+  };
+
 
   return (
     <div
@@ -458,16 +473,21 @@ export default function Landing() {
               </button>
             ))}
           </div>
-          <button className="btn btn-ghost btn-sm" style={{ color: "var(--text-secondary)" }}>
+          <button
+            onClick={openLogin}
+            className="btn btn-ghost btn-sm"
+            style={{ color: "var(--text-secondary)" }}
+          >
             Sign in
           </button>
           <button
             className="btn btn-primary btn-sm"
-            onClick={() => navigate("/dashboard")}
+            onClick={openRegister}
             style={{ gap: 5 }}
           >
             Get started <ArrowRight size={13} />
           </button>
+
         </div>
       </nav>
 
@@ -1014,6 +1034,15 @@ export default function Landing() {
           ))}
         </div>
       </footer>
+
+      {/* Auth Modal with OAuth 2.0 and Email Auth */}
+      <AuthModal
+        isOpen={isAuthOpen}
+        onClose={() => setIsAuthOpen(false)}
+        initialMode={authMode}
+        onSuccess={() => navigate("/dashboard")}
+      />
     </div>
   );
 }
+

@@ -1,5 +1,6 @@
 import crypto from "crypto";
 import { Database } from "../db/connection";
+import { DistributedSessionStore } from "../redis/sessionStore";
 
 export interface RefreshTokenEntity {
   id: string;
@@ -75,6 +76,7 @@ export class RefreshTokenRepository {
     };
 
     refreshTokensStore.set(tokenHash, entity);
+    await DistributedSessionStore.saveRefreshToken(entity);
 
     if (Database.isReady()) {
       try {
@@ -94,6 +96,13 @@ export class RefreshTokenRepository {
   static async findByToken(token: string): Promise<RefreshTokenEntity | null> {
     const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
 
+    // 1. Try Redis
+    const redisToken = await DistributedSessionStore.getRefreshToken(tokenHash);
+    if (redisToken) {
+      return redisToken;
+    }
+
+    // 2. Try Postgres
     if (Database.isReady()) {
       try {
         const res = await Database.query<RefreshTokenEntity>(
@@ -102,7 +111,10 @@ export class RefreshTokenRepository {
            FROM refresh_tokens WHERE token_hash = $1`,
           [tokenHash]
         );
-        if (res.rows[0]) return res.rows[0];
+        if (res.rows[0]) {
+          await DistributedSessionStore.saveRefreshToken(res.rows[0]);
+          return res.rows[0];
+        }
       } catch (err) {
         console.warn("[RefreshTokenRepository] DB find fallback:", err);
       }
@@ -112,6 +124,8 @@ export class RefreshTokenRepository {
   }
 
   static async revokeToken(tokenHash: string, replacedByTokenId?: string): Promise<void> {
+    await DistributedSessionStore.revokeRefreshToken(tokenHash, replacedByTokenId);
+
     const target = refreshTokensStore.get(tokenHash);
     if (target) {
       target.revoked = true;
@@ -132,6 +146,8 @@ export class RefreshTokenRepository {
   }
 
   static async revokeAllUserTokens(userId: string): Promise<void> {
+    await DistributedSessionStore.revokeAllUserRefreshTokens(userId);
+
     for (const [hash, token] of refreshTokensStore.entries()) {
       if (token.userId === userId) {
         token.revoked = true;

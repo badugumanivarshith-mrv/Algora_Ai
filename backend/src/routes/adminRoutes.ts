@@ -9,6 +9,8 @@ import { AdminContestController } from "../controllers/adminContestController";
 import { AdminAchievementController } from "../controllers/adminAchievementController";
 import { AdminAnalyticsController } from "../controllers/adminAnalyticsController";
 import { AdminSettingsController } from "../controllers/adminSettingsController";
+import { OAuthController } from "../controllers/oauthController";
+
 
 const router = Router();
 
@@ -84,9 +86,11 @@ router.post("/achievements/:id/publish", requirePermission("achievements:write")
 router.get("/analytics", requirePermission("analytics:read"), AdminAnalyticsController.getSummary);
 
 // ==========================================
-// 8. System Settings
+// 8. System Settings & Identity Platform
 // ==========================================
 router.get("/settings", requirePermission("settings:manage"), AdminSettingsController.getSettings);
 router.put("/settings/:key", requirePermission("settings:manage"), AdminSettingsController.updateSetting);
+router.get("/oauth/overview", requirePermission("settings:manage"), OAuthController.getMonitoringMetrics);
 
 export default router;
+

@@ -684,4 +684,89 @@ export interface PlatformAnalyticsSummary {
   recentActivity: AdminAuditLogEntity[];
 }
 
+export type OAuthProvider = "google" | "github";
+export type OAuthAction = "login" | "link";
+
+export interface OAuthAccountEntity {
+  id: string;
+  userId: string;
+  provider: OAuthProvider;
+  providerUserId: string;
+  email: string;
+  displayName?: string;
+  avatarUrl?: string;
+  accessToken?: string;
+  refreshToken?: string;
+  tokenExpiresAt?: string;
+  rawProfile: Record<string, any>;
+  linkedAt: string;
+  lastLoginAt: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface OAuthSessionEntity {
+  id: string;
+  state: string;
+  nonce?: string;
+  provider: OAuthProvider;
+  action: OAuthAction;
+  userId?: string;
+  redirectUrl?: string;
+  codeVerifier?: string;
+  expiresAt: string;
+  createdAt: string;
+}
+
+export type OAuthAuditEventType =
+  | "login_success"
+  | "login_failed"
+  | "account_linked"
+  | "account_unlinked"
+  | "invalid_state"
+  | "invalid_callback"
+  | "token_revoked";
+
+export interface OAuthAuditLogEntity {
+  id: string;
+  userId?: string;
+  provider: OAuthProvider;
+  eventType: OAuthAuditEventType;
+  providerUserId?: string;
+  email?: string;
+  ipAddress?: string;
+  userAgent?: string;
+  details: Record<string, any>;
+  createdAt: string;
+}
+
+export interface OAuthUserProfile {
+  provider: OAuthProvider;
+  providerUserId: string;
+  email: string;
+  emailVerified: boolean;
+  name: string;
+  username?: string;
+  avatarUrl?: string;
+  rawProfile: Record<string, any>;
+}
+
+export interface OAuthMetrics {
+  totalLogins: number;
+  successfulLogins: number;
+  failedLogins: number;
+  providerUsage: {
+    google: number;
+    github: number;
+  };
+  totalLinkedAccounts: number;
+  accountsByProvider: {
+    google: number;
+    github: number;
+  };
+  activeOAuthSessions: number;
+  recentAuditLogs: OAuthAuditLogEntity[];
+}
+
+
 

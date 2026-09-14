@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { AuthController } from "../controllers/authController";
+import { OAuthController } from "../controllers/oauthController";
 import { requireAuth } from "../middleware/auth";
 import { validateBody } from "../middleware/validate";
 import { authLimiter } from "../middleware/rateLimit";
@@ -38,4 +39,13 @@ router.post("/verify-email", AuthController.verifyEmail);
 
 router.get("/me", requireAuth, AuthController.me);
 
+// OAuth 2.0 Identity Platform Routes
+router.get("/oauth/config", OAuthController.getConfig);
+router.get("/oauth/identities", requireAuth, OAuthController.getIdentities);
+router.get("/oauth/:provider/url", authLimiter, OAuthController.getAuthUrl);
+router.get("/oauth/:provider/callback", authLimiter, OAuthController.handleCallback);
+router.get("/oauth/:provider/sandbox", OAuthController.handleSandboxConsent);
+router.post("/oauth/:provider/unlink", requireAuth, OAuthController.unlink);
+
 export default router;
+

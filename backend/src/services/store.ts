@@ -1381,4 +1381,5 @@ class InMemoryDatabase {
 }
 
 export const db = new InMemoryDatabase();
+export const store = db;
 

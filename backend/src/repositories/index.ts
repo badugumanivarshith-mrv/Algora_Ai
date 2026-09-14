@@ -19,3 +19,7 @@ export * from "./contestCmsRepository";
 export * from "./achievementCmsRepository";
 export * from "./systemSettingRepository";
 export * from "./adminAnalyticsRepository";
+export * from "./oauthAccountRepository";
+export * from "./oauthSessionRepository";
+export * from "./oauthAuditLogRepository";
+

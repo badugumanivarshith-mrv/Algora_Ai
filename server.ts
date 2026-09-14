@@ -4,12 +4,17 @@ import { createServer as createViteServer } from "vite";
 import { createExpressApp } from "./backend/src/server";
 import { initializeDatabase, Database } from "./backend/src/db";
 import { WebSocketManager } from "./backend/src/realtime/wsManager";
+import { RedisManager } from "./backend/src/redis/redisClient";
+import { RedisPubSubManager } from "./backend/src/redis/pubsub";
 
 const PORT = 3000;
 
 async function start() {
   // Initialize Database, Migrations, and Seeds
   await initializeDatabase();
+
+  // Initialize Redis Connection Manager
+  await RedisManager.initialize();
 
   const app = createExpressApp();
 
@@ -32,7 +37,7 @@ async function start() {
     console.log(`[Algora Server] Running on http://0.0.0.0:${PORT} (${process.env.NODE_ENV || "development"})`);
   });
 
-  // Attach WebSocket infrastructure
+  // Attach WebSocket infrastructure with Redis Pub/Sub scaling
   WebSocketManager.initialize(server);
 
   // Graceful shutdown handling
@@ -42,6 +47,9 @@ async function start() {
       console.log("[Algora Server] HTTP server closed.");
       await Database.close();
       console.log("[Algora Server] Database connections terminated.");
+      await RedisPubSubManager.close();
+      await RedisManager.close();
+      console.log("[Algora Server] Redis connections terminated.");
       process.exit(0);
     });
 
@@ -60,3 +68,4 @@ start().catch((err) => {
   console.error("Failed to start server:", err);
   process.exit(1);
 });
+

@@ -5,6 +5,8 @@ import {
   Calendar, ShieldCheck, Trophy, Sparkles
 } from "lucide-react";
 import { CommunityService } from "../services/communityService";
+import ConnectedAccounts from "../components/profile/ConnectedAccounts";
+
 
 export default function Profile() {
   const [profile, setProfile] = useState<any>(null);
@@ -185,7 +187,11 @@ export default function Profile() {
           )}
         </div>
 
+        {/* Connected OAuth Accounts (Google & GitHub) */}
+        <ConnectedAccounts />
+
         {/* Featured Badges */}
+
         <div className="p-6 rounded-2xl bg-[var(--bg-surface)] border border-[var(--border)] space-y-4">
           <h2 className="text-sm font-bold text-[var(--text-primary)] flex items-center gap-2">
             <Trophy className="w-4 h-4 text-amber-400" />

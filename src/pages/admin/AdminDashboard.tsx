@@ -48,6 +48,7 @@ import BroadcastPanel from "../../components/admin/BroadcastPanel";
 import SystemHealthPanel from "../../components/admin/SystemHealthPanel";
 import CommunityModerationPanel from "../../components/admin/CommunityModerationPanel";
 import PlatformAnalyticsPanel from "../../components/admin/PlatformAnalyticsPanel";
+import OAuthManagementPanel from "../../components/admin/OAuthManagementPanel";
 
 type AdminTab =
   | "analytics"
@@ -56,6 +57,7 @@ type AdminTab =
   | "curriculum"
   | "contests"
   | "achievements"
+  | "oauth"
   | "moderation"
   | "platform_analytics"
   | "ai_config"
@@ -65,6 +67,7 @@ type AdminTab =
   | "settings"
   | "audit"
   | "users";
+
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState<AdminTab>("analytics");
@@ -376,7 +379,9 @@ export default function AdminDashboard() {
           { key: "curriculum", label: `Curriculum (${curriculum.length})`, icon: Compass },
           { key: "contests", label: `Contests (${contests.length})`, icon: Trophy },
           { key: "achievements", label: `Badges (${achievements.length})`, icon: Award },
+          { key: "oauth", label: "OAuth & Identity", icon: ShieldCheck },
           { key: "moderation", label: "Moderation Queue", icon: ShieldAlert },
+
           { key: "platform_analytics", label: "Platform Telemetry", icon: Activity },
           { key: "ai_config", label: "AI Engine & Prompts", icon: Bot },
           { key: "ai_usage", label: "AI Cost & Telemetry", icon: DollarSign },
@@ -1542,8 +1547,12 @@ export default function AdminDashboard() {
           </div>
         )}
 
+        {/* OAUTH 2.0 & IDENTITY PLATFORM */}
+        {activeTab === "oauth" && <OAuthManagementPanel />}
+
         {/* MODERATION QUEUE */}
         {activeTab === "moderation" && <CommunityModerationPanel />}
+
 
         {/* PLATFORM TELEMETRY & ANALYTICS */}
         {activeTab === "platform_analytics" && <PlatformAnalyticsPanel />}

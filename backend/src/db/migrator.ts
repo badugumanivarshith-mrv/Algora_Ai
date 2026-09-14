@@ -1050,6 +1050,125 @@ export const MIGRATIONS: Migration[] = [
       DROP TABLE IF EXISTS discussions CASCADE;
     `,
   },
+  {
+    version: "011",
+    name: "011_judge_execution_schema",
+    up: `
+      CREATE TABLE IF NOT EXISTS execution_jobs (
+        id VARCHAR(64) PRIMARY KEY,
+        user_id VARCHAR(64) NOT NULL,
+        problem_id INTEGER NOT NULL,
+        problem_slug VARCHAR(128) NOT NULL,
+        language VARCHAR(32) NOT NULL,
+        code TEXT NOT NULL,
+        status VARCHAR(32) NOT NULL DEFAULT 'queued',
+        verdict VARCHAR(64),
+        execution_time_ms INTEGER,
+        memory_mb NUMERIC(6, 2),
+        compile_output TEXT,
+        stdout TEXT,
+        stderr TEXT,
+        test_cases_passed INTEGER DEFAULT 0,
+        test_cases_total INTEGER DEFAULT 0,
+        custom_input TEXT,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        started_at TIMESTAMPTZ,
+        completed_at TIMESTAMPTZ
+      );
+
+      CREATE TABLE IF NOT EXISTS submission_results (
+        id VARCHAR(64) PRIMARY KEY,
+        job_id VARCHAR(64) NOT NULL REFERENCES execution_jobs(id) ON DELETE CASCADE,
+        user_id VARCHAR(64) NOT NULL,
+        problem_slug VARCHAR(128) NOT NULL,
+        language VARCHAR(32) NOT NULL,
+        verdict VARCHAR(64) NOT NULL,
+        execution_time_ms INTEGER NOT NULL,
+        memory_mb NUMERIC(6, 2) NOT NULL,
+        test_cases_passed INTEGER NOT NULL,
+        test_cases_total INTEGER NOT NULL,
+        test_case_results JSONB NOT NULL DEFAULT '[]'::jsonb,
+        stdout TEXT,
+        stderr TEXT,
+        compile_output TEXT,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_execution_jobs_user ON execution_jobs(user_id);
+      CREATE INDEX IF NOT EXISTS idx_execution_jobs_status ON execution_jobs(status);
+      CREATE INDEX IF NOT EXISTS idx_execution_jobs_created_at ON execution_jobs(created_at DESC);
+      CREATE INDEX IF NOT EXISTS idx_submission_results_job ON submission_results(job_id);
+      CREATE INDEX IF NOT EXISTS idx_submission_results_user ON submission_results(user_id);
+    `,
+    down: `
+      DROP TABLE IF EXISTS submission_results CASCADE;
+      DROP TABLE IF EXISTS execution_jobs CASCADE;
+    `,
+  },
+  {
+    version: "012",
+    name: "012_oauth_identity_platform",
+    up: `
+      CREATE TABLE IF NOT EXISTS oauth_accounts (
+        id VARCHAR(64) PRIMARY KEY,
+        user_id VARCHAR(64) NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        provider VARCHAR(32) NOT NULL,
+        provider_user_id VARCHAR(255) NOT NULL,
+        email VARCHAR(255) NOT NULL,
+        display_name VARCHAR(255),
+        avatar_url TEXT,
+        access_token TEXT,
+        refresh_token TEXT,
+        token_expires_at TIMESTAMPTZ,
+        raw_profile JSONB NOT NULL DEFAULT '{}'::jsonb,
+        linked_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        last_login_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        CONSTRAINT uq_oauth_provider_user UNIQUE (provider, provider_user_id),
+        CONSTRAINT uq_oauth_user_provider UNIQUE (user_id, provider)
+      );
+
+      CREATE TABLE IF NOT EXISTS oauth_sessions (
+        id VARCHAR(64) PRIMARY KEY,
+        state VARCHAR(255) UNIQUE NOT NULL,
+        nonce VARCHAR(255),
+        provider VARCHAR(32) NOT NULL,
+        action VARCHAR(32) NOT NULL DEFAULT 'login',
+        user_id VARCHAR(64) REFERENCES users(id) ON DELETE CASCADE,
+        redirect_url TEXT,
+        code_verifier VARCHAR(255),
+        expires_at TIMESTAMPTZ NOT NULL,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS oauth_audit_logs (
+        id VARCHAR(64) PRIMARY KEY,
+        user_id VARCHAR(64) REFERENCES users(id) ON DELETE SET NULL,
+        provider VARCHAR(32) NOT NULL,
+        event_type VARCHAR(64) NOT NULL,
+        provider_user_id VARCHAR(255),
+        email VARCHAR(255),
+        ip_address VARCHAR(64),
+        user_agent TEXT,
+        details JSONB NOT NULL DEFAULT '{}'::jsonb,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_oauth_accounts_user_id ON oauth_accounts(user_id);
+      CREATE INDEX IF NOT EXISTS idx_oauth_accounts_provider_email ON oauth_accounts(provider, email);
+      CREATE INDEX IF NOT EXISTS idx_oauth_sessions_state ON oauth_sessions(state);
+      CREATE INDEX IF NOT EXISTS idx_oauth_sessions_expires_at ON oauth_sessions(expires_at);
+      CREATE INDEX IF NOT EXISTS idx_oauth_audit_logs_user_id ON oauth_audit_logs(user_id);
+      CREATE INDEX IF NOT EXISTS idx_oauth_audit_logs_event_type ON oauth_audit_logs(event_type);
+      CREATE INDEX IF NOT EXISTS idx_oauth_audit_logs_created_at ON oauth_audit_logs(created_at DESC);
+    `,
+    down: `
+      DROP TABLE IF EXISTS oauth_audit_logs CASCADE;
+      DROP TABLE IF EXISTS oauth_sessions CASCADE;
+      DROP TABLE IF EXISTS oauth_accounts CASCADE;
+    `,
+  },
 ];
 
 export class Migrator {
@@ -1059,7 +1178,7 @@ export class Migrator {
     let currentVersion = "000";
 
     if (!pool) {
-      Database.setMigrationVersion("010");
+      Database.setMigrationVersion("012");
       return {
         applied: [
           "001_initial_schema",
@@ -1069,10 +1188,13 @@ export class Migrator {
           "005_admin_cms",
           "009_phase9_enhancements",
           "010_collaboration_community_enterprise",
+          "011_judge_execution_schema",
+          "012_oauth_identity_platform",
         ],
-        currentVersion: "010",
+        currentVersion: "012",
       };
     }
+
 
     const client = await pool.connect();
 

@@ -3,6 +3,7 @@ import { AuthenticatedRequest } from "../middleware/auth";
 import { ContestRepository } from "../repositories/contestRepository";
 import { XPRepository } from "../repositories/xpRepository";
 import { AchievementRepository } from "../repositories/achievementRepository";
+import { DistributedLockManager } from "../redis/lockManager";
 import { logger } from "../utils/logger";
 import { db } from "../services/store";
 
@@ -81,17 +82,23 @@ export class ContestController {
         return;
       }
 
-      const result = await ContestRepository.registerUser(id, user.userId, user.username);
+      const result = await DistributedLockManager.withLock(
+        `contest:register:${id}:${user.userId}`,
+        5000,
+        async () => {
+          const reg = await ContestRepository.registerUser(id, user.userId, user.username);
+          // Award "First Contest" achievement if applicable
+          await AchievementRepository.awardAchievement(user.userId, "FIRST_CONTEST");
 
-      // Award "First Contest" achievement if applicable
-      await AchievementRepository.awardAchievement(user.userId, "FIRST_CONTEST");
-
-      // Award XP for registration/participation
-      await XPRepository.recordXP(
-        user.userId,
-        50,
-        "Contest Participation",
-        `Registered for ${contest.title}`
+          // Award XP for registration/participation
+          await XPRepository.recordXP(
+            user.userId,
+            50,
+            "Contest Participation",
+            `Registered for ${contest.title}`
+          );
+          return reg;
+        }
       );
 
       res.json({
@@ -101,7 +108,7 @@ export class ContestController {
       });
     } catch (error: any) {
       logger.error(`[ContestController] Error registering contest: ${error.message}`);
-      res.status(500).json({ success: false, error: "Failed to register for contest" });
+      res.status(500).json({ success: false, error: error.message || "Failed to register for contest" });
     }
   }
 
@@ -132,41 +139,56 @@ export class ContestController {
         return;
       }
 
-      // Record contest submission points
-      const participant = Array.from(db.contestParticipants.values()).find(
-        (p) => p.contestId === id && p.userId === user.userId
-      );
-
-      if (participant) {
-        participant.score += Number(points);
-        participant.penaltySeconds += Math.floor(Math.random() * 300) + 60;
-      }
-
-      // Award XP
-      const xpResult = await XPRepository.recordXP(
+      // Execute with distributed lock on submission & leaderboard to prevent duplicate submission and rating race conditions
+      const resultData = await DistributedLockManager.lockContestSubmission(
+        id,
         user.userId,
-        points,
-        "Accepted Solution",
-        `Contest solve: ${problemSlug}`
-      );
+        problemSlug,
+        async () => {
+          // Record contest submission points under leaderboard lock
+          await DistributedLockManager.lockContestLeaderboard(id, async () => {
+            const participant = Array.from(db.contestParticipants.values()).find(
+              (p) => p.contestId === id && p.userId === user.userId
+            );
 
-      // Check for unlockable badges
-      const newBadges = await AchievementRepository.evaluateAndUnlockAchievements(user.userId);
+            if (participant) {
+              participant.score += Number(points);
+              participant.penaltySeconds += Math.floor(Math.random() * 300) + 60;
+            }
+          });
+
+          // Award XP under user rating lock
+          const xpResult = await DistributedLockManager.lockUserRating(user.userId, async () => {
+            return await XPRepository.recordXP(
+              user.userId,
+              points,
+              "Accepted Solution",
+              `Contest solve: ${problemSlug}`
+            );
+          });
+
+          // Check for unlockable badges
+          const newBadges = await AchievementRepository.evaluateAndUnlockAchievements(user.userId);
+
+          return {
+            scoreAwarded: points,
+            xpGained: points,
+            newBadges,
+            totalXP: xpResult.totalXP,
+            level: xpResult.level,
+          };
+        }
+      );
 
       res.json({
         success: true,
         message: "Contest submission scored successfully",
-        data: {
-          scoreAwarded: points,
-          xpGained: points,
-          newBadges,
-          totalXP: xpResult.totalXP,
-          level: xpResult.level,
-        },
+        data: resultData,
       });
     } catch (error: any) {
       logger.error(`[ContestController] Error submitting contest problem: ${error.message}`);
-      res.status(500).json({ success: false, error: "Contest submission failed" });
+      res.status(error.statusCode || 500).json({ success: false, error: error.message || "Contest submission failed" });
     }
   }
 }
+
