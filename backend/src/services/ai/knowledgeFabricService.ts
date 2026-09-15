@@ -214,6 +214,10 @@ export class KnowledgeFabricService {
     return result.response.text();
   }
 
+  public static async recordExperienceFragment(userId: string, category: string, details: any) {
+    return KnowledgeFabricRepository.logMemoryEvent(userId, null, category, details);
+  }
+
   public static async agentWriteMemory(userId: string, agentId: string, entityName: string, memory: any) {
     // Link agent memory to global entities
     const entity = await KnowledgeFabricRepository.upsertEntity({

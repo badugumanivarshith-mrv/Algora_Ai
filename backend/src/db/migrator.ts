@@ -3832,6 +3832,209 @@ export const MIGRATIONS: Migration[] = [
       DROP TABLE IF EXISTS executive_agents CASCADE;
     `,
   },
+  {
+    version: "035",
+    name: "035_enterprise_simulation_ecosystem",
+    up: `
+      CREATE TABLE IF NOT EXISTS simulation_companies (
+        id VARCHAR(64) PRIMARY KEY,
+        company_name VARCHAR(128) NOT NULL,
+        slug VARCHAR(64) UNIQUE NOT NULL,
+        tier VARCHAR(32) NOT NULL DEFAULT 'Tier_1_Big_Tech',
+        domain VARCHAR(64) NOT NULL DEFAULT 'Cloud_Distributed_Systems',
+        engineering_culture TEXT NOT NULL,
+        team_structure JSONB DEFAULT '[]',
+        levels JSONB DEFAULT '[]',
+        tech_stack JSONB DEFAULT '[]',
+        interview_bar JSONB DEFAULT '{}',
+        metadata JSONB DEFAULT '{}',
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS simulation_sessions (
+        id VARCHAR(64) PRIMARY KEY,
+        user_id VARCHAR(64) NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        company_id VARCHAR(64) NOT NULL REFERENCES simulation_companies(id) ON DELETE CASCADE,
+        simulation_type VARCHAR(64) NOT NULL DEFAULT 'enterprise_engineering',
+        role VARCHAR(64) NOT NULL DEFAULT 'SDE_2',
+        team_name VARCHAR(128) NOT NULL DEFAULT 'Core Distributed Storage',
+        current_sprint INTEGER NOT NULL DEFAULT 1,
+        status VARCHAR(32) NOT NULL DEFAULT 'Active',
+        start_date TIMESTAMPTZ DEFAULT NOW(),
+        end_date TIMESTAMPTZ,
+        progress_metrics JSONB DEFAULT '{}',
+        created_at TIMESTAMPTZ DEFAULT NOW(),
+        updated_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS simulation_events (
+        id VARCHAR(64) PRIMARY KEY,
+        session_id VARCHAR(64) NOT NULL REFERENCES simulation_sessions(id) ON DELETE CASCADE,
+        event_type VARCHAR(64) NOT NULL,
+        title VARCHAR(255) NOT NULL,
+        description TEXT NOT NULL,
+        severity VARCHAR(32) DEFAULT 'Medium',
+        impact_scope VARCHAR(64) DEFAULT 'Team',
+        payload JSONB DEFAULT '{}',
+        status VARCHAR(32) DEFAULT 'Pending',
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS simulation_decisions (
+        id VARCHAR(64) PRIMARY KEY,
+        session_id VARCHAR(64) NOT NULL REFERENCES simulation_sessions(id) ON DELETE CASCADE,
+        event_id VARCHAR(64) REFERENCES simulation_events(id) ON DELETE SET NULL,
+        user_id VARCHAR(64) NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        decision_type VARCHAR(64) NOT NULL,
+        decision_text TEXT NOT NULL,
+        reasoning TEXT,
+        tradeoffs TEXT,
+        evaluation_score DECIMAL(5,2) DEFAULT 85.0,
+        feedback TEXT,
+        timestamp TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS simulation_feedback (
+        id VARCHAR(64) PRIMARY KEY,
+        session_id VARCHAR(64) NOT NULL REFERENCES simulation_sessions(id) ON DELETE CASCADE,
+        reviewer_role VARCHAR(64) NOT NULL,
+        reviewer_name VARCHAR(128) NOT NULL,
+        feedback_type VARCHAR(64) NOT NULL,
+        comments TEXT NOT NULL,
+        rating DECIMAL(3,2) DEFAULT 4.5,
+        strengths JSONB DEFAULT '[]',
+        weaknesses JSONB DEFAULT '[]',
+        actionable_items JSONB DEFAULT '[]',
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS simulation_scores (
+        id VARCHAR(64) PRIMARY KEY,
+        session_id VARCHAR(64) NOT NULL REFERENCES simulation_sessions(id) ON DELETE CASCADE,
+        user_id VARCHAR(64) NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        overall_score DECIMAL(5,2) NOT NULL DEFAULT 85.0,
+        engineering_score DECIMAL(5,2) NOT NULL DEFAULT 85.0,
+        communication_score DECIMAL(5,2) NOT NULL DEFAULT 80.0,
+        problem_solving_score DECIMAL(5,2) NOT NULL DEFAULT 88.0,
+        incident_management_score DECIMAL(5,2) NOT NULL DEFAULT 82.0,
+        architecture_score DECIMAL(5,2) NOT NULL DEFAULT 84.0,
+        breakdown JSONB DEFAULT '{}',
+        computed_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS incident_scenarios (
+        id VARCHAR(64) PRIMARY KEY,
+        title VARCHAR(255) NOT NULL,
+        scenario_type VARCHAR(64) NOT NULL,
+        severity VARCHAR(32) NOT NULL DEFAULT 'P1',
+        company_slug VARCHAR(64) NOT NULL,
+        architecture_diagram TEXT,
+        initial_logs TEXT NOT NULL,
+        root_cause TEXT NOT NULL,
+        mitigation_steps JSONB DEFAULT '[]',
+        expected_sla_minutes INTEGER DEFAULT 30,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS design_reviews (
+        id VARCHAR(64) PRIMARY KEY,
+        session_id VARCHAR(64) NOT NULL REFERENCES simulation_sessions(id) ON DELETE CASCADE,
+        title VARCHAR(255) NOT NULL,
+        problem_statement TEXT NOT NULL,
+        constraints JSONB DEFAULT '[]',
+        proposed_architecture TEXT NOT NULL,
+        trade_offs JSONB DEFAULT '[]',
+        scaling_limits JSONB DEFAULT '{}',
+        cost_estimate JSONB DEFAULT '{}',
+        reviewer_evaluations JSONB DEFAULT '[]',
+        status VARCHAR(32) DEFAULT 'Under_Review',
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS startup_simulations (
+        id VARCHAR(64) PRIMARY KEY,
+        user_id VARCHAR(64) NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        startup_name VARCHAR(128) NOT NULL,
+        market_vertical VARCHAR(64) NOT NULL,
+        stage VARCHAR(32) NOT NULL DEFAULT 'Pre-Seed',
+        capital_raised DECIMAL(12,2) DEFAULT 250000.00,
+        runway_months INTEGER DEFAULT 18,
+        burn_rate DECIMAL(10,2) DEFAULT 12000.00,
+        mrr DECIMAL(10,2) DEFAULT 3500.00,
+        product_status VARCHAR(64) DEFAULT 'MVP_Beta',
+        investor_feedback JSONB DEFAULT '[]',
+        created_at TIMESTAMPTZ DEFAULT NOW(),
+        updated_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS research_simulations (
+        id VARCHAR(64) PRIMARY KEY,
+        user_id VARCHAR(64) NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        lab_name VARCHAR(128) NOT NULL,
+        research_topic VARCHAR(255) NOT NULL,
+        current_phase VARCHAR(64) NOT NULL DEFAULT 'Experimentation',
+        conference_target VARCHAR(64) DEFAULT 'NeurIPS 2026',
+        draft_paper_url TEXT,
+        peer_reviews JSONB DEFAULT '[]',
+        grant_status VARCHAR(32) DEFAULT 'Approved',
+        created_at TIMESTAMPTZ DEFAULT NOW(),
+        updated_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS career_sandboxes (
+        id VARCHAR(64) PRIMARY KEY,
+        user_id VARCHAR(64) NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        path_slug VARCHAR(64) NOT NULL,
+        path_title VARCHAR(128) NOT NULL,
+        target_company VARCHAR(128) NOT NULL,
+        starting_level VARCHAR(32) DEFAULT 'L3 / Junior',
+        current_level VARCHAR(32) DEFAULT 'L4 / SDE 2',
+        target_level VARCHAR(32) DEFAULT 'L6 / Staff',
+        projected_timeline_months INTEGER DEFAULT 24,
+        projected_salary_trajectory JSONB DEFAULT '[]',
+        milestone_progress JSONB DEFAULT '[]',
+        risks JSONB DEFAULT '[]',
+        created_at TIMESTAMPTZ DEFAULT NOW(),
+        updated_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS simulation_achievements (
+        id VARCHAR(64) PRIMARY KEY,
+        user_id VARCHAR(64) NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        achievement_type VARCHAR(64) NOT NULL,
+        title VARCHAR(128) NOT NULL,
+        description TEXT NOT NULL,
+        badge_icon VARCHAR(64) NOT NULL,
+        xp_awarded INTEGER DEFAULT 250,
+        metadata JSONB DEFAULT '{}',
+        unlocked_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_sim_sessions_user ON simulation_sessions(user_id, status);
+      CREATE INDEX IF NOT EXISTS idx_sim_events_session ON simulation_events(session_id, status);
+      CREATE INDEX IF NOT EXISTS idx_sim_decisions_user ON simulation_decisions(user_id, session_id);
+      CREATE INDEX IF NOT EXISTS idx_sim_feedback_session ON simulation_feedback(session_id);
+      CREATE INDEX IF NOT EXISTS idx_sim_scores_user ON simulation_scores(user_id, session_id);
+      CREATE INDEX IF NOT EXISTS idx_startup_sim_user ON startup_simulations(user_id);
+      CREATE INDEX IF NOT EXISTS idx_research_sim_user ON research_simulations(user_id);
+      CREATE INDEX IF NOT EXISTS idx_career_sandboxes_user ON career_sandboxes(user_id, path_slug);
+      CREATE INDEX IF NOT EXISTS idx_sim_achievements_user ON simulation_achievements(user_id);
+    `,
+    down: `
+      DROP TABLE IF EXISTS simulation_achievements CASCADE;
+      DROP TABLE IF EXISTS career_sandboxes CASCADE;
+      DROP TABLE IF EXISTS research_simulations CASCADE;
+      DROP TABLE IF EXISTS startup_simulations CASCADE;
+      DROP TABLE IF EXISTS design_reviews CASCADE;
+      DROP TABLE IF EXISTS incident_scenarios CASCADE;
+      DROP TABLE IF EXISTS simulation_scores CASCADE;
+      DROP TABLE IF EXISTS simulation_feedback CASCADE;
+      DROP TABLE IF EXISTS simulation_decisions CASCADE;
+      DROP TABLE IF EXISTS simulation_events CASCADE;
+      DROP TABLE IF EXISTS simulation_sessions CASCADE;
+      DROP TABLE IF EXISTS simulation_companies CASCADE;
+    `,
+  },
 ];
 
 export class Migrator {
@@ -3874,8 +4077,9 @@ export class Migrator {
           "032_strategic_decision_engine",
           "033_autonomous_execution_layer",
           "034_multi_agent_executive_council",
+          "035_enterprise_simulation_ecosystem",
         ],
-        currentVersion: "034",
+        currentVersion: "035",
       };
     }
 

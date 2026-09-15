@@ -24,6 +24,14 @@ import { ExecutiveDebateService } from "../services/ai/executiveDebateService";
 import { LifePlannerService } from "../services/ai/lifePlannerService";
 import { StrategicCampaignService } from "../services/ai/strategicCampaignService";
 import { ExecutiveMemoryService } from "../services/ai/executiveMemoryService";
+import { SimulationDirectorService } from "../services/ai/simulationDirectorService";
+import { CompanySimulationService } from "../services/ai/companySimulationService";
+import { EnterpriseSimulationService } from "../services/ai/enterpriseSimulationService";
+import { ProductionEngineeringService } from "../services/ai/productionEngineeringService";
+import { StartupSimulationService } from "../services/ai/startupSimulationService";
+import { ResearchSimulationService } from "../services/ai/researchSimulationService";
+import { CareerSandboxService } from "../services/ai/careerSandboxService";
+import { SimulationRepository } from "../repositories/simulationRepository";
 import { ProductivityRepository } from "../repositories/productivityRepository";
 import { logger } from "../utils/logger";
 
@@ -615,6 +623,145 @@ export class AIOSController {
       const result = await AgentCouncilService.conveneCouncil(userId);
       await LifePlannerService.generateLifePlans(userId);
       await OpportunityDiscoveryService.discoverOpportunities(userId);
+      res.json({ status: 'success', data: result });
+    } catch (e: any) {
+      res.status(500).json({ status: 'error', message: e.message });
+    }
+  }
+
+  // --- V4.8 Autonomous Enterprise Simulation & Career Sandbox Endpoints ---
+  public static async getSimulationOverview(req: Request, res: Response) {
+    try {
+      const userId = (req as any).user?.id || 'user_1';
+      const overview = await SimulationDirectorService.getCompleteSimulationOverview(userId);
+      res.json({ status: 'success', data: overview });
+    } catch (e: any) {
+      res.status(500).json({ status: 'error', message: e.message });
+    }
+  }
+
+  public static async startCompanySimulation(req: Request, res: Response) {
+    try {
+      const userId = (req as any).user?.id || 'user_1';
+      const { companySlug, role } = req.body;
+      const result = await CompanySimulationService.startCompanySimulation(userId, companySlug || 'google', role || 'SDE_2');
+      res.json({ status: 'success', data: result });
+    } catch (e: any) {
+      res.status(500).json({ status: 'error', message: e.message });
+    }
+  }
+
+  public static async submitSimulationAction(req: Request, res: Response) {
+    try {
+      const userId = (req as any).user?.id || 'user_1';
+      const { sessionId, eventId, actionPayload } = req.body;
+      const result = await CompanySimulationService.submitEngineeringAction(userId, sessionId, eventId, actionPayload);
+      res.json({ status: 'success', data: result });
+    } catch (e: any) {
+      res.status(500).json({ status: 'error', message: e.message });
+    }
+  }
+
+  public static async getSimulationHistory(req: Request, res: Response) {
+    try {
+      const userId = (req as any).user?.id || 'user_1';
+      const sessions = await SimulationRepository.getUserSessions(userId);
+      res.json({ status: 'success', data: sessions });
+    } catch (e: any) {
+      res.status(500).json({ status: 'error', message: e.message });
+    }
+  }
+
+  public static async getSimulationScore(req: Request, res: Response) {
+    try {
+      const userId = (req as any).user?.id || 'user_1';
+      const score = await SimulationRepository.getLatestScore(userId);
+      res.json({ status: 'success', data: score });
+    } catch (e: any) {
+      res.status(500).json({ status: 'error', message: e.message });
+    }
+  }
+
+  public static async getSimulationFeedback(req: Request, res: Response) {
+    try {
+      const { sessionId } = req.query;
+      const feedback = await SimulationRepository.getSessionFeedback(String(sessionId || ''));
+      res.json({ status: 'success', data: feedback });
+    } catch (e: any) {
+      res.status(500).json({ status: 'error', message: e.message });
+    }
+  }
+
+  public static async getCareerSandboxes(req: Request, res: Response) {
+    try {
+      const userId = (req as any).user?.id || 'user_1';
+      const sandboxes = await CareerSandboxService.getCareerSandboxes(userId);
+      res.json({ status: 'success', data: sandboxes });
+    } catch (e: any) {
+      res.status(500).json({ status: 'error', message: e.message });
+    }
+  }
+
+  public static async getCompanyDetails(req: Request, res: Response) {
+    try {
+      const { slug } = req.query;
+      const company = await EnterpriseSimulationService.getCompany(String(slug || 'google'));
+      res.json({ status: 'success', data: company });
+    } catch (e: any) {
+      res.status(500).json({ status: 'error', message: e.message });
+    }
+  }
+
+  public static async mitigateIncident(req: Request, res: Response) {
+    try {
+      const userId = (req as any).user?.id || 'user_1';
+      const { incidentId, userMitigation } = req.body;
+      const result = await ProductionEngineeringService.evaluateIncidentMitigation(userId, incidentId, userMitigation);
+      await SimulationDirectorService.recordSimulatedOutcome(userId, {
+        category: 'incident_response',
+        title: `Mitigated Incident ${incidentId}`,
+        score: result.score,
+        details: result.analysis
+      });
+      res.json({ status: 'success', data: result });
+    } catch (e: any) {
+      res.status(500).json({ status: 'error', message: e.message });
+    }
+  }
+
+  public static async pitchStartupInvestors(req: Request, res: Response) {
+    try {
+      const userId = (req as any).user?.id || 'user_1';
+      const { pitchDeck } = req.body;
+      const result = await StartupSimulationService.pitchInvestors(userId, pitchDeck);
+      res.json({ status: 'success', data: result });
+    } catch (e: any) {
+      res.status(500).json({ status: 'error', message: e.message });
+    }
+  }
+
+  public static async submitResearchRebuttal(req: Request, res: Response) {
+    try {
+      const userId = (req as any).user?.id || 'user_1';
+      const { rebuttalText } = req.body;
+      const result = await ResearchSimulationService.submitPaperRebuttal(userId, rebuttalText);
+      res.json({ status: 'success', data: result });
+    } catch (e: any) {
+      res.status(500).json({ status: 'error', message: e.message });
+    }
+  }
+
+  public static async simulatePromotion(req: Request, res: Response) {
+    try {
+      const userId = (req as any).user?.id || 'user_1';
+      const { pathSlug } = req.body;
+      const result = await CareerSandboxService.simulatePromotion(userId, pathSlug);
+      await SimulationDirectorService.recordSimulatedOutcome(userId, {
+        category: 'promotion',
+        title: `Simulated Promotion on ${pathSlug}`,
+        score: 95,
+        details: result.promotionDelta
+      });
       res.json({ status: 'success', data: result });
     } catch (e: any) {
       res.status(500).json({ status: 'error', message: e.message });

@@ -28,6 +28,7 @@ import ProjectWorkspaceHub from "./pages/ProjectWorkspaceHub";
 import ResearchLab from "./pages/ResearchLab";
 import AIOSHub from "./pages/AIOSHub";
 import ExecutionCenterPage from "./pages/ExecutionCenter";
+import SimulationHub from "./pages/SimulationHub";
 import Profile from "./pages/Profile";
 import { AIProblemGenerator } from "./pages/ai/AIProblemGenerator";
 import { AIQuizGenerator } from "./pages/ai/AIQuizGenerator";
@@ -81,6 +82,8 @@ export const router = createBrowserRouter([
       { path: "research", Component: ResearchLab },
       { path: "ai-os", Component: AIOSHub },
       { path: "execution-center", Component: ExecutionCenterPage },
+      { path: "simulation", Component: SimulationHub },
+      { path: "enterprise-simulation", Component: SimulationHub },
       { path: "contests", Component: Contest },
       { path: "leaderboard", Component: Leaderboard },
       { path: "community", Component: Community },
@@ -227,5 +230,15 @@ export const router = createBrowserRouter([
     path: "/execution-center",
     Component: AppShell,
     children: [{ index: true, Component: ExecutionCenterPage }],
+  },
+  {
+    path: "/simulation",
+    Component: AppShell,
+    children: [{ index: true, Component: SimulationHub }],
+  },
+  {
+    path: "/enterprise-simulation",
+    Component: AppShell,
+    children: [{ index: true, Component: SimulationHub }],
   },
 ]);

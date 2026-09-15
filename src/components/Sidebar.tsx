@@ -20,6 +20,7 @@ const navSections: NavSection[] = [
   {
     items: [
       { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
+      { icon: Building2,       label: "Enterprise Simulation", path: "/simulation", badge: "V4.8" },
       { icon: Rocket,          label: "Execution Center", path: "/execution-center", badge: "V4.6" },
       { icon: Cpu,             label: "AI OS",       path: "/ai-os", badge: "V4.0" },
       { icon: Network,         label: "Intelligence", path: "/learning-intelligence", badge: "V3.4" },

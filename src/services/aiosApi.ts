@@ -230,5 +230,55 @@ export const aiosApi = {
   recalculateExecutiveCouncil: async () => {
     const { data } = await axios.post(`${API_BASE}/executive/recalculate`);
     return data;
+  },
+
+  // V4.8 Autonomous Enterprise Simulation & Career Sandbox API
+  getSimulationOverview: async () => {
+    const { data } = await axios.get(`${API_BASE}/enterprise-simulations/overview`);
+    return data;
+  },
+  startCompanySimulation: async (params: { companySlug?: string; role?: string }) => {
+    const { data } = await axios.post(`${API_BASE}/enterprise-simulations/start`, params);
+    return data;
+  },
+  submitSimulationAction: async (params: { sessionId: string; eventId: string; actionPayload: any }) => {
+    const { data } = await axios.post(`${API_BASE}/enterprise-simulations/action`, params);
+    return data;
+  },
+  getSimulationHistory: async () => {
+    const { data } = await axios.get(`${API_BASE}/enterprise-simulations/history`);
+    return data;
+  },
+  getSimulationScore: async () => {
+    const { data } = await axios.get(`${API_BASE}/enterprise-simulations/score`);
+    return data;
+  },
+  getSimulationFeedback: async (sessionId: string) => {
+    const { data } = await axios.get(`${API_BASE}/enterprise-simulations/feedback?sessionId=${sessionId}`);
+    return data;
+  },
+  getCareerSandboxes: async () => {
+    const { data } = await axios.get(`${API_BASE}/enterprise-simulations/career-sandbox`);
+    return data;
+  },
+  getCompanyDetails: async (slug: string) => {
+    const { data } = await axios.get(`${API_BASE}/enterprise-simulations/company?slug=${slug}`);
+    return data;
+  },
+  mitigateIncident: async (params: { incidentId: string; userMitigation: string }) => {
+    const { data } = await axios.post(`${API_BASE}/enterprise-simulations/incident/mitigate`, params);
+    return data;
+  },
+  pitchStartupInvestors: async (params: { pitchDeck: any }) => {
+    const { data } = await axios.post(`${API_BASE}/enterprise-simulations/startup/pitch`, params);
+    return data;
+  },
+  submitResearchRebuttal: async (params: { rebuttalText: string }) => {
+    const { data } = await axios.post(`${API_BASE}/enterprise-simulations/research/rebuttal`, params);
+    return data;
+  },
+  simulatePromotion: async (params: { pathSlug: string }) => {
+    const { data } = await axios.post(`${API_BASE}/enterprise-simulations/career/promote`, params);
+    return data;
   }
 };

@@ -20,6 +20,8 @@ const META: Record<string, { title: string; subtitle?: string }> = {
   "/faculty":          { title: "Faculty Portal",   subtitle: "Class analytics and management" },
   "/admin":            { title: "Admin CMS",        subtitle: "Platform governance & curriculum control" },
   "/profile":          { title: "Profile & Badges", subtitle: "Your developer identity & stats" },
+  "/simulation":       { title: "Enterprise Simulation", subtitle: "Real-world engineering, startup & career sandbox" },
+  "/enterprise-simulation": { title: "Enterprise Simulation", subtitle: "Real-world engineering, startup & career sandbox" },
 };
 
 export default function Layout() {

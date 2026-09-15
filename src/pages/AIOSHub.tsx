@@ -23,7 +23,8 @@ import {
   CheckSquare,
   BarChart3,
   Network,
-  Compass
+  Compass,
+  Building2
 } from 'lucide-react';
 import { aiosApi } from '../services/aiosApi';
 import AgentBuilder from '../components/aios/AgentBuilder';
@@ -38,6 +39,7 @@ import OperationsCenter from '../components/aios/OperationsCenter';
 import IntelligencePlatform from '../components/aios/IntelligencePlatform';
 import ExecutiveDashboard from '../components/aios/ExecutiveDashboard';
 import ExecutionCenter from '../components/aios/ExecutionCenter';
+import { SimulationCenter } from '../components/aios/SimulationCenter';
 
 const AIOSHub: React.FC = () => {
   const [activeTab, setActiveTab] = useState('command');
@@ -87,6 +89,7 @@ const AIOSHub: React.FC = () => {
 
   const tabs = [
     { id: 'command', label: 'Command Center', icon: Terminal },
+    { id: 'simulation', label: 'Enterprise Simulation', icon: Building2 },
     { id: 'execution', label: 'Execution Center', icon: Rocket },
     { id: 'executive', label: 'AI Executive', icon: Compass },
     { id: 'ops', label: 'Ops Center', icon: Activity },
@@ -361,6 +364,7 @@ const AIOSHub: React.FC = () => {
                 </div>
               )}
 
+              {activeTab === 'simulation' && <SimulationCenter />}
               {activeTab === 'ops' && <OperationsCenter />}
               {activeTab === 'execution' && <ExecutionCenter />}
               {activeTab === 'executive' && <ExecutiveDashboard />}

@@ -76,4 +76,18 @@ router.get("/executive/forecast", AIOSController.getExecutiveForecastModel);
 router.get("/executive/memory", AIOSController.getExecutiveMemories);
 router.post("/executive/recalculate", AIOSController.recalculateExecutiveCouncil);
 
+// Autonomous Enterprise Simulation & Real-World Career Sandbox Routes (V4.8)
+router.get("/enterprise-simulations/overview", AIOSController.getSimulationOverview);
+router.post("/enterprise-simulations/start", AIOSController.startCompanySimulation);
+router.post("/enterprise-simulations/action", AIOSController.submitSimulationAction);
+router.get("/enterprise-simulations/history", AIOSController.getSimulationHistory);
+router.get("/enterprise-simulations/score", AIOSController.getSimulationScore);
+router.get("/enterprise-simulations/feedback", AIOSController.getSimulationFeedback);
+router.get("/enterprise-simulations/career-sandbox", AIOSController.getCareerSandboxes);
+router.get("/enterprise-simulations/company", AIOSController.getCompanyDetails);
+router.post("/enterprise-simulations/incident/mitigate", AIOSController.mitigateIncident);
+router.post("/enterprise-simulations/startup/pitch", AIOSController.pitchStartupInvestors);
+router.post("/enterprise-simulations/research/rebuttal", AIOSController.submitResearchRebuttal);
+router.post("/enterprise-simulations/career/promote", AIOSController.simulatePromotion);
+
 export default router;
