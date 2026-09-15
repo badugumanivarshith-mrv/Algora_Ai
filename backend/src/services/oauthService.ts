@@ -190,8 +190,10 @@ export class OAuthService {
     }
 
     // Atomic consumption of OAuth state (CSRF & Replay attack defense)
+    logger.info(`[OAuthService] Processing callback for provider: ${provider}, state received: ${state}`);
     const session = await OAuthSessionRepository.getAndConsumeSession(state);
     if (!session) {
+      logger.error(`[OAuthService] FAILED to resolve OAuth session for state: ${state}`);
       await OAuthAuditLogRepository.logEvent({
         provider,
         eventType: "invalid_state",
@@ -201,6 +203,7 @@ export class OAuthService {
       });
       throw new ApiError(400, "INVALID_OAUTH_STATE", "OAuth state is invalid or has expired. Please try logging in again.");
     }
+    logger.info(`[OAuthService] Successfully resolved OAuth session for state: ${state}, action: ${session.action}`);
 
     if (!code) {
       await OAuthAuditLogRepository.logEvent({

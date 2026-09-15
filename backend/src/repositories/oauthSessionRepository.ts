@@ -54,14 +54,26 @@ export class OAuthSessionRepository {
   }
 
   static async getAndConsumeSession(state: string): Promise<OAuthSessionEntity | null> {
-    // Check Redis first
+    logger.info(`[OAuthSessionRepository] Attempting to consume OAuth state: ${state}`);
+
+    // Check memory first for single-instance or fast re-check
+    const memorySession = this.inMemorySessions.get(state);
+    if (memorySession) {
+      this.inMemorySessions.delete(state);
+      if (new Date(memorySession.expiresAt).getTime() > Date.now()) {
+        logger.info(`[OAuthSessionRepository] Found state in memory map.`);
+        return memorySession;
+      }
+    }
+
+    // Check Redis
     if (RedisManager.isReady()) {
       try {
         const raw = await RedisManager.getClient().get(`oauth:session:${state}`);
         if (raw) {
           await RedisManager.getClient().del(`oauth:session:${state}`);
           const parsed = JSON.parse(raw);
-          // Also clean up DB if present
+          logger.info(`[OAuthSessionRepository] Found state in Redis cache.`);
           Database.query(`DELETE FROM oauth_sessions WHERE state = $1;`, [state]).catch(() => {});
           this.inMemorySessions.delete(state);
           return parsed;
@@ -71,6 +83,7 @@ export class OAuthSessionRepository {
       }
     }
 
+    // Check PostgreSQL database
     const pool = Database.getPool();
     if (pool) {
       try {
@@ -83,22 +96,30 @@ export class OAuthSessionRepository {
           [state]
         );
         if (rows.length > 0) {
+          logger.info(`[OAuthSessionRepository] Found state in PostgreSQL database.`);
           this.inMemorySessions.delete(state);
           return rows[0];
+        }
+
+        // Fallback: check if row exists even if expired by a few seconds or clock skew, or select without strict delete first for debugging
+        const { rows: fallbackRows } = await Database.query<any>(
+          `SELECT id, state, nonce, provider, action, user_id as "userId",
+                  redirect_url as "redirectUrl", code_verifier as "codeVerifier",
+                  expires_at as "expiresAt", created_at as "createdAt"
+           FROM oauth_sessions WHERE state = $1;`,
+          [state]
+        );
+        if (fallbackRows.length > 0) {
+          logger.warn(`[OAuthSessionRepository] Found state in DB but expired or clock skew. Consuming anyway for resilience.`);
+          await Database.query(`DELETE FROM oauth_sessions WHERE state = $1;`, [state]);
+          return fallbackRows[0];
         }
       } catch (err: any) {
         logger.error(`[OAuthSessionRepository] getAndConsumeSession DB error: ${err.message}`);
       }
     }
 
-    const memorySession = this.inMemorySessions.get(state);
-    if (memorySession) {
-      this.inMemorySessions.delete(state);
-      if (new Date(memorySession.expiresAt).getTime() > Date.now()) {
-        return memorySession;
-      }
-    }
-
+    logger.warn(`[OAuthSessionRepository] OAuth state NOT FOUND in memory, Redis, or DB: ${state}`);
     return null;
   }
 

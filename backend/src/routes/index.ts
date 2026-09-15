@@ -38,6 +38,7 @@ import enterpriseRoutes from "./enterpriseRoutes";
 import projectRoutes from "./projectWorkspaceRoutes";
 import researchRoutes from "./researchRoutes";
 import aiosRoutes from "./aiosRoutes";
+import productionObservabilityRoutes from "./productionObservabilityRoutes";
 
 const router = Router();
 
@@ -56,6 +57,7 @@ router.use("/memory", learningMemoryRoutes);
 router.use("/adaptive", adaptiveLearningRoutes);
 router.use("/judge", judgeRoutes);
 router.use("/health", healthRoutes);
+router.use("/observability", productionObservabilityRoutes);
 router.use("/auth", authRoutes);
 router.use("/users", userRoutes);
 router.use("/submissions", submissionRoutes);
