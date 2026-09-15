@@ -66,6 +66,7 @@ export interface ComplexityAnalysisResult {
 export interface IAIProvider {
   name: string;
   isAvailable(): boolean;
+  generateRawText?(prompt: string, systemInstruction?: string, ttlSeconds?: number): Promise<string>;
   generateMentorResponse(prompt: string, options?: AIChatOptions): Promise<AIChatResult>;
   generateProgressiveHint(options: HintOptions): Promise<{ hint: string; level: number; followUpQuestion: string }>;
   generateCodeReview(options: CodeReviewOptions): Promise<CodeReviewResult>;

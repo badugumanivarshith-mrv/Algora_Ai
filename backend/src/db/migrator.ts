@@ -4244,6 +4244,87 @@ export const MIGRATIONS: Migration[] = [
       DROP TABLE IF EXISTS reputation_profiles CASCADE;
     `,
   },
+  {
+    version: "037",
+    name: "037_ai_university_human_capability_platform",
+    up: `
+      CREATE TABLE IF NOT EXISTS university_programs (
+        id VARCHAR(64) PRIMARY KEY,
+        title VARCHAR(255) NOT NULL,
+        degree_type VARCHAR(64) NOT NULL,
+        description TEXT NOT NULL,
+        required_credits INT DEFAULT 120,
+        enrolled_count INT DEFAULT 0,
+        is_published BOOLEAN DEFAULT true,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+      );
+      CREATE TABLE IF NOT EXISTS student_degrees (
+        id VARCHAR(64) PRIMARY KEY,
+        user_id VARCHAR(64) NOT NULL,
+        program_id VARCHAR(64) REFERENCES university_programs(id) ON DELETE CASCADE,
+        earned_credits INT DEFAULT 0,
+        gpa NUMERIC(3,2) DEFAULT 4.0,
+        status VARCHAR(32) DEFAULT 'Enrolled',
+        enrolled_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+      );
+    `,
+    down: `
+      DROP TABLE IF EXISTS student_degrees CASCADE;
+      DROP TABLE IF EXISTS university_programs CASCADE;
+    `,
+  },
+  {
+    version: "038",
+    name: "038_cognitive_intelligence_platform",
+    up: `
+      CREATE TABLE IF NOT EXISTS cognitive_profiles (
+        id VARCHAR(64) PRIMARY KEY,
+        user_id VARCHAR(64) UNIQUE NOT NULL,
+        working_memory_score NUMERIC(5, 2) DEFAULT 88.5,
+        long_term_memory_score NUMERIC(5, 2) DEFAULT 92.0,
+        problem_solving_score NUMERIC(5, 2) DEFAULT 94.0,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+      );
+      CREATE INDEX IF NOT EXISTS idx_cognitive_profiles_user ON cognitive_profiles(user_id);
+    `,
+    down: `
+      DROP TABLE IF EXISTS cognitive_profiles CASCADE;
+    `,
+  },
+  {
+    version: "039",
+    name: "039_performance_indexes_and_optimizations",
+    up: `
+      CREATE INDEX IF NOT EXISTS idx_marketplace_enrollments_user ON marketplace_enrollments(user_id);
+      CREATE INDEX IF NOT EXISTS idx_marketplace_enrollments_status ON marketplace_enrollments(status);
+      CREATE INDEX IF NOT EXISTS idx_credential_verifications_cred ON credential_verifications(credential_id);
+      CREATE INDEX IF NOT EXISTS idx_trajectory_simulations_user ON trajectory_simulations(user_id);
+      CREATE INDEX IF NOT EXISTS idx_impact_forecasts_user ON impact_forecasts(user_id);
+      CREATE INDEX IF NOT EXISTS idx_meta_learning_user ON meta_learning_patterns(user_id);
+      CREATE INDEX IF NOT EXISTS idx_knowledge_compounding_user ON knowledge_compounding(user_id);
+      CREATE INDEX IF NOT EXISTS idx_agi_experiments_project ON agi_experiments(project_id);
+      CREATE INDEX IF NOT EXISTS idx_cognitive_metrics_user_logged ON cognitive_metrics(user_id, logged_at DESC);
+      CREATE INDEX IF NOT EXISTS idx_cognitive_forecasts_user ON cognitive_forecasts(user_id);
+      CREATE INDEX IF NOT EXISTS idx_submissions_user_created ON submissions(user_id, created_at DESC);
+      CREATE INDEX IF NOT EXISTS idx_solved_problems_user_topic ON solved_problems(user_id, topic);
+      CREATE INDEX IF NOT EXISTS idx_user_achievements_user_badge ON user_achievements(user_id, badge_code);
+    `,
+    down: `
+      DROP INDEX IF EXISTS idx_user_achievements_user_badge;
+      DROP INDEX IF EXISTS idx_solved_problems_user_topic;
+      DROP INDEX IF EXISTS idx_submissions_user_created;
+      DROP INDEX IF EXISTS idx_cognitive_forecasts_user;
+      DROP INDEX IF EXISTS idx_cognitive_metrics_user_logged;
+      DROP INDEX IF EXISTS idx_agi_experiments_project;
+      DROP INDEX IF EXISTS idx_knowledge_compounding_user;
+      DROP INDEX IF EXISTS idx_meta_learning_user;
+      DROP INDEX IF EXISTS idx_impact_forecasts_user;
+      DROP INDEX IF EXISTS idx_trajectory_simulations_user;
+      DROP INDEX IF EXISTS idx_credential_verifications_cred;
+      DROP INDEX IF EXISTS idx_marketplace_enrollments_status;
+      DROP INDEX IF EXISTS idx_marketplace_enrollments_user;
+    `,
+  },
 ];
 
 export class Migrator {
@@ -4288,8 +4369,11 @@ export class Migrator {
           "034_multi_agent_executive_council",
           "035_enterprise_simulation_ecosystem",
           "036_skill_economy_talent_marketplace",
+          "037_ai_university_human_capability_platform",
+          "038_cognitive_intelligence_platform",
+          "039_performance_indexes_and_optimizations",
         ],
-        currentVersion: "036",
+        currentVersion: "039",
       };
     }
 

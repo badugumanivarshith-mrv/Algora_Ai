@@ -1,4 +1,5 @@
 import { GoogleGenAI } from "@google/genai";
+import crypto from "crypto";
 import {
   IAIProvider,
   AIChatOptions,
@@ -10,6 +11,7 @@ import {
 } from "./aiProvider";
 import { MonitoringService } from "../monitoringService";
 import { logger } from "../../utils/logger";
+import { RedisManager } from "../../redis/redisClient";
 
 export class GeminiAIProvider implements IAIProvider {
   public readonly name = "Gemini AI";
@@ -40,7 +42,17 @@ export class GeminiAIProvider implements IAIProvider {
     return Boolean(process.env.GEMINI_API_KEY);
   }
 
-  public async generateRawText(prompt: string, systemInstruction?: string): Promise<string> {
+  public async generateRawText(prompt: string, systemInstruction?: string, ttlSeconds: number = 300): Promise<string> {
+    const cacheKey = `ai_raw:${crypto.createHash("md5").update(`${systemInstruction || ""}:${prompt}`).digest("hex")}`;
+    try {
+      const cached = await RedisManager.get(cacheKey);
+      if (cached) {
+        return cached;
+      }
+    } catch {
+      // ignore cache get error
+    }
+
     const client = this.getClient();
     if (!client) {
       throw new Error("Gemini AI API key is not configured. Please set GEMINI_API_KEY.");
@@ -52,7 +64,15 @@ export class GeminiAIProvider implements IAIProvider {
         temperature: 0.7,
       },
     });
-    return response.text || "";
+    const text = response.text || "";
+    if (text && ttlSeconds > 0) {
+      try {
+        await RedisManager.set(cacheKey, text, ttlSeconds);
+      } catch {
+        // ignore cache set error
+      }
+    }
+    return text;
   }
 
   /**

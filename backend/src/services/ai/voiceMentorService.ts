@@ -46,7 +46,6 @@ import { LearningDNAService } from "./learningDNAService";
 import { CognitiveBottleneckService } from "./cognitiveBottleneckService";
 import { SuperintelligenceSimulator } from "./superintelligenceSimulator";
 import { CredentialNetworkService } from "./credentialNetworkService";
-import { defaultAIProvider } from "./geminiProvider";
 
 export interface VoiceChatResult {
   sessionId: string;
