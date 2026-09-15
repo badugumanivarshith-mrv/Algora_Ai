@@ -1,245 +1,307 @@
 import { Database } from "../db/connection";
-import { db } from "../services/store";
-import {
-  ContestEntity,
-  ContestProblemEntity,
-  ContestParticipantEntity,
-  ContestLeaderboardEntry,
-} from "../types";
+import { logger } from "../utils/logger";
+
+export interface ContestEntity {
+  id: string;
+  title: string;
+  description: string;
+  contest_type: string;
+  start_time: Date;
+  end_time: Date;
+  duration_minutes: number;
+  created_at: Date;
+}
+
+export interface ContestProblemEntity {
+  id: string;
+  contest_id: string;
+  problem_id: string;
+  points: number;
+  order_index: number;
+  created_at: Date;
+}
+
+export interface ContestParticipantEntity {
+  id: string;
+  contest_id: string;
+  user_id: string;
+  rating_before: number;
+  rating_after: number;
+  rank: number;
+  score: number;
+  created_at: Date;
+}
+
+export interface ContestSubmissionEntity {
+  id: string;
+  contest_id: string;
+  user_id: string;
+  problem_id: string;
+  verdict: string;
+  runtime: number;
+  memory: number;
+  created_at: Date;
+}
+
+export interface ContestTeamEntity {
+  id: string;
+  contest_id: string;
+  team_name: string;
+  captain_id: string;
+  created_at: Date;
+}
+
+export interface ContestTeamMemberEntity {
+  id: string;
+  team_id: string;
+  user_id: string;
+  created_at: Date;
+}
+
+export interface ContestAnalyticsEntity {
+  id: string;
+  user_id: string;
+  contests_joined: number;
+  contests_won: number;
+  average_rank: number;
+  rating: number;
+  updated_at: Date;
+}
+
+export interface ContestPredictionEntity {
+  id: string;
+  user_id: string;
+  predicted_rank: number;
+  predicted_rating: number;
+  predicted_company_readiness: number;
+  created_at: Date;
+}
 
 export class ContestRepository {
-  static async findAll(): Promise<ContestEntity[]> {
-    const pool = Database.getPool();
-    if (pool) {
-      const { rows } = await Database.query<any>(
-        `SELECT id, title, description, contest_type as "contestType",
-                start_time as "startTime", end_time as "endTime",
-                duration_minutes as "durationMinutes", difficulty,
-                participant_count as "participantCount", status,
-                created_at as "createdAt", updated_at as "updatedAt"
-         FROM contests
-         ORDER BY start_time DESC;`
-      );
-      if (rows.length > 0) {
-        return rows.map((r) => ({
-          id: r.id,
-          title: r.title,
-          description: r.description,
-          contestType: r.contestType,
-          startTime: new Date(r.startTime).toISOString(),
-          endTime: new Date(r.endTime).toISOString(),
-          durationMinutes: Number(r.durationMinutes),
-          difficulty: r.difficulty,
-          participantCount: Number(r.participantCount),
-          status: r.status,
-          createdAt: new Date(r.createdAt).toISOString(),
-          updatedAt: new Date(r.updatedAt).toISOString(),
-        }));
-      }
-    }
-
-    return Array.from(db.contests.values()).sort(
-      (a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime()
+  public static async createContest(contest: {
+    title: string;
+    description: string;
+    contestType: string;
+    startTime?: Date;
+    endTime?: Date;
+    durationMinutes?: number;
+  }): Promise<ContestEntity> {
+    const id = `cnt_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+    const res = await Database.query(
+      `INSERT INTO contests (id, title, description, contest_type, start_time, end_time, duration_minutes)
+       VALUES ($1, $2, $3, $4, COALESCE($5, CURRENT_TIMESTAMP), COALESCE($6, CURRENT_TIMESTAMP + INTERVAL '2 hours'), $7)
+       RETURNING *;`,
+      [
+        id,
+        contest.title,
+        contest.description,
+        contest.contestType,
+        contest.startTime || null,
+        contest.endTime || null,
+        contest.durationMinutes || 120,
+      ]
     );
+    return res.rows[0];
   }
 
-  static async findById(contestId: string): Promise<ContestEntity | null> {
-    const pool = Database.getPool();
-    if (pool) {
-      const { rows } = await Database.query<any>(
-        `SELECT id, title, description, contest_type as "contestType",
-                start_time as "startTime", end_time as "endTime",
-                duration_minutes as "durationMinutes", difficulty,
-                participant_count as "participantCount", status,
-                created_at as "createdAt", updated_at as "updatedAt"
-         FROM contests
-         WHERE id = $1;`,
-        [contestId]
-      );
-      if (rows.length > 0) {
-        const c = rows[0];
-        const problems = await this.findProblemsByContestId(contestId);
-        return {
-          id: c.id,
-          title: c.title,
-          description: c.description,
-          contestType: c.contestType,
-          startTime: new Date(c.startTime).toISOString(),
-          endTime: new Date(c.endTime).toISOString(),
-          durationMinutes: Number(c.durationMinutes),
-          difficulty: c.difficulty,
-          participantCount: Number(c.participantCount),
-          status: c.status,
-          problems,
-          createdAt: new Date(c.createdAt).toISOString(),
-          updatedAt: new Date(c.updatedAt).toISOString(),
-        };
-      }
-    }
-
-    const memoryContest = db.contests.get(contestId);
-    if (!memoryContest) return null;
-
-    const problems = await this.findProblemsByContestId(contestId);
-    return {
-      ...memoryContest,
-      problems,
-    };
+  public static async getContests(): Promise<ContestEntity[]> {
+    const res = await Database.query(`SELECT * FROM contests ORDER BY start_time DESC;`);
+    return res.rows;
   }
 
-  static async findProblemsByContestId(contestId: string): Promise<ContestProblemEntity[]> {
-    const pool = Database.getPool();
-    if (pool) {
-      const { rows } = await Database.query<any>(
-        `SELECT id, contest_id as "contestId", problem_id as "problemId",
-                problem_slug as "problemSlug", problem_title as "problemTitle",
-                order_index as "orderIndex", score_points as "scorePoints"
-         FROM contest_problems
-         WHERE contest_id = $1
-         ORDER BY order_index ASC;`,
-        [contestId]
-      );
-      if (rows.length > 0) {
-        return rows.map((r) => ({
-          id: r.id,
-          contestId: r.contestId,
-          problemId: Number(r.problemId),
-          problemSlug: r.problemSlug,
-          problemTitle: r.problemTitle,
-          orderIndex: Number(r.orderIndex),
-          scorePoints: Number(r.scorePoints),
-        }));
-      }
-    }
-
-    return Array.from(db.contestProblems.values())
-      .filter((cp) => cp.contestId === contestId)
-      .sort((a, b) => a.orderIndex - b.orderIndex);
+  public static async getContestById(id: string): Promise<ContestEntity | null> {
+    const res = await Database.query(`SELECT * FROM contests WHERE id = $1;`, [id]);
+    return res.rows[0] || null;
   }
 
-  static async registerUser(
-    contestId: string,
-    userId: string,
-    username: string
-  ): Promise<{ registered: boolean; participant: ContestParticipantEntity }> {
-    const pool = Database.getPool();
-    const id = `cpart-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
-    const now = new Date().toISOString();
-
-    if (pool) {
-      await Database.query(
-        `INSERT INTO contest_participants (id, contest_id, user_id, username, score, penalty_seconds, registered_at)
-         VALUES ($1, $2, $3, $4, 0, 0, $5)
-         ON CONFLICT (contest_id, user_id) DO NOTHING;`,
-        [id, contestId, userId, username, now]
-      );
-
-      await Database.query(
-        `UPDATE contests SET participant_count = participant_count + 1 WHERE id = $1;`,
-        [contestId]
-      );
-    }
-
-    // In-memory update
-    const existing = Array.from(db.contestParticipants.values()).find(
-      (p) => p.contestId === contestId && p.userId === userId
+  public static async addContestProblem(problem: {
+    contestId: string;
+    problemId: string;
+    points?: number;
+    orderIndex?: number;
+  }): Promise<ContestProblemEntity> {
+    const id = `cp_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+    const res = await Database.query(
+      `INSERT INTO contest_problems (id, contest_id, problem_id, points, order_index)
+       VALUES ($1, $2, $3, $4, $5)
+       RETURNING *;`,
+      [id, problem.contestId, problem.problemId, problem.points || 100, problem.orderIndex || 0]
     );
-
-    if (existing) {
-      return { registered: true, participant: existing };
-    }
-
-    const participant: ContestParticipantEntity = {
-      id,
-      contestId,
-      userId,
-      username,
-      score: 0,
-      penaltySeconds: 0,
-      registeredAt: now,
-    };
-    db.contestParticipants.set(id, participant);
-
-    const contest = db.contests.get(contestId);
-    if (contest) {
-      contest.participantCount += 1;
-      contest.registered = true;
-    }
-
-    return { registered: true, participant };
+    return res.rows[0];
   }
 
-  static async isUserRegistered(contestId: string, userId: string): Promise<boolean> {
-    const pool = Database.getPool();
-    if (pool) {
-      const { rows } = await Database.query(
-        `SELECT id FROM contest_participants WHERE contest_id = $1 AND user_id = $2;`,
+  public static async getContestProblems(contestId: string): Promise<ContestProblemEntity[]> {
+    const res = await Database.query(
+      `SELECT * FROM contest_problems WHERE contest_id = $1 ORDER BY order_index ASC;`,
+      [contestId]
+    );
+    return res.rows;
+  }
+
+  public static async registerParticipant(participant: {
+    contestId: string;
+    userId: string;
+    ratingBefore?: number;
+  }): Promise<ContestParticipantEntity> {
+    const id = `cp_${participant.contestId}_${participant.userId}`;
+    const res = await Database.query(
+      `INSERT INTO contest_participants (id, contest_id, user_id, rating_before, rating_after)
+       VALUES ($1, $2, $3, $4, $4)
+       ON CONFLICT (contest_id, user_id) DO UPDATE SET
+         rating_before = EXCLUDED.rating_before
+       RETURNING *;`,
+      [id, participant.contestId, participant.userId, participant.ratingBefore || 1500]
+    );
+    return res.rows[0];
+  }
+
+  public static async getParticipants(contestId: string): Promise<ContestParticipantEntity[]> {
+    const res = await Database.query(
+      `SELECT * FROM contest_participants WHERE contest_id = $1 ORDER BY score DESC, rank ASC;`,
+      [contestId]
+    );
+    return res.rows;
+  }
+
+  public static async updateParticipantResult(params: {
+    contestId: string;
+    userId: string;
+    score: number;
+    rank: number;
+    ratingAfter: number;
+  }): Promise<ContestParticipantEntity> {
+    const res = await Database.query(
+      `UPDATE contest_participants
+       SET score = $1, rank = $2, rating_after = $3
+       WHERE contest_id = $4 AND user_id = $5
+       RETURNING *;`,
+      [params.score, params.rank, params.ratingAfter, params.contestId, params.userId]
+    );
+    return res.rows[0];
+  }
+
+  public static async addSubmission(sub: {
+    contestId: string;
+    userId: string;
+    problemId: string;
+    verdict: string;
+    runtime?: number;
+    memory?: number;
+  }): Promise<ContestSubmissionEntity> {
+    const id = `cs_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+    const res = await Database.query(
+      `INSERT INTO contest_submissions (id, contest_id, user_id, problem_id, verdict, runtime, memory)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)
+       RETURNING *;`,
+      [id, sub.contestId, sub.userId, sub.problemId, sub.verdict, sub.runtime || 0, sub.memory || 0]
+    );
+    return res.rows[0];
+  }
+
+  public static async getSubmissions(contestId: string, userId?: string): Promise<ContestSubmissionEntity[]> {
+    if (userId) {
+      const res = await Database.query(
+        `SELECT * FROM contest_submissions WHERE contest_id = $1 AND user_id = $2 ORDER BY created_at DESC;`,
         [contestId, userId]
       );
-      return rows.length > 0;
+      return res.rows;
     }
-
-    return Array.from(db.contestParticipants.values()).some(
-      (p) => p.contestId === contestId && p.userId === userId
+    const res = await Database.query(
+      `SELECT * FROM contest_submissions WHERE contest_id = $1 ORDER BY created_at DESC;`,
+      [contestId]
     );
+    return res.rows;
   }
 
-  static async getContestLeaderboard(
-    contestId: string,
-    currentUserId?: string
-  ): Promise<ContestLeaderboardEntry[]> {
-    const pool = Database.getPool();
-    if (pool) {
-      const { rows } = await Database.query<any>(
-        `SELECT cp.user_id as "userId", cp.username, p.full_name as "fullName",
-                p.avatar_url as "avatarUrl", p.institution,
-                cp.score, cp.penalty_seconds as "penaltySeconds",
-                cp.registered_at as "registeredAt"
-         FROM contest_participants cp
-         LEFT JOIN profiles p ON cp.user_id = p.user_id
-         WHERE cp.contest_id = $1
-         ORDER BY cp.score DESC, cp.penalty_seconds ASC;`,
-        [contestId]
-      );
+  public static async createTeam(team: {
+    contestId: string;
+    teamName: string;
+    captainId: string;
+  }): Promise<ContestTeamEntity> {
+    const id = `ct_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+    const res = await Database.query(
+      `INSERT INTO contest_teams (id, contest_id, team_name, captain_id)
+       VALUES ($1, $2, $3, $4)
+       RETURNING *;`,
+      [id, team.contestId, team.teamName, team.captainId]
+    );
+    // Add captain as team member
+    await Database.query(
+      `INSERT INTO contest_team_members (id, team_id, user_id) VALUES ($1, $2, $3) ON CONFLICT DO NOTHING;`,
+      [`ctm_${id}_${team.captainId}`, id, team.captainId]
+    );
+    return res.rows[0];
+  }
 
-      if (rows.length > 0) {
-        return rows.map((r, index) => ({
-          rank: index + 1,
-          userId: r.userId,
-          username: r.username,
-          fullName: r.fullName || r.username,
-          avatarUrl: r.avatarUrl || `https://api.dicebear.com/7.x/identicon/svg?seed=${r.username}`,
-          institution: r.institution || "Algora Academy",
-          score: Number(r.score),
-          penaltySeconds: Number(r.penaltySeconds),
-          problemsSolved: Math.min(4, Math.floor(Number(r.score) / 200)),
-          totalProblems: 4,
-          submissionTime: new Date(r.registeredAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-          isCurrentUser: currentUserId === r.userId,
-        }));
-      }
-    }
+  public static async addTeamMember(teamId: string, userId: string): Promise<ContestTeamMemberEntity> {
+    const id = `ctm_${teamId}_${userId}`;
+    const res = await Database.query(
+      `INSERT INTO contest_team_members (id, team_id, user_id)
+       VALUES ($1, $2, $3)
+       ON CONFLICT (team_id, user_id) DO NOTHING
+       RETURNING *;`,
+      [id, teamId, userId]
+    );
+    return res.rows[0];
+  }
 
-    const participants = Array.from(db.contestParticipants.values())
-      .filter((p) => p.contestId === contestId)
-      .sort((a, b) => b.score - a.score || a.penaltySeconds - b.penaltySeconds);
+  public static async getTeams(contestId: string): Promise<ContestTeamEntity[]> {
+    const res = await Database.query(
+      `SELECT * FROM contest_teams WHERE contest_id = $1 ORDER BY created_at DESC;`,
+      [contestId]
+    );
+    return res.rows;
+  }
 
-    return participants.map((p, index) => {
-      const profile = db.profiles.get(p.userId);
-      return {
-        rank: index + 1,
-        userId: p.userId,
-        username: p.username,
-        fullName: profile?.fullName || p.username,
-        avatarUrl: profile?.avatarUrl || `https://api.dicebear.com/7.x/identicon/svg?seed=${p.username}`,
-        institution: profile?.institution || "Algora Academy",
-        score: p.score,
-        penaltySeconds: p.penaltySeconds,
-        problemsSolved: Math.min(4, Math.floor(p.score / 200)),
-        totalProblems: 4,
-        submissionTime: new Date(p.registeredAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-        isCurrentUser: currentUserId === p.userId,
-      };
-    });
+  public static async upsertAnalytics(analytics: {
+    userId: string;
+    contestsJoined: number;
+    contestsWon: number;
+    averageRank: number;
+    rating: number;
+  }): Promise<ContestAnalyticsEntity> {
+    const id = `ca_${analytics.userId}`;
+    const res = await Database.query(
+      `INSERT INTO contest_analytics (id, user_id, contests_joined, contests_won, average_rank, rating, updated_at)
+       VALUES ($1, $2, $3, $4, $5, $6, CURRENT_TIMESTAMP)
+       ON CONFLICT (user_id) DO UPDATE SET
+         contests_joined = EXCLUDED.contests_joined,
+         contests_won = EXCLUDED.contests_won,
+         average_rank = EXCLUDED.average_rank,
+         rating = EXCLUDED.rating,
+         updated_at = CURRENT_TIMESTAMP
+       RETURNING *;`,
+      [id, analytics.userId, analytics.contestsJoined, analytics.contestsWon, analytics.averageRank, analytics.rating]
+    );
+    return res.rows[0];
+  }
+
+  public static async getAnalytics(userId: string): Promise<ContestAnalyticsEntity | null> {
+    const res = await Database.query(`SELECT * FROM contest_analytics WHERE user_id = $1;`, [userId]);
+    return res.rows[0] || null;
+  }
+
+  public static async savePrediction(pred: {
+    userId: string;
+    predictedRank: number;
+    predictedRating: number;
+    predictedCompanyReadiness: number;
+  }): Promise<ContestPredictionEntity> {
+    const id = `cpd_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+    const res = await Database.query(
+      `INSERT INTO contest_predictions (id, user_id, predicted_rank, predicted_rating, predicted_company_readiness)
+       VALUES ($1, $2, $3, $4, $5)
+       RETURNING *;`,
+      [id, pred.userId, pred.predictedRank, pred.predictedRating, pred.predictedCompanyReadiness]
+    );
+    return res.rows[0];
+  }
+
+  public static async getPredictions(userId: string): Promise<ContestPredictionEntity[]> {
+    const res = await Database.query(
+      `SELECT * FROM contest_predictions WHERE user_id = $1 ORDER BY created_at DESC;`,
+      [userId]
+    );
+    return res.rows;
   }
 }

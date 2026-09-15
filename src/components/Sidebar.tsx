@@ -1,8 +1,8 @@
 import { useNavigate, useLocation } from "react-router";
 import {
   LayoutDashboard, BookOpen, Code2, Brain, BarChart2, CalendarCheck,
-  Trophy, Users, GraduationCap, Settings, LogOut, ChevronRight, ShieldCheck,
-  MessageSquare, Briefcase, Target, Award, Sparkles, User, Building2, Mic,
+  Trophy, Users, GraduationCap, Settings, LogOut, ChevronRight, ShieldCheck, Cpu,
+  MessageSquare, Briefcase, Target, Award, Sparkles, User, Building2, Mic, Network, Beaker, Rocket
 } from "lucide-react";
 import AlgoraLogo from "./AlgoraLogo";
 
@@ -20,6 +20,9 @@ const navSections: NavSection[] = [
   {
     items: [
       { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
+      { icon: Rocket,          label: "Execution Center", path: "/execution-center", badge: "V4.6" },
+      { icon: Cpu,             label: "AI OS",       path: "/ai-os", badge: "V4.0" },
+      { icon: Network,         label: "Intelligence", path: "/learning-intelligence", badge: "V3.4" },
       { icon: BookOpen,        label: "Learning",   path: "/learning" },
       { icon: Code2,           label: "Workspace",  path: "/workspace" },
       { icon: Users,           label: "Live Collab", path: "/collaboration", badge: "v3.1" },
@@ -33,6 +36,7 @@ const navSections: NavSection[] = [
   {
     title: "Competition & Peer",
     items: [
+      { icon: Trophy,          label: "Contest Arena", path: "/contests-v2", badge: "V3.5" },
       { icon: Trophy,          label: "Contests",   path: "/contests" },
       { icon: Users,           label: "Leaderboard", path: "/leaderboard" },
       { icon: MessageSquare,   label: "Community",  path: "/community" },
@@ -51,6 +55,11 @@ const navSections: NavSection[] = [
   {
     title: "Career & Enterprise",
     items: [
+      { icon: Beaker,          label: "Research Lab", path: "/research", badge: "V3.9" },
+      { icon: Briefcase,       label: "Project Workspace", path: "/projects", badge: "V3.8" },
+      { icon: GraduationCap,   label: "Enterprise University", path: "/enterprise", badge: "V3.7" },
+      { icon: Briefcase,       label: "AI Hiring Suite", path: "/hiring", badge: "V3.6" },
+      { icon: Target,          label: "AI Career Platform", path: "/career", badge: "v3.3" },
       { icon: Building2,       label: "Company Prep", path: "/company-prep", badge: "v2.4" },
       { icon: Briefcase,       label: "Interviews", path: "/interviews", badge: "AI" },
       { icon: Target,          label: "Placement Hub", path: "/placements" },

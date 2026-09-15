@@ -19,6 +19,15 @@ import AdaptiveRoadmapV2 from "./pages/AdaptiveRoadmapV2";
 import CompanyPrep from "./pages/CompanyPrep";
 import VoiceMentor from "./pages/VoiceMentor";
 import { CollaborationWorkspace } from "./pages/CollaborationWorkspace";
+import { CareerHub } from "./pages/CareerHub";
+import { LearningIntelligence } from "./pages/LearningIntelligence";
+import { ContestHub } from "./pages/ContestHub";
+import { HiringHub } from "./pages/HiringHub";
+import EnterpriseHub from "./pages/EnterpriseHub";
+import ProjectWorkspaceHub from "./pages/ProjectWorkspaceHub";
+import ResearchLab from "./pages/ResearchLab";
+import AIOSHub from "./pages/AIOSHub";
+import ExecutionCenterPage from "./pages/ExecutionCenter";
 import Profile from "./pages/Profile";
 import { AIProblemGenerator } from "./pages/ai/AIProblemGenerator";
 import { AIQuizGenerator } from "./pages/ai/AIQuizGenerator";
@@ -63,6 +72,15 @@ export const router = createBrowserRouter([
       { path: "company-prep", Component: CompanyPrep },
       { path: "voice-mentor", Component: VoiceMentor },
       { path: "collaboration", Component: CollaborationWorkspace },
+      { path: "career", Component: CareerHub },
+      { path: "learning-intelligence", Component: LearningIntelligence },
+      { path: "contests-v2", Component: ContestHub },
+      { path: "hiring", Component: HiringHub },
+      { path: "enterprise", Component: EnterpriseHub },
+      { path: "projects", Component: ProjectWorkspaceHub },
+      { path: "research", Component: ResearchLab },
+      { path: "ai-os", Component: AIOSHub },
+      { path: "execution-center", Component: ExecutionCenterPage },
       { path: "contests", Component: Contest },
       { path: "leaderboard", Component: Leaderboard },
       { path: "community", Component: Community },
@@ -164,5 +182,50 @@ export const router = createBrowserRouter([
     path: "/collaboration",
     Component: AppShell,
     children: [{ index: true, Component: CollaborationWorkspace }],
+  },
+  {
+    path: "/career",
+    Component: AppShell,
+    children: [{ index: true, Component: CareerHub }],
+  },
+  {
+    path: "/learning-intelligence",
+    Component: AppShell,
+    children: [{ index: true, Component: LearningIntelligence }],
+  },
+  {
+    path: "/contests-v2",
+    Component: AppShell,
+    children: [{ index: true, Component: ContestHub }],
+  },
+  {
+    path: "/hiring",
+    Component: AppShell,
+    children: [{ index: true, Component: HiringHub }],
+  },
+  {
+    path: "/enterprise",
+    Component: AppShell,
+    children: [{ index: true, Component: EnterpriseHub }],
+  },
+  {
+    path: "/projects",
+    Component: AppShell,
+    children: [{ index: true, Component: ProjectWorkspaceHub }],
+  },
+  {
+    path: "/research",
+    Component: AppShell,
+    children: [{ index: true, Component: ResearchLab }],
+  },
+  {
+    path: "/ai-os",
+    Component: AppShell,
+    children: [{ index: true, Component: AIOSHub }],
+  },
+  {
+    path: "/execution-center",
+    Component: AppShell,
+    children: [{ index: true, Component: ExecutionCenterPage }],
   },
 ]);

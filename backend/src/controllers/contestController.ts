@@ -1,194 +1,118 @@
-import { Response } from "express";
-import { AuthenticatedRequest } from "../middleware/auth";
+import { Request, Response } from "express";
+import { ContestService } from "../services/ai/contestService";
+import { ContestAnalyticsService } from "../services/ai/contestAnalyticsService";
+import { ContestPredictionService } from "../services/ai/contestPredictionService";
+import { AIContestCoachService } from "../services/ai/aiContestCoachService";
+import { ContestReplayService } from "../services/ai/contestReplayService";
 import { ContestRepository } from "../repositories/contestRepository";
-import { XPRepository } from "../repositories/xpRepository";
-import { AchievementRepository } from "../repositories/achievementRepository";
-import { DistributedLockManager } from "../redis/lockManager";
 import { logger } from "../utils/logger";
-import { db } from "../services/store";
 
 export class ContestController {
-  static async listContests(req: AuthenticatedRequest, res: Response): Promise<void> {
+  public static async getContests(req: Request, res: Response) {
     try {
-      const currentUserId = req.user?.userId;
-      const contests = await ContestRepository.findAll();
-
-      const enriched = await Promise.all(
-        contests.map(async (c) => {
-          const isRegistered = currentUserId
-            ? await ContestRepository.isUserRegistered(c.id, currentUserId)
-            : false;
-          return {
-            ...c,
-            registered: isRegistered,
-          };
-        })
-      );
-
-      res.json({
-        success: true,
-        data: enriched,
-      });
-    } catch (error: any) {
-      logger.error(`[ContestController] Error listing contests: ${error.message}`);
-      res.status(500).json({ success: false, error: "Failed to fetch contests" });
+      const contests = await ContestService.getContests();
+      res.json({ success: true, contests });
+    } catch (e: any) {
+      logger.error(`[ContestController.getContests] Error: ${e.message}`);
+      res.status(500).json({ success: false, error: e.message });
     }
   }
 
-  static async getContest(req: AuthenticatedRequest, res: Response): Promise<void> {
+  public static async getContestById(req: Request, res: Response) {
     try {
       const { id } = req.params;
-      const currentUserId = req.user?.userId;
-
-      const contest = await ContestRepository.findById(id);
-      if (!contest) {
-        res.status(404).json({ success: false, error: "Contest not found" });
-        return;
-      }
-
-      const isRegistered = currentUserId
-        ? await ContestRepository.isUserRegistered(id, currentUserId)
-        : false;
-
-      const leaderboard = await ContestRepository.getContestLeaderboard(id, currentUserId);
-
-      res.json({
-        success: true,
-        data: {
-          ...contest,
-          registered: isRegistered,
-          leaderboard,
-        },
-      });
-    } catch (error: any) {
-      logger.error(`[ContestController] Error getting contest: ${error.message}`);
-      res.status(500).json({ success: false, error: "Failed to fetch contest details" });
+      const contest = await ContestRepository.getContestById(id);
+      const problems = await ContestRepository.getContestProblems(id);
+      const leaderboard = await ContestService.getLeaderboard(id);
+      res.json({ success: true, contest, problems, leaderboard });
+    } catch (e: any) {
+      logger.error(`[ContestController.getContestById] Error: ${e.message}`);
+      res.status(500).json({ success: false, error: e.message });
     }
   }
 
-  static async registerContest(req: AuthenticatedRequest, res: Response): Promise<void> {
+  public static async registerParticipant(req: Request, res: Response) {
     try {
-      const { id } = req.params;
-      const user = req.user;
-
-      if (!user) {
-        res.status(401).json({ success: false, error: "Authentication required to register" });
-        return;
-      }
-
-      const contest = await ContestRepository.findById(id);
-      if (!contest) {
-        res.status(404).json({ success: false, error: "Contest not found" });
-        return;
-      }
-
-      const result = await DistributedLockManager.withLock(
-        `contest:register:${id}:${user.userId}`,
-        5000,
-        async () => {
-          const reg = await ContestRepository.registerUser(id, user.userId, user.username);
-          // Award "First Contest" achievement if applicable
-          await AchievementRepository.awardAchievement(user.userId, "FIRST_CONTEST");
-
-          // Award XP for registration/participation
-          await XPRepository.recordXP(
-            user.userId,
-            50,
-            "Contest Participation",
-            `Registered for ${contest.title}`
-          );
-          return reg;
-        }
-      );
-
-      res.json({
-        success: true,
-        message: "Successfully registered for contest",
-        data: result,
-      });
-    } catch (error: any) {
-      logger.error(`[ContestController] Error registering contest: ${error.message}`);
-      res.status(500).json({ success: false, error: error.message || "Failed to register for contest" });
+      const userId = (req as any).user?.id || "usr_demo";
+      const { contestId } = req.body;
+      const participant = await ContestRepository.registerParticipant({ contestId, userId });
+      res.json({ success: true, participant });
+    } catch (e: any) {
+      logger.error(`[ContestController.registerParticipant] Error: ${e.message}`);
+      res.status(500).json({ success: false, error: e.message });
     }
   }
 
-  static async getLeaderboard(req: AuthenticatedRequest, res: Response): Promise<void> {
+  public static async submitSolution(req: Request, res: Response) {
     try {
-      const { id } = req.params;
-      const currentUserId = req.user?.userId;
-
-      const leaderboard = await ContestRepository.getContestLeaderboard(id, currentUserId);
-      res.json({
-        success: true,
-        data: leaderboard,
+      const userId = (req as any).user?.id || "usr_demo";
+      const { contestId, problemId, verdict, runtime, memory, topic } = req.body;
+      const submission = await ContestService.submitSolution({
+        contestId,
+        userId,
+        problemId: problemId || "p_sw_1",
+        verdict: verdict || "Accepted",
+        runtime: runtime || 45,
+        memory: memory || 14200,
+        topic: topic || "Arrays",
       });
-    } catch (error: any) {
-      logger.error(`[ContestController] Error fetching contest leaderboard: ${error.message}`);
-      res.status(500).json({ success: false, error: "Failed to fetch leaderboard" });
+      res.json({ success: true, submission });
+    } catch (e: any) {
+      logger.error(`[ContestController.submitSolution] Error: ${e.message}`);
+      res.status(500).json({ success: false, error: e.message });
     }
   }
 
-  static async submitSolution(req: AuthenticatedRequest, res: Response): Promise<void> {
+  public static async createTeam(req: Request, res: Response) {
     try {
-      const { id } = req.params;
-      const { problemSlug, points = 100 } = req.body;
-      const user = req.user;
+      const userId = (req as any).user?.id || "usr_demo";
+      const { contestId, teamName } = req.body;
+      const team = await ContestRepository.createTeam({ contestId, teamName, captainId: userId });
+      res.json({ success: true, team });
+    } catch (e: any) {
+      logger.error(`[ContestController.createTeam] Error: ${e.message}`);
+      res.status(500).json({ success: false, error: e.message });
+    }
+  }
 
-      if (!user) {
-        res.status(401).json({ success: false, error: "Authentication required" });
-        return;
-      }
+  public static async getAnalytics(req: Request, res: Response) {
+    try {
+      const userId = (req as any).user?.id || "usr_demo";
+      const analytics = await ContestAnalyticsService.getUserAnalytics(userId);
+      const predictions = await ContestPredictionService.getPredictions(userId);
+      res.json({ success: true, analytics, predictions });
+    } catch (e: any) {
+      logger.error(`[ContestController.getAnalytics] Error: ${e.message}`);
+      res.status(500).json({ success: false, error: e.message });
+    }
+  }
 
-      // Execute with distributed lock on submission & leaderboard to prevent duplicate submission and rating race conditions
-      const resultData = await DistributedLockManager.lockContestSubmission(
-        id,
-        user.userId,
-        problemSlug,
-        async () => {
-          // Record contest submission points under leaderboard lock
-          await DistributedLockManager.lockContestLeaderboard(id, async () => {
-            const participant = Array.from(db.contestParticipants.values()).find(
-              (p) => p.contestId === id && p.userId === user.userId
-            );
-
-            if (participant) {
-              participant.score += Number(points);
-              participant.penaltySeconds += Math.floor(Math.random() * 300) + 60;
-            }
-          });
-
-          // Award XP under user rating lock
-          const xpResult = await DistributedLockManager.lockUserRating(user.userId, async () => {
-            return await XPRepository.recordXP(
-              user.userId,
-              points,
-              "Accepted Solution",
-              `Contest solve: ${problemSlug}`
-            );
-          });
-
-          // Check for unlockable badges
-          const newBadges = await AchievementRepository.evaluateAndUnlockAchievements(user.userId);
-
-          return {
-            scoreAwarded: points,
-            xpGained: points,
-            newBadges,
-            totalXP: xpResult.totalXP,
-            level: xpResult.level,
-          };
-        }
-      );
-
-      res.json({
-        success: true,
-        message: "Contest submission scored successfully",
-        data: resultData,
+  public static async getCoachAdvice(req: Request, res: Response) {
+    try {
+      const { contestId, problemTitle, userCode, errorLog, timeRemainingMinutes, requestType } = req.body;
+      const advice = await AIContestCoachService.getCoachAdvice({
+        contestId,
+        problemTitle,
+        userCode,
+        errorLog,
+        timeRemainingMinutes,
+        requestType: requestType || "hint",
       });
-    } catch (error: any) {
-      logger.error(`[ContestController] Error submitting contest problem: ${error.message}`);
-      res.status(error.statusCode || 500).json({ success: false, error: error.message || "Contest submission failed" });
+      res.json({ success: true, advice });
+    } catch (e: any) {
+      logger.error(`[ContestController.getCoachAdvice] Error: ${e.message}`);
+      res.status(500).json({ success: false, error: e.message });
+    }
+  }
+
+  public static async getReplay(req: Request, res: Response) {
+    try {
+      const { contestId } = req.params;
+      const replay = await ContestReplayService.getContestReplay(contestId);
+      res.json({ success: true, replay });
+    } catch (e: any) {
+      logger.error(`[ContestController.getReplay] Error: ${e.message}`);
+      res.status(500).json({ success: false, error: e.message });
     }
   }
 }
-

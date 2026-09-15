@@ -1,7 +1,30 @@
 import { defaultAIProvider } from "./geminiProvider";
 import { CollaborationRepository } from "../../repositories/collaborationRepository";
 
+export interface EnterpriseSessionRoom {
+  roomId: string;
+  type: "Classroom" | "Faculty-Led" | "Study Group" | "Lab Session";
+  title: string;
+  hostId: string;
+  maxParticipants: number;
+}
+
 export class CollaborationService {
+  public static async createEnterpriseRoom(params: {
+    type: "Classroom" | "Faculty-Led" | "Study Group" | "Lab Session";
+    title: string;
+    hostId: string;
+  }): Promise<EnterpriseSessionRoom> {
+    const roomId = `room_ent_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+    return {
+      roomId,
+      type: params.type,
+      title: params.title,
+      hostId: params.hostId,
+      maxParticipants: params.type === "Faculty-Led" ? 200 : 30,
+    };
+  }
+
   public static async generateAIChatResponse(params: {
     roomId: string;
     userId: string;

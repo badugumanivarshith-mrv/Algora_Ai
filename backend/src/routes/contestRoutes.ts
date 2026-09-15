@@ -1,13 +1,26 @@
 import { Router } from "express";
 import { ContestController } from "../controllers/contestController";
-import { requireAuth, optionalAuth } from "../middleware/auth";
+import { requireAuth } from "../middleware/auth";
+import rateLimit from "express-rate-limit";
 
 const router = Router();
 
-router.get("/", optionalAuth, ContestController.listContests);
-router.get("/:id", optionalAuth, ContestController.getContest);
-router.post("/:id/register", requireAuth, ContestController.registerContest);
-router.get("/:id/leaderboard", optionalAuth, ContestController.getLeaderboard);
-router.post("/:id/submit", requireAuth, ContestController.submitSolution);
+const contestLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 250,
+  message: { error: "Too many contest requests. Please try again later." },
+});
 
+router.use(contestLimiter);
+
+router.get("/list", requireAuth, ContestController.getContests);
+router.get("/detail/:id", requireAuth, ContestController.getContestById);
+router.post("/register", requireAuth, ContestController.registerParticipant);
+router.post("/submit", requireAuth, ContestController.submitSolution);
+router.post("/team", requireAuth, ContestController.createTeam);
+router.get("/analytics", requireAuth, ContestController.getAnalytics);
+router.post("/coach", requireAuth, ContestController.getCoachAdvice);
+router.get("/replay/:contestId", requireAuth, ContestController.getReplay);
+
+export const contestRoutes = router;
 export default router;

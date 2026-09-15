@@ -330,6 +330,52 @@ export class Seeder {
         logger.info("[Seeder] Demo seed data successfully populated.");
       }
 
+      // 3. Seed Agent Templates & Marketplace
+      const { rows: templateCount } = await client.query(`SELECT count(*) FROM agent_templates;`);
+      if (parseInt(templateCount[0].count) === 0) {
+        logger.info("[Seeder] Seeding agent templates and marketplace...");
+        const templates = [
+          {
+            id: 'tmpl-research-mentor',
+            name: 'Autonomous Research Mentor',
+            description: 'Expert agent for literature review, paper analysis, and citation management.',
+            category: 'Research',
+            config: { agent_type: 'Research', memory_mode: 'long-term' },
+            price_credits: 0
+          },
+          {
+            id: 'tmpl-career-coach',
+            name: 'AI Career Coach',
+            description: 'Personalized agent for resume optimization, interview prep, and career pathing.',
+            category: 'Career',
+            config: { agent_type: 'Career', memory_mode: 'standard' },
+            price_credits: 0
+          },
+          {
+            id: 'tmpl-code-architect',
+            name: 'Code Architect & Auditor',
+            description: 'Enterprise-grade code review, architectural suggestions, and security auditing.',
+            category: 'Project',
+            config: { agent_type: 'Project', memory_mode: 'long-term' },
+            price_credits: 500
+          }
+        ];
+
+        for (const tmpl of templates) {
+          await client.query(`
+            INSERT INTO agent_templates (id, name, description, category, config, price_credits)
+            VALUES ($1, $2, $3, $4, $5, $6)
+            ON CONFLICT (id) DO NOTHING;
+          `, [tmpl.id, tmpl.name, tmpl.description, tmpl.category, JSON.stringify(tmpl.config), tmpl.price_credits]);
+
+          await client.query(`
+            INSERT INTO agent_marketplace (id, template_id, name, description, category, price_credits, author_id, install_count, rating_avg)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+            ON CONFLICT (id) DO NOTHING;
+          `, [`market-${tmpl.id}`, tmpl.id, tmpl.name, tmpl.description, tmpl.category, tmpl.price_credits, 'admin', Math.floor(Math.random() * 1000), 4.5 + Math.random() * 0.5]);
+        }
+      }
+
       return { seeded: true, message: "PostgreSQL database seeded successfully." };
     } finally {
       client.release();

@@ -111,6 +111,35 @@ export class ApiClient {
     }
   }
 
+  public static async get<T>(endpoint: string, options: any = {}): Promise<ApiResponse<T>> {
+    let url = endpoint;
+    if (options.params) {
+      const query = new URLSearchParams(options.params).toString();
+      url += (url.includes("?") ? "&" : "?") + query;
+    }
+    return this.request<T>(url, { ...options, method: "GET" });
+  }
+
+  public static async post<T>(endpoint: string, data: any = {}, options: any = {}): Promise<ApiResponse<T>> {
+    return this.request<T>(endpoint, {
+      ...options,
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
+
+  public static async put<T>(endpoint: string, data: any = {}, options: any = {}): Promise<ApiResponse<T>> {
+    return this.request<T>(endpoint, {
+      ...options,
+      method: "PUT",
+      body: JSON.stringify(data),
+    });
+  }
+
+  public static async delete<T>(endpoint: string, options: any = {}): Promise<ApiResponse<T>> {
+    return this.request<T>(endpoint, { ...options, method: "DELETE" });
+  }
+
   // --- Auth API ---
   public static async register(data: {
     email: string;

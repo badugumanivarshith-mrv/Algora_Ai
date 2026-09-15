@@ -1672,6 +1672,1992 @@ export const MIGRATIONS: Migration[] = [
       DROP TABLE IF EXISTS collaboration_rooms CASCADE;
     `,
   },
+  {
+    version: "020",
+    name: "020_ai_career_platform",
+    up: `
+      CREATE TABLE IF NOT EXISTS career_profiles (
+        id VARCHAR(128) PRIMARY KEY,
+        user_id VARCHAR(128) UNIQUE NOT NULL,
+        career_goal VARCHAR(256),
+        target_companies JSONB DEFAULT '[]',
+        target_role VARCHAR(128),
+        experience_level VARCHAR(64),
+        preferred_tech_stack JSONB DEFAULT '[]',
+        strength_areas JSONB DEFAULT '[]',
+        weak_areas JSONB DEFAULT '[]',
+        readiness_history JSONB DEFAULT '[]',
+        learning_velocity NUMERIC DEFAULT 1.0,
+        career_progression JSONB DEFAULT '{}',
+        created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS resume_versions (
+        id VARCHAR(128) PRIMARY KEY,
+        user_id VARCHAR(128) NOT NULL,
+        title VARCHAR(256) NOT NULL,
+        target_role VARCHAR(128) NOT NULL,
+        template_id VARCHAR(64) DEFAULT 'modern',
+        content_json JSONB NOT NULL DEFAULT '{}',
+        ats_score NUMERIC DEFAULT 0,
+        is_active BOOLEAN DEFAULT TRUE,
+        created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS resume_reviews (
+        id VARCHAR(128) PRIMARY KEY,
+        resume_id VARCHAR(128) NOT NULL,
+        user_id VARCHAR(128) NOT NULL,
+        ats_score NUMERIC DEFAULT 0,
+        skill_gaps JSONB DEFAULT '[]',
+        keyword_matches JSONB DEFAULT '[]',
+        formatting_score NUMERIC DEFAULT 0,
+        experience_quality VARCHAR(64),
+        project_quality VARCHAR(64),
+        achievements_score NUMERIC DEFAULT 0,
+        issues JSONB DEFAULT '[]',
+        suggestions JSONB DEFAULT '[]',
+        improvement_plan TEXT,
+        created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS job_matches (
+        id VARCHAR(128) PRIMARY KEY,
+        user_id VARCHAR(128) NOT NULL,
+        company VARCHAR(128) NOT NULL,
+        role VARCHAR(128) NOT NULL,
+        match_percentage NUMERIC DEFAULT 0,
+        skill_gaps JSONB DEFAULT '[]',
+        recommended_topics JSONB DEFAULT '[]',
+        recommended_problems JSONB DEFAULT '[]',
+        created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS career_roadmaps (
+        id VARCHAR(128) PRIMARY KEY,
+        user_id VARCHAR(128) NOT NULL,
+        target_company VARCHAR(128) NOT NULL,
+        target_role VARCHAR(128) NOT NULL,
+        interview_date TIMESTAMPTZ,
+        daily_plan JSONB DEFAULT '[]',
+        weekly_plan JSONB DEFAULT '[]',
+        monthly_plan JSONB DEFAULT '[]',
+        revision_schedule JSONB DEFAULT '[]',
+        mock_schedule JSONB DEFAULT '[]',
+        created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS recruiter_interviews (
+        id VARCHAR(128) PRIMARY KEY,
+        user_id VARCHAR(128) NOT NULL,
+        company VARCHAR(128) NOT NULL,
+        interview_type VARCHAR(64) NOT NULL,
+        scores_json JSONB DEFAULT '{}',
+        communication_feedback TEXT,
+        confidence_score NUMERIC DEFAULT 0,
+        hiring_recommendation VARCHAR(64),
+        transcript_json JSONB DEFAULT '[]',
+        created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS portfolio_analyses (
+        id VARCHAR(128) PRIMARY KEY,
+        user_id VARCHAR(128) NOT NULL,
+        github_username VARCHAR(128),
+        portfolio_score NUMERIC DEFAULT 0,
+        complexity_rating VARCHAR(64),
+        tech_stack_detected JSONB DEFAULT '[]',
+        architecture_score NUMERIC DEFAULT 0,
+        documentation_score NUMERIC DEFAULT 0,
+        strengths JSONB DEFAULT '[]',
+        weaknesses JSONB DEFAULT '[]',
+        recommendations JSONB DEFAULT '[]',
+        created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS career_analytics (
+        id VARCHAR(128) PRIMARY KEY,
+        user_id VARCHAR(128) UNIQUE NOT NULL,
+        readiness_trends JSONB DEFAULT '[]',
+        learning_velocity NUMERIC DEFAULT 1.0,
+        interview_performance JSONB DEFAULT '{}',
+        contest_performance JSONB DEFAULT '{}',
+        skill_growth JSONB DEFAULT '{}',
+        company_readiness JSONB DEFAULT '{}',
+        placement_probability NUMERIC DEFAULT 0,
+        updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS interview_history (
+        id VARCHAR(128) PRIMARY KEY,
+        user_id VARCHAR(128) NOT NULL,
+        session_id VARCHAR(128) NOT NULL,
+        company VARCHAR(128) NOT NULL,
+        round_type VARCHAR(64) NOT NULL,
+        scores_json JSONB DEFAULT '{}',
+        feedback_text TEXT,
+        communication_metrics JSONB DEFAULT '{}',
+        technical_metrics JSONB DEFAULT '{}',
+        improvement_areas JSONB DEFAULT '[]',
+        created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS placement_predictions (
+        id VARCHAR(128) PRIMARY KEY,
+        user_id VARCHAR(128) UNIQUE NOT NULL,
+        placement_confidence NUMERIC DEFAULT 0,
+        interview_readiness NUMERIC DEFAULT 0,
+        hiring_probability NUMERIC DEFAULT 0,
+        company_breakdown JSONB DEFAULT '{}',
+        risk_areas JSONB DEFAULT '[]',
+        recommended_actions JSONB DEFAULT '[]',
+        updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_career_profile_user ON career_profiles(user_id);
+      CREATE INDEX IF NOT EXISTS idx_resume_ver_user ON resume_versions(user_id);
+      CREATE INDEX IF NOT EXISTS idx_resume_rev_resume ON resume_reviews(resume_id);
+      CREATE INDEX IF NOT EXISTS idx_job_match_user ON job_matches(user_id);
+      CREATE INDEX IF NOT EXISTS idx_career_map_user ON career_roadmaps(user_id);
+      CREATE INDEX IF NOT EXISTS idx_recruiter_int_user ON recruiter_interviews(user_id);
+      CREATE INDEX IF NOT EXISTS idx_portfolio_an_user ON portfolio_analyses(user_id);
+      CREATE INDEX IF NOT EXISTS idx_career_an_user ON career_analytics(user_id);
+      CREATE INDEX IF NOT EXISTS idx_interview_hist_user ON interview_history(user_id);
+      CREATE INDEX IF NOT EXISTS idx_placement_pred_user ON placement_predictions(user_id);
+    `,
+    down: `
+      DROP TABLE IF EXISTS placement_predictions CASCADE;
+      DROP TABLE IF EXISTS interview_history CASCADE;
+      DROP TABLE IF EXISTS career_analytics CASCADE;
+      DROP TABLE IF EXISTS portfolio_analyses CASCADE;
+      DROP TABLE IF EXISTS recruiter_interviews CASCADE;
+      DROP TABLE IF EXISTS career_roadmaps CASCADE;
+      DROP TABLE IF EXISTS job_matches CASCADE;
+      DROP TABLE IF EXISTS resume_reviews CASCADE;
+      DROP TABLE IF EXISTS resume_versions CASCADE;
+      DROP TABLE IF EXISTS career_profiles CASCADE;
+    `,
+  },
+  {
+    version: "021",
+    name: "021_learning_intelligence_engine",
+    up: `
+      CREATE TABLE IF NOT EXISTS knowledge_nodes (
+        id VARCHAR(64) PRIMARY KEY,
+        topic VARCHAR(128) NOT NULL,
+        subtopic VARCHAR(128) NOT NULL,
+        category VARCHAR(64) NOT NULL,
+        difficulty_level VARCHAR(32) DEFAULT 'Medium',
+        description TEXT,
+        prerequisites JSONB DEFAULT '[]',
+        created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS knowledge_edges (
+        id VARCHAR(64) PRIMARY KEY,
+        source_node_id VARCHAR(64) NOT NULL REFERENCES knowledge_nodes(id) ON DELETE CASCADE,
+        target_node_id VARCHAR(64) NOT NULL REFERENCES knowledge_nodes(id) ON DELETE CASCADE,
+        relationship_type VARCHAR(64) DEFAULT 'prerequisite',
+        weight NUMERIC DEFAULT 1.0,
+        created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS learning_paths (
+        id VARCHAR(64) PRIMARY KEY,
+        user_id VARCHAR(64) NOT NULL,
+        path_name VARCHAR(128) NOT NULL,
+        target_goal VARCHAR(128) NOT NULL,
+        node_sequence JSONB DEFAULT '[]',
+        progress_percentage NUMERIC DEFAULT 0,
+        current_node_id VARCHAR(64),
+        created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS mastery_scores (
+        id VARCHAR(64) PRIMARY KEY,
+        user_id VARCHAR(64) NOT NULL,
+        topic VARCHAR(128) NOT NULL,
+        subtopic VARCHAR(128) NOT NULL,
+        mastery_rating NUMERIC DEFAULT 0,
+        retention_score NUMERIC DEFAULT 0,
+        revision_score NUMERIC DEFAULT 0,
+        difficulty_score NUMERIC DEFAULT 0,
+        last_practiced_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+        created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(user_id, topic, subtopic)
+      );
+
+      CREATE TABLE IF NOT EXISTS topic_dependencies (
+        id VARCHAR(64) PRIMARY KEY,
+        topic VARCHAR(128) NOT NULL,
+        parent_topic VARCHAR(128) NOT NULL,
+        dependency_type VARCHAR(64) DEFAULT 'hard_prerequisite',
+        importance_rating NUMERIC DEFAULT 5.0,
+        created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS knowledge_gaps (
+        id VARCHAR(64) PRIMARY KEY,
+        user_id VARCHAR(64) NOT NULL,
+        gap_type VARCHAR(64) NOT NULL, -- missing_prerequisite, weak_concept, repeated_mistake, interview_weakness
+        topic VARCHAR(128) NOT NULL,
+        subtopic VARCHAR(128),
+        severity VARCHAR(32) DEFAULT 'Medium',
+        detected_reason TEXT,
+        remediation_action TEXT,
+        is_resolved BOOLEAN DEFAULT FALSE,
+        created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS knowledge_predictions (
+        id VARCHAR(64) PRIMARY KEY,
+        user_id VARCHAR(64) NOT NULL,
+        prediction_type VARCHAR(64) NOT NULL, -- topic_fail, topic_forget, interview_risk, placement_risk
+        topic VARCHAR(128),
+        risk_probability NUMERIC DEFAULT 0,
+        prediction_reason TEXT,
+        suggested_prevention TEXT,
+        created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS learning_recommendations (
+        id VARCHAR(64) PRIMARY KEY,
+        user_id VARCHAR(64) NOT NULL,
+        recommendation_type VARCHAR(64) NOT NULL, -- next_topic, revision_schedule, contest_suggestion, company_prep
+        title VARCHAR(255) NOT NULL,
+        description TEXT,
+        target_resource VARCHAR(255),
+        priority VARCHAR(32) DEFAULT 'High',
+        is_completed BOOLEAN DEFAULT FALSE,
+        created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_knodes_topic ON knowledge_nodes(topic);
+      CREATE INDEX IF NOT EXISTS idx_kedges_src ON knowledge_edges(source_node_id);
+      CREATE INDEX IF NOT EXISTS idx_kedges_tgt ON knowledge_edges(target_node_id);
+      CREATE INDEX IF NOT EXISTS idx_lpaths_user ON learning_paths(user_id);
+      CREATE INDEX IF NOT EXISTS idx_mscores_user_topic ON mastery_scores(user_id, topic);
+      CREATE INDEX IF NOT EXISTS idx_kgaps_user ON knowledge_gaps(user_id);
+      CREATE INDEX IF NOT EXISTS idx_kpred_user ON knowledge_predictions(user_id);
+      CREATE INDEX IF NOT EXISTS idx_lrec_user ON learning_recommendations(user_id);
+    `,
+    down: `
+      DROP TABLE IF EXISTS learning_recommendations CASCADE;
+      DROP TABLE IF EXISTS knowledge_predictions CASCADE;
+      DROP TABLE IF EXISTS knowledge_gaps CASCADE;
+      DROP TABLE IF EXISTS topic_dependencies CASCADE;
+      DROP TABLE IF EXISTS mastery_scores CASCADE;
+      DROP TABLE IF EXISTS learning_paths CASCADE;
+      DROP TABLE IF EXISTS knowledge_edges CASCADE;
+      DROP TABLE IF EXISTS knowledge_nodes CASCADE;
+    `,
+  },
+  {
+    version: "022",
+    name: "022_contest_ecosystem",
+    up: `
+      CREATE TABLE IF NOT EXISTS contests (
+        id VARCHAR(64) PRIMARY KEY,
+        title VARCHAR(255) NOT NULL,
+        description TEXT,
+        contest_type VARCHAR(64) NOT NULL DEFAULT 'Weekly', -- Daily, Weekly, Monthly, Team, Company, Virtual
+        start_time TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        end_time TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP + INTERVAL '2 hours',
+        duration_minutes INTEGER DEFAULT 120,
+        created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS contest_problems (
+        id VARCHAR(64) PRIMARY KEY,
+        contest_id VARCHAR(64) NOT NULL REFERENCES contests(id) ON DELETE CASCADE,
+        problem_id VARCHAR(64) NOT NULL,
+        points INTEGER DEFAULT 100,
+        order_index INTEGER DEFAULT 0,
+        created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS contest_participants (
+        id VARCHAR(64) PRIMARY KEY,
+        contest_id VARCHAR(64) NOT NULL REFERENCES contests(id) ON DELETE CASCADE,
+        user_id VARCHAR(64) NOT NULL,
+        rating_before INTEGER DEFAULT 1500,
+        rating_after INTEGER DEFAULT 1500,
+        rank INTEGER DEFAULT 0,
+        score INTEGER DEFAULT 0,
+        created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(contest_id, user_id)
+      );
+
+      CREATE TABLE IF NOT EXISTS contest_submissions (
+        id VARCHAR(64) PRIMARY KEY,
+        contest_id VARCHAR(64) NOT NULL REFERENCES contests(id) ON DELETE CASCADE,
+        user_id VARCHAR(64) NOT NULL,
+        problem_id VARCHAR(64) NOT NULL,
+        verdict VARCHAR(64) NOT NULL DEFAULT 'Accepted', -- Accepted, Wrong Answer, Time Limit Exceeded, Runtime Error
+        runtime INTEGER DEFAULT 0, -- ms
+        memory INTEGER DEFAULT 0, -- KB
+        created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS contest_teams (
+        id VARCHAR(64) PRIMARY KEY,
+        contest_id VARCHAR(64) NOT NULL REFERENCES contests(id) ON DELETE CASCADE,
+        team_name VARCHAR(128) NOT NULL,
+        captain_id VARCHAR(64) NOT NULL,
+        created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS contest_team_members (
+        id VARCHAR(64) PRIMARY KEY,
+        team_id VARCHAR(64) NOT NULL REFERENCES contest_teams(id) ON DELETE CASCADE,
+        user_id VARCHAR(64) NOT NULL,
+        created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(team_id, user_id)
+      );
+
+      CREATE TABLE IF NOT EXISTS contest_analytics (
+        id VARCHAR(64) PRIMARY KEY,
+        user_id VARCHAR(64) UNIQUE NOT NULL,
+        contests_joined INTEGER DEFAULT 0,
+        contests_won INTEGER DEFAULT 0,
+        average_rank NUMERIC DEFAULT 0,
+        rating INTEGER DEFAULT 1500,
+        updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS contest_predictions (
+        id VARCHAR(64) PRIMARY KEY,
+        user_id VARCHAR(64) NOT NULL,
+        predicted_rank INTEGER DEFAULT 0,
+        predicted_rating INTEGER DEFAULT 1500,
+        predicted_company_readiness NUMERIC DEFAULT 0,
+        created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_cproblems_cid ON contest_problems(contest_id);
+      CREATE INDEX IF NOT EXISTS idx_cpart_cid ON contest_participants(contest_id);
+      CREATE INDEX IF NOT EXISTS idx_cpart_uid ON contest_participants(user_id);
+      CREATE INDEX IF NOT EXISTS idx_csub_cid_uid ON contest_submissions(contest_id, user_id);
+      CREATE INDEX IF NOT EXISTS idx_cteam_cid ON contest_teams(contest_id);
+      CREATE INDEX IF NOT EXISTS idx_canalytics_uid ON contest_analytics(user_id);
+      CREATE INDEX IF NOT EXISTS idx_cpred_uid ON contest_predictions(user_id);
+    `,
+    down: `
+      DROP TABLE IF EXISTS contest_predictions CASCADE;
+      DROP TABLE IF EXISTS contest_analytics CASCADE;
+      DROP TABLE IF EXISTS contest_team_members CASCADE;
+      DROP TABLE IF EXISTS contest_teams CASCADE;
+      DROP TABLE IF EXISTS contest_submissions CASCADE;
+      DROP TABLE IF EXISTS contest_participants CASCADE;
+      DROP TABLE IF EXISTS contest_problems CASCADE;
+      DROP TABLE IF EXISTS contests CASCADE;
+    `,
+  },
+  {
+    version: "023",
+    name: "023_ai_hiring_assessment_platform",
+    up: `
+      CREATE TABLE IF NOT EXISTS assessments (
+        id VARCHAR(64) PRIMARY KEY,
+        title VARCHAR(255) NOT NULL,
+        description TEXT,
+        assessment_type VARCHAR(64) NOT NULL DEFAULT 'Online Assessment', -- Coding, AI Interview, MCQ, System Design
+        company VARCHAR(128) NOT NULL DEFAULT 'Google',
+        duration_minutes INTEGER DEFAULT 60,
+        difficulty VARCHAR(32) DEFAULT 'Medium',
+        created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS assessment_questions (
+        id VARCHAR(64) PRIMARY KEY,
+        assessment_id VARCHAR(64) NOT NULL REFERENCES assessments(id) ON DELETE CASCADE,
+        question_type VARCHAR(64) NOT NULL DEFAULT 'Coding',
+        question_content JSONB NOT NULL,
+        points INTEGER DEFAULT 100
+      );
+
+      CREATE TABLE IF NOT EXISTS assessment_attempts (
+        id VARCHAR(64) PRIMARY KEY,
+        assessment_id VARCHAR(64) NOT NULL REFERENCES assessments(id) ON DELETE CASCADE,
+        user_id VARCHAR(64) NOT NULL,
+        score INTEGER DEFAULT 0,
+        rank INTEGER DEFAULT 0,
+        started_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+        completed_at TIMESTAMPTZ
+      );
+
+      CREATE TABLE IF NOT EXISTS candidate_profiles (
+        id VARCHAR(64) PRIMARY KEY,
+        user_id VARCHAR(64) UNIQUE NOT NULL,
+        readiness_score NUMERIC DEFAULT 0,
+        overall_rating INTEGER DEFAULT 1500,
+        updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS candidate_rankings (
+        id VARCHAR(64) PRIMARY KEY,
+        user_id VARCHAR(64) NOT NULL,
+        company VARCHAR(128) NOT NULL,
+        ranking_score NUMERIC DEFAULT 0,
+        percentile NUMERIC DEFAULT 0,
+        UNIQUE(user_id, company)
+      );
+
+      CREATE TABLE IF NOT EXISTS recruiter_feedback (
+        id VARCHAR(64) PRIMARY KEY,
+        candidate_id VARCHAR(64) NOT NULL,
+        company VARCHAR(128) NOT NULL,
+        strengths TEXT[],
+        weaknesses TEXT[],
+        recommendation VARCHAR(64) DEFAULT 'Hire',
+        created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS hiring_pipelines (
+        id VARCHAR(64) PRIMARY KEY,
+        company VARCHAR(128) NOT NULL,
+        stage_name VARCHAR(128) NOT NULL,
+        description TEXT
+      );
+
+      CREATE TABLE IF NOT EXISTS hiring_predictions (
+        id VARCHAR(64) PRIMARY KEY,
+        user_id VARCHAR(64) NOT NULL,
+        company VARCHAR(128) NOT NULL,
+        selection_probability NUMERIC DEFAULT 0,
+        confidence_score NUMERIC DEFAULT 0,
+        created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(user_id, company)
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_aquestions_aid ON assessment_questions(assessment_id);
+      CREATE INDEX IF NOT EXISTS idx_aattempts_aid_uid ON assessment_attempts(assessment_id, user_id);
+      CREATE INDEX IF NOT EXISTS idx_crankings_uid_comp ON candidate_rankings(user_id, company);
+      CREATE INDEX IF NOT EXISTS idx_hpredictions_uid_comp ON hiring_predictions(user_id, company);
+    `,
+    down: `
+      DROP TABLE IF EXISTS hiring_predictions CASCADE;
+      DROP TABLE IF EXISTS hiring_pipelines CASCADE;
+      DROP TABLE IF EXISTS recruiter_feedback CASCADE;
+      DROP TABLE IF EXISTS candidate_rankings CASCADE;
+      DROP TABLE IF EXISTS candidate_profiles CASCADE;
+      DROP TABLE IF EXISTS assessment_attempts CASCADE;
+      DROP TABLE IF EXISTS assessment_questions CASCADE;
+      DROP TABLE IF EXISTS assessments CASCADE;
+    `,
+  },
+  {
+    version: "024",
+    name: "024_enterprise_learning_ecosystem",
+    up: `
+      CREATE TABLE IF NOT EXISTS universities (
+        id VARCHAR(64) PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        code VARCHAR(64) UNIQUE NOT NULL,
+        location VARCHAR(255),
+        created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS departments (
+        id VARCHAR(64) PRIMARY KEY,
+        university_id VARCHAR(64) NOT NULL REFERENCES universities(id) ON DELETE CASCADE,
+        name VARCHAR(255) NOT NULL,
+        code VARCHAR(64) NOT NULL,
+        head_of_department VARCHAR(128)
+      );
+
+      CREATE TABLE IF NOT EXISTS faculty_members (
+        id VARCHAR(64) PRIMARY KEY,
+        university_id VARCHAR(64) NOT NULL REFERENCES universities(id) ON DELETE CASCADE,
+        department_id VARCHAR(64) REFERENCES departments(id) ON DELETE SET NULL,
+        user_id VARCHAR(64) NOT NULL,
+        designation VARCHAR(128) DEFAULT 'Assistant Professor',
+        email VARCHAR(255)
+      );
+
+      CREATE TABLE IF NOT EXISTS student_batches (
+        id VARCHAR(64) PRIMARY KEY,
+        university_id VARCHAR(64) NOT NULL REFERENCES universities(id) ON DELETE CASCADE,
+        department_id VARCHAR(64) REFERENCES departments(id) ON DELETE SET NULL,
+        batch_name VARCHAR(128) NOT NULL,
+        graduation_year INTEGER NOT NULL
+      );
+
+      CREATE TABLE IF NOT EXISTS courses (
+        id VARCHAR(64) PRIMARY KEY,
+        university_id VARCHAR(64) NOT NULL REFERENCES universities(id) ON DELETE CASCADE,
+        department_id VARCHAR(64) REFERENCES departments(id) ON DELETE SET NULL,
+        title VARCHAR(255) NOT NULL,
+        code VARCHAR(64) NOT NULL,
+        credits INTEGER DEFAULT 3,
+        semester INTEGER DEFAULT 1
+      );
+
+      CREATE TABLE IF NOT EXISTS course_modules (
+        id VARCHAR(64) PRIMARY KEY,
+        course_id VARCHAR(64) NOT NULL REFERENCES courses(id) ON DELETE CASCADE,
+        title VARCHAR(255) NOT NULL,
+        description TEXT,
+        order_index INTEGER DEFAULT 0
+      );
+
+      CREATE TABLE IF NOT EXISTS module_progress (
+        id VARCHAR(64) PRIMARY KEY,
+        module_id VARCHAR(64) NOT NULL REFERENCES course_modules(id) ON DELETE CASCADE,
+        user_id VARCHAR(64) NOT NULL,
+        status VARCHAR(64) DEFAULT 'In Progress',
+        completed_at TIMESTAMPTZ,
+        UNIQUE(module_id, user_id)
+      );
+
+      CREATE TABLE IF NOT EXISTS classrooms (
+        id VARCHAR(64) PRIMARY KEY,
+        course_id VARCHAR(64) NOT NULL REFERENCES courses(id) ON DELETE CASCADE,
+        faculty_id VARCHAR(64) REFERENCES faculty_members(id) ON DELETE SET NULL,
+        room_name VARCHAR(128) NOT NULL,
+        section VARCHAR(32) DEFAULT 'A'
+      );
+
+      CREATE TABLE IF NOT EXISTS classroom_members (
+        id VARCHAR(64) PRIMARY KEY,
+        classroom_id VARCHAR(64) NOT NULL REFERENCES classrooms(id) ON DELETE CASCADE,
+        user_id VARCHAR(64) NOT NULL,
+        role VARCHAR(32) DEFAULT 'Student',
+        UNIQUE(classroom_id, user_id)
+      );
+
+      CREATE TABLE IF NOT EXISTS assignments_v2 (
+        id VARCHAR(64) PRIMARY KEY,
+        classroom_id VARCHAR(64) NOT NULL REFERENCES classrooms(id) ON DELETE CASCADE,
+        title VARCHAR(255) NOT NULL,
+        description TEXT,
+        due_date TIMESTAMPTZ,
+        max_points INTEGER DEFAULT 100
+      );
+
+      CREATE TABLE IF NOT EXISTS assignment_submissions_v2 (
+        id VARCHAR(64) PRIMARY KEY,
+        assignment_id VARCHAR(64) NOT NULL REFERENCES assignments_v2(id) ON DELETE CASCADE,
+        user_id VARCHAR(64) NOT NULL,
+        status VARCHAR(32) DEFAULT 'Submitted',
+        score INTEGER DEFAULT 0,
+        submission_content TEXT,
+        submitted_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(assignment_id, user_id)
+      );
+
+      CREATE TABLE IF NOT EXISTS attendance_records (
+        id VARCHAR(64) PRIMARY KEY,
+        classroom_id VARCHAR(64) NOT NULL REFERENCES classrooms(id) ON DELETE CASCADE,
+        user_id VARCHAR(64) NOT NULL,
+        date DATE DEFAULT CURRENT_DATE,
+        status VARCHAR(32) DEFAULT 'Present',
+        UNIQUE(classroom_id, user_id, date)
+      );
+
+      CREATE TABLE IF NOT EXISTS placement_drives (
+        id VARCHAR(64) PRIMARY KEY,
+        university_id VARCHAR(64) NOT NULL REFERENCES universities(id) ON DELETE CASCADE,
+        company VARCHAR(128) NOT NULL,
+        title VARCHAR(255) NOT NULL,
+        min_cgpa NUMERIC DEFAULT 7.0,
+        drive_date TIMESTAMPTZ
+      );
+
+      CREATE TABLE IF NOT EXISTS placement_registrations (
+        id VARCHAR(64) PRIMARY KEY,
+        drive_id VARCHAR(64) NOT NULL REFERENCES placement_drives(id) ON DELETE CASCADE,
+        user_id VARCHAR(64) NOT NULL,
+        status VARCHAR(32) DEFAULT 'Registered',
+        registered_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(drive_id, user_id)
+      );
+
+      CREATE TABLE IF NOT EXISTS placement_results (
+        id VARCHAR(64) PRIMARY KEY,
+        drive_id VARCHAR(64) NOT NULL REFERENCES placement_drives(id) ON DELETE CASCADE,
+        user_id VARCHAR(64) NOT NULL,
+        verdict VARCHAR(64) DEFAULT 'Placed',
+        package_lpa NUMERIC DEFAULT 12.0,
+        UNIQUE(drive_id, user_id)
+      );
+
+      CREATE TABLE IF NOT EXISTS university_analytics (
+        id VARCHAR(64) PRIMARY KEY,
+        university_id VARCHAR(64) UNIQUE NOT NULL REFERENCES universities(id) ON DELETE CASCADE,
+        total_students INTEGER DEFAULT 0,
+        average_placement_rate NUMERIC DEFAULT 0,
+        top_skills TEXT[],
+        updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_depts_univid ON departments(university_id);
+      CREATE INDEX IF NOT EXISTS idx_fac_univid ON faculty_members(university_id);
+      CREATE INDEX IF NOT EXISTS idx_courses_univid ON courses(university_id);
+      CREATE INDEX IF NOT EXISTS idx_crooms_courseid ON classrooms(course_id);
+      CREATE INDEX IF NOT EXISTS idx_cmembers_croomid_uid ON classroom_members(classroom_id, user_id);
+      CREATE INDEX IF NOT EXISTS idx_assign_croomid ON assignments_v2(classroom_id);
+      CREATE INDEX IF NOT EXISTS idx_att_croomid_uid ON attendance_records(classroom_id, user_id);
+      CREATE INDEX IF NOT EXISTS idx_pdrives_univid ON placement_drives(university_id);
+    `,
+    down: `
+      DROP TABLE IF EXISTS university_analytics CASCADE;
+      DROP TABLE IF EXISTS placement_results CASCADE;
+      DROP TABLE IF EXISTS placement_registrations CASCADE;
+      DROP TABLE IF EXISTS placement_drives CASCADE;
+      DROP TABLE IF EXISTS attendance_records CASCADE;
+      DROP TABLE IF EXISTS assignment_submissions_v2 CASCADE;
+      DROP TABLE IF EXISTS assignments_v2 CASCADE;
+      DROP TABLE IF EXISTS classroom_members CASCADE;
+      DROP TABLE IF EXISTS classrooms CASCADE;
+      DROP TABLE IF EXISTS module_progress CASCADE;
+      DROP TABLE IF EXISTS course_modules CASCADE;
+      DROP TABLE IF EXISTS courses CASCADE;
+      DROP TABLE IF EXISTS student_batches CASCADE;
+      DROP TABLE IF EXISTS faculty_members CASCADE;
+      DROP TABLE IF EXISTS departments CASCADE;
+      DROP TABLE IF EXISTS universities CASCADE;
+    `,
+  },
+  {
+    version: "025",
+    name: "025_project_workspace_ecosystem",
+    up: `
+      CREATE TABLE IF NOT EXISTS project_workspaces (
+        id VARCHAR(64) PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        description TEXT,
+        owner_id VARCHAR(64) NOT NULL,
+        status VARCHAR(32) DEFAULT 'Active',
+        repository_url VARCHAR(255),
+        live_demo_url VARCHAR(255),
+        tags TEXT[],
+        created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS project_members (
+        id VARCHAR(64) PRIMARY KEY,
+        workspace_id VARCHAR(64) NOT NULL REFERENCES project_workspaces(id) ON DELETE CASCADE,
+        user_id VARCHAR(64) NOT NULL,
+        role VARCHAR(32) DEFAULT 'Contributor',
+        joined_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(workspace_id, user_id)
+      );
+
+      CREATE TABLE IF NOT EXISTS project_tasks (
+        id VARCHAR(64) PRIMARY KEY,
+        workspace_id VARCHAR(64) NOT NULL REFERENCES project_workspaces(id) ON DELETE CASCADE,
+        title VARCHAR(255) NOT NULL,
+        description TEXT,
+        assigned_to VARCHAR(64),
+        status VARCHAR(32) DEFAULT 'Todo',
+        priority VARCHAR(32) DEFAULT 'Medium',
+        due_date TIMESTAMPTZ,
+        created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS project_milestones (
+        id VARCHAR(64) PRIMARY KEY,
+        workspace_id VARCHAR(64) NOT NULL REFERENCES project_workspaces(id) ON DELETE CASCADE,
+        title VARCHAR(255) NOT NULL,
+        description TEXT,
+        status VARCHAR(32) DEFAULT 'Pending',
+        due_date TIMESTAMPTZ,
+        completed_at TIMESTAMPTZ
+      );
+
+      CREATE TABLE IF NOT EXISTS project_submissions (
+        id VARCHAR(64) PRIMARY KEY,
+        workspace_id VARCHAR(64) NOT NULL REFERENCES project_workspaces(id) ON DELETE CASCADE,
+        user_id VARCHAR(64) NOT NULL,
+        submission_url VARCHAR(255) NOT NULL,
+        description TEXT,
+        submitted_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS project_reviews (
+        id VARCHAR(64) PRIMARY KEY,
+        workspace_id VARCHAR(64) NOT NULL REFERENCES project_workspaces(id) ON DELETE CASCADE,
+        reviewer_id VARCHAR(64) NOT NULL,
+        architecture_score NUMERIC DEFAULT 0,
+        scalability_score NUMERIC DEFAULT 0,
+        maintainability_score NUMERIC DEFAULT 0,
+        documentation_score NUMERIC DEFAULT 0,
+        testing_score NUMERIC DEFAULT 0,
+        overall_score NUMERIC DEFAULT 0,
+        feedback JSONB,
+        reviewed_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS project_skills (
+        id VARCHAR(64) PRIMARY KEY,
+        workspace_id VARCHAR(64) NOT NULL REFERENCES project_workspaces(id) ON DELETE CASCADE,
+        user_id VARCHAR(64) NOT NULL,
+        skill_name VARCHAR(128) NOT NULL,
+        category VARCHAR(64),
+        proficiency_gain NUMERIC DEFAULT 0,
+        tracked_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS project_activity_logs (
+        id VARCHAR(64) PRIMARY KEY,
+        workspace_id VARCHAR(64) NOT NULL REFERENCES project_workspaces(id) ON DELETE CASCADE,
+        user_id VARCHAR(64) NOT NULL,
+        activity_type VARCHAR(64) NOT NULL,
+        description TEXT,
+        metadata JSONB,
+        created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS internship_programs (
+        id VARCHAR(64) PRIMARY KEY,
+        company_name VARCHAR(255) NOT NULL,
+        title VARCHAR(255) NOT NULL,
+        description TEXT,
+        stipend VARCHAR(64),
+        duration VARCHAR(64),
+        location VARCHAR(128),
+        tags TEXT[],
+        created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS internship_applications (
+        id VARCHAR(64) PRIMARY KEY,
+        internship_id VARCHAR(64) NOT NULL REFERENCES internship_programs(id) ON DELETE CASCADE,
+        user_id VARCHAR(64) NOT NULL,
+        status VARCHAR(32) DEFAULT 'Applied',
+        applied_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(internship_id, user_id)
+      );
+
+      CREATE TABLE IF NOT EXISTS internship_progress (
+        id VARCHAR(64) PRIMARY KEY,
+        internship_id VARCHAR(64) NOT NULL REFERENCES internship_programs(id) ON DELETE CASCADE,
+        user_id VARCHAR(64) NOT NULL,
+        task_completed INTEGER DEFAULT 0,
+        mentor_feedback TEXT,
+        overall_rating NUMERIC DEFAULT 0,
+        status VARCHAR(32) DEFAULT 'In-Progress',
+        updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(internship_id, user_id)
+      );
+
+      CREATE TABLE IF NOT EXISTS project_analytics (
+        id VARCHAR(64) PRIMARY KEY,
+        workspace_id VARCHAR(64) UNIQUE NOT NULL REFERENCES project_workspaces(id) ON DELETE CASCADE,
+        completion_rate NUMERIC DEFAULT 0,
+        milestone_performance NUMERIC DEFAULT 0,
+        team_productivity NUMERIC DEFAULT 0,
+        quality_score NUMERIC DEFAULT 0,
+        updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_proj_work_owner ON project_workspaces(owner_id);
+      CREATE INDEX IF NOT EXISTS idx_proj_mem_workid ON project_members(workspace_id);
+      CREATE INDEX IF NOT EXISTS idx_proj_mem_uid ON project_members(user_id);
+      CREATE INDEX IF NOT EXISTS idx_proj_task_workid ON project_tasks(workspace_id);
+      CREATE INDEX IF NOT EXISTS idx_proj_task_uid ON project_tasks(assigned_to);
+      CREATE INDEX IF NOT EXISTS idx_proj_mile_workid ON project_milestones(workspace_id);
+      CREATE INDEX IF NOT EXISTS idx_proj_sub_workid ON project_submissions(workspace_id);
+      CREATE INDEX IF NOT EXISTS idx_proj_skill_uid ON project_skills(user_id);
+      CREATE INDEX IF NOT EXISTS idx_int_app_iid ON internship_applications(internship_id);
+      CREATE INDEX IF NOT EXISTS idx_int_app_uid ON internship_applications(user_id);
+      CREATE INDEX IF NOT EXISTS idx_int_prog_iid ON internship_progress(internship_id);
+      CREATE INDEX IF NOT EXISTS idx_int_prog_uid ON internship_progress(user_id);
+    `,
+    down: `
+      DROP TABLE IF EXISTS project_analytics CASCADE;
+      DROP TABLE IF EXISTS internship_progress CASCADE;
+      DROP TABLE IF EXISTS internship_applications CASCADE;
+      DROP TABLE IF EXISTS internship_programs CASCADE;
+      DROP TABLE IF EXISTS project_activity_logs CASCADE;
+      DROP TABLE IF EXISTS project_skills CASCADE;
+      DROP TABLE IF EXISTS project_reviews CASCADE;
+      DROP TABLE IF EXISTS project_submissions CASCADE;
+      DROP TABLE IF EXISTS project_milestones CASCADE;
+      DROP TABLE IF EXISTS project_tasks CASCADE;
+      DROP TABLE IF EXISTS project_members CASCADE;
+      DROP TABLE IF EXISTS project_workspaces CASCADE;
+    `,
+  },
+  {
+    version: "026",
+    name: "026_research_innovation_ecosystem",
+    up: `
+      -- Research System
+      CREATE TABLE IF NOT EXISTS research_projects (
+        id VARCHAR(64) PRIMARY KEY,
+        owner_id VARCHAR(64) NOT NULL,
+        title VARCHAR(255) NOT NULL,
+        abstract TEXT,
+        domain VARCHAR(128),
+        status VARCHAR(32) DEFAULT 'Active',
+        visibility VARCHAR(32) DEFAULT 'Public',
+        metadata JSONB,
+        created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS research_papers (
+        id VARCHAR(64) PRIMARY KEY,
+        project_id VARCHAR(64) REFERENCES research_projects(id) ON DELETE SET NULL,
+        title VARCHAR(255) NOT NULL,
+        authors TEXT[],
+        publication_date DATE,
+        url TEXT,
+        abstract TEXT,
+        tags TEXT[],
+        metadata JSONB,
+        created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS research_teams (
+        id VARCHAR(64) PRIMARY KEY,
+        project_id VARCHAR(64) NOT NULL REFERENCES research_projects(id) ON DELETE CASCADE,
+        name VARCHAR(255),
+        created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS research_members (
+        id VARCHAR(64) PRIMARY KEY,
+        team_id VARCHAR(64) NOT NULL REFERENCES research_teams(id) ON DELETE CASCADE,
+        user_id VARCHAR(64) NOT NULL,
+        role VARCHAR(64) DEFAULT 'Researcher',
+        joined_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(team_id, user_id)
+      );
+
+      CREATE TABLE IF NOT EXISTS literature_reviews (
+        id VARCHAR(64) PRIMARY KEY,
+        user_id VARCHAR(64) NOT NULL,
+        topic VARCHAR(255) NOT NULL,
+        summary TEXT,
+        full_review TEXT,
+        metadata JSONB,
+        created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS citations (
+        id VARCHAR(64) PRIMARY KEY,
+        user_id VARCHAR(64) NOT NULL,
+        paper_title VARCHAR(255) NOT NULL,
+        citation_text TEXT,
+        metadata JSONB,
+        created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS research_analytics (
+        id VARCHAR(64) PRIMARY KEY,
+        user_id VARCHAR(64) UNIQUE NOT NULL,
+        papers_read INTEGER DEFAULT 0,
+        projects_contributed INTEGER DEFAULT 0,
+        impact_factor NUMERIC DEFAULT 0,
+        collaboration_score NUMERIC DEFAULT 0,
+        updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+      );
+
+      -- Open Source System
+      CREATE TABLE IF NOT EXISTS opensource_projects (
+        id VARCHAR(64) PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        repository_url TEXT UNIQUE NOT NULL,
+        description TEXT,
+        language VARCHAR(64),
+        stars INTEGER DEFAULT 0,
+        metadata JSONB,
+        created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS opensource_contributions (
+        id VARCHAR(64) PRIMARY KEY,
+        user_id VARCHAR(64) NOT NULL,
+        project_id VARCHAR(64) REFERENCES opensource_projects(id) ON DELETE CASCADE,
+        contribution_type VARCHAR(64) NOT NULL, -- Commit, PR, Issue
+        description TEXT,
+        impact_score NUMERIC DEFAULT 0,
+        metadata JSONB,
+        created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS pull_request_reviews (
+        id VARCHAR(64) PRIMARY KEY,
+        user_id VARCHAR(64) NOT NULL,
+        project_id VARCHAR(64) REFERENCES opensource_projects(id) ON DELETE CASCADE,
+        pr_number INTEGER,
+        review_text TEXT,
+        metadata JSONB,
+        created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS opensource_rankings (
+        id VARCHAR(64) PRIMARY KEY,
+        user_id VARCHAR(64) UNIQUE NOT NULL,
+        rank_score NUMERIC DEFAULT 0,
+        global_rank INTEGER,
+        last_calculated TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+      );
+
+      -- Innovation System
+      CREATE TABLE IF NOT EXISTS innovation_projects (
+        id VARCHAR(64) PRIMARY KEY,
+        user_id VARCHAR(64) NOT NULL,
+        title VARCHAR(255) NOT NULL,
+        description TEXT,
+        category VARCHAR(64),
+        status VARCHAR(32) DEFAULT 'Draft',
+        created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS startup_ideas (
+        id VARCHAR(64) PRIMARY KEY,
+        user_id VARCHAR(64) NOT NULL,
+        title VARCHAR(255) NOT NULL,
+        problem_statement TEXT,
+        solution_statement TEXT,
+        market_size VARCHAR(128),
+        evaluation_score NUMERIC DEFAULT 0,
+        metadata JSONB,
+        created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS mvp_roadmaps (
+        id VARCHAR(64) PRIMARY KEY,
+        project_id VARCHAR(64) NOT NULL,
+        user_id VARCHAR(64) NOT NULL,
+        milestones JSONB NOT NULL,
+        created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS innovation_analytics (
+        id VARCHAR(64) PRIMARY KEY,
+        user_id VARCHAR(64) UNIQUE NOT NULL,
+        ideas_count INTEGER DEFAULT 0,
+        mvps_built INTEGER DEFAULT 0,
+        feasibility_avg NUMERIC DEFAULT 0,
+        innovation_score NUMERIC DEFAULT 0,
+        updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_res_proj_owner ON research_projects(owner_id);
+      CREATE INDEX IF NOT EXISTS idx_res_paper_proj ON research_papers(project_id);
+      CREATE INDEX IF NOT EXISTS idx_res_team_proj ON research_teams(project_id);
+      CREATE INDEX IF NOT EXISTS idx_res_mem_team ON research_members(team_id);
+      CREATE INDEX IF NOT EXISTS idx_res_mem_uid ON research_members(user_id);
+      CREATE INDEX IF NOT EXISTS idx_lit_rev_uid ON literature_reviews(user_id);
+      CREATE INDEX IF NOT EXISTS idx_cit_uid ON citations(user_id);
+      CREATE INDEX IF NOT EXISTS idx_oss_cont_uid ON opensource_contributions(user_id);
+      CREATE INDEX IF NOT EXISTS idx_oss_cont_proj ON opensource_contributions(project_id);
+      CREATE INDEX IF NOT EXISTS idx_pr_rev_uid ON pull_request_reviews(user_id);
+      CREATE INDEX IF NOT EXISTS idx_inn_proj_uid ON innovation_projects(user_id);
+      CREATE INDEX IF NOT EXISTS idx_start_uid ON startup_ideas(user_id);
+      CREATE INDEX IF NOT EXISTS idx_mvp_proj ON mvp_roadmaps(project_id);
+      CREATE INDEX IF NOT EXISTS idx_mvp_uid ON mvp_roadmaps(user_id);
+    `,
+    down: `
+      DROP TABLE IF EXISTS innovation_analytics CASCADE;
+      DROP TABLE IF EXISTS mvp_roadmaps CASCADE;
+      DROP TABLE IF EXISTS startup_ideas CASCADE;
+      DROP TABLE IF EXISTS innovation_projects CASCADE;
+      DROP TABLE IF EXISTS opensource_rankings CASCADE;
+      DROP TABLE IF EXISTS pull_request_reviews CASCADE;
+      DROP TABLE IF EXISTS opensource_contributions CASCADE;
+      DROP TABLE IF EXISTS opensource_projects CASCADE;
+      DROP TABLE IF EXISTS research_analytics CASCADE;
+      DROP TABLE IF EXISTS citations CASCADE;
+      DROP TABLE IF EXISTS literature_reviews CASCADE;
+      DROP TABLE IF EXISTS research_members CASCADE;
+      DROP TABLE IF EXISTS research_teams CASCADE;
+      DROP TABLE IF EXISTS research_papers CASCADE;
+      DROP TABLE IF EXISTS research_projects CASCADE;
+    `,
+  },
+  {
+    version: "027",
+    name: "027_ai_operating_system",
+    up: `
+      -- Agent System
+      CREATE TABLE IF NOT EXISTS ai_agents (
+        id VARCHAR(64) PRIMARY KEY,
+        user_id VARCHAR(64) NOT NULL,
+        name VARCHAR(128) NOT NULL,
+        agent_type VARCHAR(64) NOT NULL, -- Learning, Career, Research, Project, Contest, Startup
+        status VARCHAR(32) DEFAULT 'Active',
+        config JSONB DEFAULT '{}',
+        created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS agent_tasks (
+        id VARCHAR(64) PRIMARY KEY,
+        agent_id VARCHAR(64) NOT NULL REFERENCES ai_agents(id) ON DELETE CASCADE,
+        user_id VARCHAR(64) NOT NULL,
+        title VARCHAR(255) NOT NULL,
+        description TEXT,
+        status VARCHAR(32) DEFAULT 'Pending',
+        priority INTEGER DEFAULT 1,
+        metadata JSONB,
+        due_at TIMESTAMPTZ,
+        created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS agent_memory (
+        id VARCHAR(64) PRIMARY KEY,
+        agent_id VARCHAR(64) NOT NULL REFERENCES ai_agents(id) ON DELETE CASCADE,
+        user_id VARCHAR(64) NOT NULL,
+        memory_key VARCHAR(128) NOT NULL,
+        memory_value TEXT,
+        importance_score NUMERIC DEFAULT 0,
+        metadata JSONB,
+        created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(agent_id, memory_key)
+      );
+
+      CREATE TABLE IF NOT EXISTS agent_workflows (
+        id VARCHAR(64) PRIMARY KEY,
+        user_id VARCHAR(64) NOT NULL,
+        name VARCHAR(255) NOT NULL,
+        steps JSONB NOT NULL,
+        trigger_config JSONB,
+        status VARCHAR(32) DEFAULT 'Active',
+        created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS agent_executions (
+        id VARCHAR(64) PRIMARY KEY,
+        workflow_id VARCHAR(64) REFERENCES agent_workflows(id) ON DELETE SET NULL,
+        agent_id VARCHAR(64) REFERENCES ai_agents(id) ON DELETE SET NULL,
+        user_id VARCHAR(64) NOT NULL,
+        status VARCHAR(32) NOT NULL,
+        input JSONB,
+        output JSONB,
+        started_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+        completed_at TIMESTAMPTZ
+      );
+
+      CREATE TABLE IF NOT EXISTS agent_logs (
+        id VARCHAR(64) PRIMARY KEY,
+        execution_id VARCHAR(64) REFERENCES agent_executions(id) ON DELETE CASCADE,
+        agent_id VARCHAR(64) REFERENCES ai_agents(id) ON DELETE SET NULL,
+        level VARCHAR(16) DEFAULT 'INFO',
+        message TEXT,
+        metadata JSONB,
+        created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+      );
+
+      -- Goal System
+      CREATE TABLE IF NOT EXISTS user_goals (
+        id VARCHAR(64) PRIMARY KEY,
+        user_id VARCHAR(64) NOT NULL,
+        title VARCHAR(255) NOT NULL,
+        description TEXT,
+        category VARCHAR(64), -- Career, Learning, Research, etc.
+        target_date TIMESTAMPTZ,
+        status VARCHAR(32) DEFAULT 'Active',
+        progress NUMERIC DEFAULT 0,
+        created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS goal_milestones (
+        id VARCHAR(64) PRIMARY KEY,
+        goal_id VARCHAR(64) NOT NULL REFERENCES user_goals(id) ON DELETE CASCADE,
+        title VARCHAR(255) NOT NULL,
+        status VARCHAR(32) DEFAULT 'Pending',
+        metadata JSONB,
+        completed_at TIMESTAMPTZ
+      );
+
+      CREATE TABLE IF NOT EXISTS goal_predictions (
+        id VARCHAR(64) PRIMARY KEY,
+        goal_id VARCHAR(64) NOT NULL REFERENCES user_goals(id) ON DELETE CASCADE,
+        user_id VARCHAR(64) NOT NULL,
+        probability NUMERIC DEFAULT 0,
+        predicted_completion_date TIMESTAMPTZ,
+        reasoning TEXT,
+        created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+      );
+
+      -- Automation System
+      CREATE TABLE IF NOT EXISTS automations (
+        id VARCHAR(64) PRIMARY KEY,
+        user_id VARCHAR(64) NOT NULL,
+        name VARCHAR(255) NOT NULL,
+        description TEXT,
+        trigger_type VARCHAR(64), -- Schedule, Event, Manual
+        action_config JSONB NOT NULL,
+        is_active BOOLEAN DEFAULT TRUE,
+        created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS automation_runs (
+        id VARCHAR(64) PRIMARY KEY,
+        automation_id VARCHAR(64) REFERENCES automations(id) ON DELETE CASCADE,
+        status VARCHAR(32) NOT NULL,
+        result JSONB,
+        started_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+        finished_at TIMESTAMPTZ
+      );
+
+      -- Intelligence System
+      CREATE TABLE IF NOT EXISTS personal_ai_profiles (
+        id VARCHAR(64) PRIMARY KEY,
+        user_id VARCHAR(64) UNIQUE NOT NULL,
+        preferences JSONB DEFAULT '{}',
+        learning_style VARCHAR(64),
+        career_focus TEXT[],
+        research_interests TEXT[],
+        updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS ai_decisions (
+        id VARCHAR(64) PRIMARY KEY,
+        user_id VARCHAR(64) NOT NULL,
+        agent_id VARCHAR(64) REFERENCES ai_agents(id) ON DELETE SET NULL,
+        decision_type VARCHAR(64),
+        context JSONB,
+        rationale TEXT,
+        impact_score NUMERIC DEFAULT 0,
+        created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS ai_recommendations (
+        id VARCHAR(64) PRIMARY KEY,
+        user_id VARCHAR(64) NOT NULL,
+        category VARCHAR(64),
+        title VARCHAR(255) NOT NULL,
+        content TEXT,
+        action_url TEXT,
+        is_read BOOLEAN DEFAULT FALSE,
+        created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_agent_uid ON ai_agents(user_id);
+      CREATE INDEX IF NOT EXISTS idx_agent_task_aid ON agent_tasks(agent_id);
+      CREATE INDEX IF NOT EXISTS idx_agent_mem_aid ON agent_memory(agent_id);
+      CREATE INDEX IF NOT EXISTS idx_agent_exec_wid ON agent_executions(workflow_id);
+      CREATE INDEX IF NOT EXISTS idx_goal_uid ON user_goals(user_id);
+      CREATE INDEX IF NOT EXISTS idx_goal_mile_gid ON goal_milestones(goal_id);
+      CREATE INDEX IF NOT EXISTS idx_auto_uid ON automations(user_id);
+      CREATE INDEX IF NOT EXISTS idx_rec_uid ON ai_recommendations(user_id);
+    `,
+    down: `
+      DROP TABLE IF EXISTS ai_recommendations CASCADE;
+      DROP TABLE IF EXISTS ai_decisions CASCADE;
+      DROP TABLE IF EXISTS personal_ai_profiles CASCADE;
+      DROP TABLE IF EXISTS automation_runs CASCADE;
+      DROP TABLE IF EXISTS automations CASCADE;
+      DROP TABLE IF EXISTS goal_predictions CASCADE;
+      DROP TABLE IF EXISTS goal_milestones CASCADE;
+      DROP TABLE IF EXISTS user_goals CASCADE;
+      DROP TABLE IF EXISTS agent_logs CASCADE;
+      DROP TABLE IF EXISTS agent_executions CASCADE;
+      DROP TABLE IF EXISTS agent_workflows CASCADE;
+      DROP TABLE IF EXISTS agent_memory CASCADE;
+      DROP TABLE IF EXISTS agent_tasks CASCADE;
+      DROP TABLE IF EXISTS ai_agents CASCADE;
+    `,
+  },
+  {
+    version: "028",
+    name: "028_agent_marketplace_and_builder",
+    up: `
+      CREATE TABLE IF NOT EXISTS agent_templates (
+        id VARCHAR(64) PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        description TEXT,
+        agent_type VARCHAR(64) NOT NULL,
+        instructions TEXT,
+        personality JSONB,
+        tools JSONB,
+        memory_mode VARCHAR(32) DEFAULT 'standard',
+        workflow_rules JSONB,
+        created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS agent_workflow_steps (
+        id VARCHAR(64) PRIMARY KEY,
+        workflow_id VARCHAR(64) REFERENCES agent_workflows(id) ON DELETE CASCADE,
+        step_type VARCHAR(64) NOT NULL, -- Trigger, Action, Condition, Decision, Loop, Memory, Agent
+        config JSONB NOT NULL,
+        order_index INTEGER NOT NULL,
+        created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS agent_marketplace (
+        id VARCHAR(64) PRIMARY KEY,
+        agent_id VARCHAR(64) REFERENCES ai_agents(id) ON DELETE SET NULL,
+        template_id VARCHAR(64) REFERENCES agent_templates(id) ON DELETE SET NULL,
+        author_id VARCHAR(64) NOT NULL,
+        name VARCHAR(255) NOT NULL,
+        description TEXT,
+        category VARCHAR(64),
+        tags TEXT[],
+        price_credits INTEGER DEFAULT 0,
+        is_public BOOLEAN DEFAULT TRUE,
+        install_count INTEGER DEFAULT 0,
+        rating_avg NUMERIC DEFAULT 0,
+        rating_count INTEGER DEFAULT 0,
+        created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS agent_installs (
+        id VARCHAR(64) PRIMARY KEY,
+        marketplace_id VARCHAR(64) REFERENCES agent_marketplace(id) ON DELETE CASCADE,
+        user_id VARCHAR(64) NOT NULL,
+        config_overrides JSONB,
+        installed_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(marketplace_id, user_id)
+      );
+
+      CREATE TABLE IF NOT EXISTS agent_ratings (
+        id VARCHAR(64) PRIMARY KEY,
+        marketplace_id VARCHAR(64) REFERENCES agent_marketplace(id) ON DELETE CASCADE,
+        user_id VARCHAR(64) NOT NULL,
+        rating INTEGER CHECK (rating >= 1 AND rating <= 5),
+        review TEXT,
+        created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(marketplace_id, user_id)
+      );
+
+      CREATE TABLE IF NOT EXISTS agent_teams (
+        id VARCHAR(64) PRIMARY KEY,
+        user_id VARCHAR(64) NOT NULL,
+        name VARCHAR(255) NOT NULL,
+        description TEXT,
+        shared_memory_id VARCHAR(64),
+        status VARCHAR(32) DEFAULT 'Active',
+        created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS agent_team_members (
+        id VARCHAR(64) PRIMARY KEY,
+        team_id VARCHAR(64) REFERENCES agent_teams(id) ON DELETE CASCADE,
+        agent_id VARCHAR(64) REFERENCES ai_agents(id) ON DELETE CASCADE,
+        role VARCHAR(64),
+        created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(team_id, agent_id)
+      );
+
+      CREATE TABLE IF NOT EXISTS agent_usage_analytics (
+        id VARCHAR(64) PRIMARY KEY,
+        user_id VARCHAR(64) NOT NULL,
+        agent_id VARCHAR(64),
+        workflow_id VARCHAR(64),
+        team_id VARCHAR(64),
+        execution_count INTEGER DEFAULT 0,
+        success_count INTEGER DEFAULT 0,
+        failure_count INTEGER DEFAULT 0,
+        avg_latency_ms NUMERIC,
+        tokens_consumed INTEGER DEFAULT 0,
+        last_executed_at TIMESTAMPTZ,
+        UNIQUE(user_id, agent_id, workflow_id, team_id)
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_template_type ON agent_templates(agent_type);
+      CREATE INDEX IF NOT EXISTS idx_market_cat ON agent_marketplace(category);
+      CREATE INDEX IF NOT EXISTS idx_market_author ON agent_marketplace(author_id);
+      CREATE INDEX IF NOT EXISTS idx_install_uid ON agent_installs(user_id);
+      CREATE INDEX IF NOT EXISTS idx_team_uid ON agent_teams(user_id);
+      CREATE INDEX IF NOT EXISTS idx_usage_uid ON agent_usage_analytics(user_id);
+    `,
+    down: `
+      DROP TABLE IF EXISTS agent_usage_analytics CASCADE;
+      DROP TABLE IF EXISTS agent_team_members CASCADE;
+      DROP TABLE IF EXISTS agent_teams CASCADE;
+      DROP TABLE IF EXISTS agent_ratings CASCADE;
+      DROP TABLE IF EXISTS agent_installs CASCADE;
+      DROP TABLE IF EXISTS agent_marketplace CASCADE;
+      DROP TABLE IF EXISTS agent_workflow_steps CASCADE;
+      DROP TABLE IF EXISTS agent_templates CASCADE;
+    `,
+  },
+  {
+    version: "029",
+    name: "029_enterprise_integrations_platform",
+    up: `
+      CREATE TABLE IF NOT EXISTS external_integrations (
+        id VARCHAR(64) PRIMARY KEY,
+        user_id VARCHAR(64) NOT NULL,
+        service_name VARCHAR(64) NOT NULL,
+        status VARCHAR(32) DEFAULT 'Disconnected',
+        permissions JSONB DEFAULT '[]',
+        metadata JSONB DEFAULT '{}',
+        last_synced_at TIMESTAMPTZ,
+        created_at TIMESTAMPTZ DEFAULT NOW(),
+        UNIQUE(user_id, service_name)
+      );
+
+      CREATE TABLE IF NOT EXISTS integration_tokens (
+        id VARCHAR(64) PRIMARY KEY,
+        integration_id VARCHAR(64) REFERENCES external_integrations(id) ON DELETE CASCADE,
+        access_token TEXT NOT NULL,
+        refresh_token TEXT,
+        expires_at TIMESTAMPTZ,
+        scopes TEXT,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS automation_workflows (
+        id VARCHAR(64) PRIMARY KEY,
+        user_id VARCHAR(64) NOT NULL,
+        name VARCHAR(255) NOT NULL,
+        description TEXT,
+        trigger_config JSONB NOT NULL,
+        condition_config JSONB,
+        action_config JSONB NOT NULL,
+        is_active BOOLEAN DEFAULT TRUE,
+        last_triggered_at TIMESTAMPTZ,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS workflow_executions (
+        id VARCHAR(64) PRIMARY KEY,
+        workflow_id VARCHAR(64) REFERENCES automation_workflows(id) ON DELETE CASCADE,
+        status VARCHAR(32) DEFAULT 'Pending',
+        input JSONB,
+        output JSONB,
+        error TEXT,
+        started_at TIMESTAMPTZ DEFAULT NOW(),
+        completed_at TIMESTAMPTZ
+      );
+
+      CREATE TABLE IF NOT EXISTS workflow_logs (
+        id SERIAL PRIMARY KEY,
+        execution_id VARCHAR(64) REFERENCES workflow_executions(id) ON DELETE CASCADE,
+        level VARCHAR(16),
+        message TEXT,
+        metadata JSONB,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      -- Update existing agent_tasks with new fields
+      ALTER TABLE agent_tasks ADD COLUMN IF NOT EXISTS due_date TIMESTAMPTZ;
+      ALTER TABLE agent_tasks ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW();
+
+      CREATE TABLE IF NOT EXISTS scheduled_tasks (
+        id VARCHAR(64) PRIMARY KEY,
+        user_id VARCHAR(64) NOT NULL,
+        task_id VARCHAR(64) REFERENCES agent_tasks(id) ON DELETE CASCADE,
+        cron_expression VARCHAR(64),
+        next_run_at TIMESTAMPTZ,
+        is_active BOOLEAN DEFAULT TRUE,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS productivity_metrics (
+        id SERIAL PRIMARY KEY,
+        user_id VARCHAR(64) NOT NULL,
+        date DATE DEFAULT CURRENT_DATE,
+        tasks_completed INT DEFAULT 0,
+        workflows_executed INT DEFAULT 0,
+        agent_actions INT DEFAULT 0,
+        time_saved_seconds INT DEFAULT 0,
+        success_rate DECIMAL(5,2) DEFAULT 0,
+        UNIQUE(user_id, date)
+      );
+
+      CREATE TABLE IF NOT EXISTS notification_preferences (
+        user_id VARCHAR(64) PRIMARY KEY,
+        channels JSONB DEFAULT '{"in_app": true, "email": true, "push": false}',
+        categories JSONB DEFAULT '{"workflow": true, "agent": true, "career": true, "research": true, "project": true}',
+        updated_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_integrations_user ON external_integrations(user_id);
+      CREATE INDEX IF NOT EXISTS idx_workflows_user ON automation_workflows(user_id);
+      CREATE INDEX IF NOT EXISTS idx_tasks_user ON agent_tasks(user_id);
+      CREATE INDEX IF NOT EXISTS idx_metrics_user_date ON productivity_metrics(user_id, date);
+    `,
+    down: `
+      DROP TABLE IF EXISTS notification_preferences CASCADE;
+      DROP TABLE IF EXISTS productivity_metrics CASCADE;
+      DROP TABLE IF EXISTS scheduled_tasks CASCADE;
+      DROP TABLE IF EXISTS workflow_logs CASCADE;
+      DROP TABLE IF EXISTS workflow_executions CASCADE;
+      DROP TABLE IF EXISTS automation_workflows CASCADE;
+      DROP TABLE IF EXISTS integration_tokens CASCADE;
+      DROP TABLE IF EXISTS external_integrations CASCADE;
+    `,
+  },
+  {
+    version: "030",
+    name: "030_agent_operations_platform",
+    up: `
+      CREATE TABLE IF NOT EXISTS agent_executions (
+        id VARCHAR(64) PRIMARY KEY,
+        agent_id VARCHAR(64) REFERENCES ai_agents(id) ON DELETE CASCADE,
+        user_id VARCHAR(64) NOT NULL,
+        status VARCHAR(32) DEFAULT 'Running',
+        input JSONB,
+        output JSONB,
+        error TEXT,
+        started_at TIMESTAMPTZ DEFAULT NOW(),
+        completed_at TIMESTAMPTZ,
+        duration_ms INTEGER
+      );
+
+      CREATE TABLE IF NOT EXISTS agent_execution_steps (
+        id VARCHAR(64) PRIMARY KEY,
+        execution_id VARCHAR(64) REFERENCES agent_executions(id) ON DELETE CASCADE,
+        step_name VARCHAR(128) NOT NULL,
+        status VARCHAR(32) DEFAULT 'Pending',
+        input JSONB,
+        output JSONB,
+        error TEXT,
+        started_at TIMESTAMPTZ DEFAULT NOW(),
+        completed_at TIMESTAMPTZ
+      );
+
+      CREATE TABLE IF NOT EXISTS workflow_events (
+        id SERIAL PRIMARY KEY,
+        workflow_id VARCHAR(64) REFERENCES agent_workflows(id) ON DELETE CASCADE,
+        event_type VARCHAR(64) NOT NULL,
+        payload JSONB,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS agent_health (
+        agent_id VARCHAR(64) PRIMARY KEY REFERENCES ai_agents(id) ON DELETE CASCADE,
+        health_score DECIMAL(5,2) DEFAULT 100,
+        success_rate DECIMAL(5,2) DEFAULT 0,
+        failure_rate DECIMAL(5,2) DEFAULT 0,
+        avg_runtime_ms INTEGER DEFAULT 0,
+        total_token_usage INTEGER DEFAULT 0,
+        total_executions INTEGER DEFAULT 0,
+        last_success_at TIMESTAMPTZ,
+        last_failure_at TIMESTAMPTZ,
+        updated_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS agent_alerts (
+        id VARCHAR(64) PRIMARY KEY,
+        agent_id VARCHAR(64) REFERENCES ai_agents(id) ON DELETE CASCADE,
+        user_id VARCHAR(64) NOT NULL,
+        severity VARCHAR(32) NOT NULL,
+        message TEXT NOT NULL,
+        is_resolved BOOLEAN DEFAULT FALSE,
+        metadata JSONB,
+        created_at TIMESTAMPTZ DEFAULT NOW(),
+        resolved_at TIMESTAMPTZ
+      );
+
+      CREATE TABLE IF NOT EXISTS agent_recovery_logs (
+        id VARCHAR(64) PRIMARY KEY,
+        execution_id VARCHAR(64) REFERENCES agent_executions(id) ON DELETE CASCADE,
+        recovery_type VARCHAR(64) NOT NULL,
+        status VARCHAR(32) NOT NULL,
+        details TEXT,
+        result JSONB,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS system_metrics (
+        id SERIAL PRIMARY KEY,
+        metric_name VARCHAR(64) NOT NULL,
+        metric_value DECIMAL(16,4) NOT NULL,
+        labels JSONB,
+        timestamp TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS execution_metrics (
+        id SERIAL PRIMARY KEY,
+        execution_id VARCHAR(64) REFERENCES agent_executions(id) ON DELETE CASCADE,
+        metric_name VARCHAR(64) NOT NULL,
+        metric_value DECIMAL(16,4) NOT NULL,
+        timestamp TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS agent_dependencies (
+        id VARCHAR(64) PRIMARY KEY,
+        agent_id VARCHAR(64) REFERENCES ai_agents(id) ON DELETE CASCADE,
+        depends_on_agent_id VARCHAR(64) REFERENCES ai_agents(id) ON DELETE CASCADE,
+        dependency_type VARCHAR(64),
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS agent_versions (
+        id VARCHAR(64) PRIMARY KEY,
+        agent_id VARCHAR(64) REFERENCES ai_agents(id) ON DELETE CASCADE,
+        version_number VARCHAR(32) NOT NULL,
+        config JSONB NOT NULL,
+        changes TEXT,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_agent_executions_user ON agent_executions(user_id);
+      CREATE INDEX IF NOT EXISTS idx_workflow_events_wf ON workflow_events(workflow_id);
+      CREATE INDEX IF NOT EXISTS idx_agent_alerts_user ON agent_alerts(user_id);
+      CREATE INDEX IF NOT EXISTS idx_system_metrics_name ON system_metrics(metric_name, timestamp);
+    `,
+    down: `
+      DROP TABLE IF EXISTS agent_versions CASCADE;
+      DROP TABLE IF EXISTS agent_dependencies CASCADE;
+      DROP TABLE IF EXISTS execution_metrics CASCADE;
+      DROP TABLE IF EXISTS system_metrics CASCADE;
+      DROP TABLE IF EXISTS agent_recovery_logs CASCADE;
+      DROP TABLE IF EXISTS agent_alerts CASCADE;
+      DROP TABLE IF EXISTS agent_health CASCADE;
+      DROP TABLE IF EXISTS workflow_events CASCADE;
+      DROP TABLE IF EXISTS agent_execution_steps CASCADE;
+      DROP TABLE IF EXISTS agent_executions CASCADE;
+    `,
+  },
+  {
+    version: "031",
+    name: "031_knowledge_fabric_platform",
+    up: `
+      CREATE TABLE IF NOT EXISTS global_entities (
+        id VARCHAR(64) PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        entity_type VARCHAR(64) NOT NULL, -- Topic, Skill, Company, Project, Research, Contest, Assessment, Agent
+        description TEXT,
+        metadata JSONB DEFAULT '{}',
+        created_at TIMESTAMPTZ DEFAULT NOW(),
+        updated_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS entity_relationships (
+        id VARCHAR(64) PRIMARY KEY,
+        source_id VARCHAR(64) REFERENCES global_entities(id) ON DELETE CASCADE,
+        target_id VARCHAR(64) REFERENCES global_entities(id) ON DELETE CASCADE,
+        relationship_type VARCHAR(64) NOT NULL, -- Prerequisite, Related, ImpactedBy, ComponentOf
+        weight DECIMAL(5,2) DEFAULT 1.0,
+        metadata JSONB DEFAULT '{}',
+        created_at TIMESTAMPTZ DEFAULT NOW(),
+        UNIQUE(source_id, target_id, relationship_type)
+      );
+
+      CREATE TABLE IF NOT EXISTS memory_events (
+        id SERIAL PRIMARY KEY,
+        user_id VARCHAR(64) NOT NULL,
+        entity_id VARCHAR(64) REFERENCES global_entities(id) ON DELETE CASCADE,
+        event_type VARCHAR(64) NOT NULL, -- Learning, Career, Research, Project, Execution
+        payload JSONB NOT NULL,
+        timestamp TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS knowledge_snapshots (
+        id VARCHAR(64) PRIMARY KEY,
+        user_id VARCHAR(64) NOT NULL,
+        snapshot_data JSONB NOT NULL,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS knowledge_embeddings (
+        id VARCHAR(64) PRIMARY KEY,
+        entity_id VARCHAR(64) REFERENCES global_entities(id) ON DELETE CASCADE,
+        embedding_vector VECTOR(768), -- Assuming Gemini embeddings
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS user_intelligence_profiles (
+        user_id VARCHAR(64) PRIMARY KEY,
+        overall_mastery DECIMAL(5,2) DEFAULT 0,
+        learning_velocity DECIMAL(5,2) DEFAULT 0,
+        hiring_readiness DECIMAL(5,2) DEFAULT 0,
+        career_progress DECIMAL(5,2) DEFAULT 0,
+        research_impact DECIMAL(5,2) DEFAULT 0,
+        project_completion_rate DECIMAL(5,2) DEFAULT 0,
+        top_skills TEXT[],
+        skill_distribution JSONB DEFAULT '{}',
+        updated_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS cross_domain_insights (
+        id VARCHAR(64) PRIMARY KEY,
+        user_id VARCHAR(64) NOT NULL,
+        title VARCHAR(255) NOT NULL,
+        insight_type VARCHAR(64) NOT NULL, -- Performance, Readiness, Gap, Optimization
+        description TEXT NOT NULL,
+        recommendation TEXT,
+        metadata JSONB DEFAULT '{}',
+        is_read BOOLEAN DEFAULT FALSE,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS agent_memory_links (
+        id VARCHAR(64) PRIMARY KEY,
+        agent_id VARCHAR(64) REFERENCES ai_agents(id) ON DELETE CASCADE,
+        entity_id VARCHAR(64) REFERENCES global_entities(id) ON DELETE CASCADE,
+        relevance_score DECIMAL(5,2) DEFAULT 1.0,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS knowledge_queries (
+        id SERIAL PRIMARY KEY,
+        user_id VARCHAR(64) NOT NULL,
+        query_text TEXT NOT NULL,
+        response_data JSONB,
+        execution_time_ms INTEGER,
+        timestamp TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS knowledge_analytics (
+        id SERIAL PRIMARY KEY,
+        user_id VARCHAR(64) NOT NULL,
+        metric_name VARCHAR(64) NOT NULL,
+        metric_value DECIMAL(16,4) NOT NULL,
+        timestamp TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_entities_type ON global_entities(entity_type);
+      CREATE INDEX IF NOT EXISTS idx_relationships_source ON entity_relationships(source_id);
+      CREATE INDEX IF NOT EXISTS idx_relationships_target ON entity_relationships(target_id);
+      CREATE INDEX IF NOT EXISTS idx_mem_events_user ON memory_events(user_id, timestamp);
+      CREATE INDEX IF NOT EXISTS idx_insights_user ON cross_domain_insights(user_id, created_at);
+      CREATE INDEX IF NOT EXISTS idx_queries_user ON knowledge_queries(user_id);
+    `,
+    down: `
+      DROP TABLE IF EXISTS knowledge_analytics CASCADE;
+      DROP TABLE IF EXISTS knowledge_queries CASCADE;
+      DROP TABLE IF EXISTS agent_memory_links CASCADE;
+      DROP TABLE IF EXISTS cross_domain_insights CASCADE;
+      DROP TABLE IF EXISTS user_intelligence_profiles CASCADE;
+      DROP TABLE IF EXISTS knowledge_embeddings CASCADE;
+      DROP TABLE IF EXISTS knowledge_snapshots CASCADE;
+      DROP TABLE IF EXISTS memory_events CASCADE;
+      DROP TABLE IF EXISTS entity_relationships CASCADE;
+      DROP TABLE IF EXISTS global_entities CASCADE;
+    `,
+  },
+  {
+    version: "032",
+    name: "032_strategic_decision_engine",
+    up: `
+      CREATE TABLE IF NOT EXISTS strategic_goals (
+        id VARCHAR(64) PRIMARY KEY,
+        user_id VARCHAR(64) NOT NULL,
+        title VARCHAR(255) NOT NULL,
+        goal_type VARCHAR(64) NOT NULL,
+        target_role VARCHAR(128),
+        target_company VARCHAR(128),
+        current_state JSONB DEFAULT '{}',
+        target_state JSONB DEFAULT '{}',
+        current_position TEXT,
+        gap_analysis JSONB DEFAULT '[]',
+        probability_score DECIMAL(5,2) DEFAULT 70.0,
+        timeline_months INT DEFAULT 6,
+        status VARCHAR(32) DEFAULT 'Active',
+        created_at TIMESTAMPTZ DEFAULT NOW(),
+        updated_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS strategic_plans (
+        id VARCHAR(64) PRIMARY KEY,
+        goal_id VARCHAR(64) REFERENCES strategic_goals(id) ON DELETE CASCADE,
+        user_id VARCHAR(64) NOT NULL,
+        title VARCHAR(255) NOT NULL,
+        roadmap_milestones JSONB DEFAULT '[]',
+        trade_offs JSONB DEFAULT '[]',
+        bottlenecks JSONB DEFAULT '[]',
+        execution_velocity DECIMAL(5,2) DEFAULT 80.0,
+        status VARCHAR(32) DEFAULT 'In_Progress',
+        created_at TIMESTAMPTZ DEFAULT NOW(),
+        updated_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS decision_recommendations (
+        id VARCHAR(64) PRIMARY KEY,
+        user_id VARCHAR(64) NOT NULL,
+        goal_id VARCHAR(64) REFERENCES strategic_goals(id) ON DELETE SET NULL,
+        category VARCHAR(64) NOT NULL,
+        title VARCHAR(255) NOT NULL,
+        action_title VARCHAR(255),
+        description TEXT,
+        reasoning TEXT,
+        priority VARCHAR(32) DEFAULT 'High',
+        expected_impact VARCHAR(64) DEFAULT 'High',
+        impact_score DECIMAL(4,2) DEFAULT 8.5,
+        urgency VARCHAR(32) DEFAULT 'High',
+        effort_level VARCHAR(32) DEFAULT 'Medium',
+        rationale TEXT,
+        tradeoff_summary TEXT,
+        action_url VARCHAR(255),
+        status VARCHAR(32) DEFAULT 'Pending',
+        metadata JSONB DEFAULT '{}',
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS decision_history (
+        id VARCHAR(64) PRIMARY KEY,
+        user_id VARCHAR(64) NOT NULL,
+        decision_type VARCHAR(64) NOT NULL,
+        context JSONB DEFAULT '{}',
+        recommendation_id VARCHAR(64) REFERENCES decision_recommendations(id) ON DELETE SET NULL,
+        user_action VARCHAR(64) NOT NULL,
+        outcome_metric JSONB DEFAULT '{}',
+        feedback TEXT,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS opportunity_scores (
+        id VARCHAR(64) PRIMARY KEY,
+        user_id VARCHAR(64) NOT NULL,
+        opportunity_type VARCHAR(64) NOT NULL,
+        title VARCHAR(255) NOT NULL,
+        organization VARCHAR(255) NOT NULL,
+        description TEXT,
+        opportunity_url VARCHAR(255),
+        match_score DECIMAL(5,2) DEFAULT 80.0,
+        relevance_score DECIMAL(5,2) DEFAULT 85.0,
+        skill_alignment_score DECIMAL(5,2) DEFAULT 85.0,
+        roi_score DECIMAL(5,2) DEFAULT 90.0,
+        roi_ranking INT DEFAULT 1,
+        difficulty VARCHAR(32) DEFAULT 'Medium',
+        deadline TIMESTAMPTZ,
+        status VARCHAR(32) DEFAULT 'Available',
+        metadata JSONB DEFAULT '{}',
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS risk_assessments (
+        id VARCHAR(64) PRIMARY KEY,
+        user_id VARCHAR(64) NOT NULL,
+        risk_type VARCHAR(64) NOT NULL,
+        severity VARCHAR(32) NOT NULL,
+        title VARCHAR(255) NOT NULL,
+        description TEXT,
+        impact_domain VARCHAR(64),
+        mitigation_strategy TEXT,
+        is_active BOOLEAN DEFAULT TRUE,
+        is_mitigated BOOLEAN DEFAULT FALSE,
+        created_at TIMESTAMPTZ DEFAULT NOW(),
+        updated_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS career_strategies (
+        id VARCHAR(64) PRIMARY KEY,
+        user_id VARCHAR(64) NOT NULL,
+        goal_id VARCHAR(64) REFERENCES strategic_goals(id) ON DELETE CASCADE,
+        strategy_data JSONB NOT NULL,
+        created_at TIMESTAMPTZ DEFAULT NOW(),
+        updated_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS learning_strategies (
+        id VARCHAR(64) PRIMARY KEY,
+        user_id VARCHAR(64) NOT NULL,
+        goal_id VARCHAR(64) REFERENCES strategic_goals(id) ON DELETE CASCADE,
+        strategy_data JSONB NOT NULL,
+        created_at TIMESTAMPTZ DEFAULT NOW(),
+        updated_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS project_strategies (
+        id VARCHAR(64) PRIMARY KEY,
+        user_id VARCHAR(64) NOT NULL,
+        goal_id VARCHAR(64) REFERENCES strategic_goals(id) ON DELETE CASCADE,
+        strategy_data JSONB NOT NULL,
+        created_at TIMESTAMPTZ DEFAULT NOW(),
+        updated_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS executive_insights (
+        id VARCHAR(64) PRIMARY KEY,
+        user_id VARCHAR(64) NOT NULL,
+        insight_type VARCHAR(64) DEFAULT 'DailyBriefing',
+        executive_summary TEXT NOT NULL,
+        summary TEXT,
+        key_bottleneck TEXT,
+        primary_focus_today TEXT,
+        strategic_tradeoff TEXT,
+        action_plan JSONB DEFAULT '[]',
+        confidence_level DECIMAL(5,2) DEFAULT 88.0,
+        confidence_score DECIMAL(5,2) DEFAULT 88.0,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_strategic_goals_user ON strategic_goals(user_id, status);
+      CREATE INDEX IF NOT EXISTS idx_dec_recs_user ON decision_recommendations(user_id, status, impact_score);
+      CREATE INDEX IF NOT EXISTS idx_opp_scores_user ON opportunity_scores(user_id, roi_score);
+      CREATE INDEX IF NOT EXISTS idx_risks_user ON risk_assessments(user_id, is_active, severity);
+      CREATE INDEX IF NOT EXISTS idx_exec_insights_user ON executive_insights(user_id, created_at);
+      CREATE INDEX IF NOT EXISTS idx_dec_history_user ON decision_history(user_id, created_at);
+    `,
+    down: `
+      DROP TABLE IF EXISTS executive_insights CASCADE;
+      DROP TABLE IF EXISTS project_strategies CASCADE;
+      DROP TABLE IF EXISTS learning_strategies CASCADE;
+      DROP TABLE IF EXISTS career_strategies CASCADE;
+      DROP TABLE IF EXISTS risk_assessments CASCADE;
+      DROP TABLE IF EXISTS opportunity_scores CASCADE;
+      DROP TABLE IF EXISTS decision_history CASCADE;
+      DROP TABLE IF EXISTS decision_recommendations CASCADE;
+      DROP TABLE IF EXISTS strategic_plans CASCADE;
+      DROP TABLE IF EXISTS strategic_goals CASCADE;
+    `,
+  },
+  {
+    version: "033",
+    name: "033_autonomous_execution_layer",
+    up: `
+      CREATE TABLE IF NOT EXISTS digital_twins (
+        id VARCHAR(64) PRIMARY KEY,
+        user_id VARCHAR(64) UNIQUE NOT NULL,
+        learning_progress JSONB DEFAULT '{}',
+        mastery_scores JSONB DEFAULT '{}',
+        contest_ratings JSONB DEFAULT '{}',
+        hiring_readiness JSONB DEFAULT '{}',
+        research_performance JSONB DEFAULT '{}',
+        project_achievements JSONB DEFAULT '{}',
+        productivity_metrics JSONB DEFAULT '{}',
+        strategic_goals JSONB DEFAULT '{}',
+        agent_activity JSONB DEFAULT '{}',
+        growth_models JSONB DEFAULT '{}',
+        risk_factors JSONB DEFAULT '[]',
+        readiness_forecast JSONB DEFAULT '{}',
+        updated_at TIMESTAMPTZ DEFAULT NOW(),
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS digital_twin_snapshots (
+        id VARCHAR(64) PRIMARY KEY,
+        digital_twin_id VARCHAR(64) REFERENCES digital_twins(id) ON DELETE CASCADE,
+        user_id VARCHAR(64) NOT NULL,
+        snapshot_data JSONB NOT NULL,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS future_simulations (
+        id VARCHAR(64) PRIMARY KEY,
+        user_id VARCHAR(64) NOT NULL,
+        goal_id VARCHAR(64),
+        timeframe VARCHAR(32) NOT NULL,
+        assumptions JSONB DEFAULT '{}',
+        status VARCHAR(32) DEFAULT 'Completed',
+        created_at TIMESTAMPTZ DEFAULT NOW(),
+        updated_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS simulation_results (
+        id VARCHAR(64) PRIMARY KEY,
+        simulation_id VARCHAR(64) REFERENCES future_simulations(id) ON DELETE CASCADE,
+        user_id VARCHAR(64) NOT NULL,
+        scenario_type VARCHAR(32) NOT NULL,
+        learning_growth JSONB DEFAULT '{}',
+        contest_ratings JSONB DEFAULT '{}',
+        hiring_probability JSONB DEFAULT '{}',
+        research_impact JSONB DEFAULT '{}',
+        career_outcomes JSONB DEFAULT '{}',
+        startup_potential JSONB DEFAULT '{}',
+        key_milestones JSONB DEFAULT '[]',
+        risk_analysis JSONB DEFAULT '[]',
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS autonomous_plans (
+        id VARCHAR(64) PRIMARY KEY,
+        user_id VARCHAR(64) NOT NULL,
+        goal_id VARCHAR(64),
+        plan_type VARCHAR(32) NOT NULL,
+        title VARCHAR(255) NOT NULL,
+        description TEXT,
+        roadmaps JSONB DEFAULT '{}',
+        milestones JSONB DEFAULT '[]',
+        status VARCHAR(32) DEFAULT 'Active',
+        execution_velocity DECIMAL(5,2) DEFAULT 80.0,
+        created_at TIMESTAMPTZ DEFAULT NOW(),
+        updated_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS execution_actions (
+        id VARCHAR(64) PRIMARY KEY,
+        plan_id VARCHAR(64) REFERENCES autonomous_plans(id) ON DELETE CASCADE,
+        user_id VARCHAR(64) NOT NULL,
+        action_type VARCHAR(64) NOT NULL,
+        title VARCHAR(255) NOT NULL,
+        description TEXT,
+        priority VARCHAR(32) DEFAULT 'High',
+        estimated_minutes INT DEFAULT 45,
+        deadline TIMESTAMPTZ,
+        status VARCHAR(32) DEFAULT 'Planned',
+        workflow_id VARCHAR(64),
+        outcome_data JSONB DEFAULT '{}',
+        created_at TIMESTAMPTZ DEFAULT NOW(),
+        updated_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS execution_timelines (
+        id VARCHAR(64) PRIMARY KEY,
+        user_id VARCHAR(64) NOT NULL,
+        event_type VARCHAR(64) NOT NULL,
+        title VARCHAR(255) NOT NULL,
+        description TEXT,
+        status VARCHAR(32) DEFAULT 'Success',
+        timestamp TIMESTAMPTZ DEFAULT NOW(),
+        metadata JSONB DEFAULT '{}',
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS adaptive_strategy_updates (
+        id VARCHAR(64) PRIMARY KEY,
+        user_id VARCHAR(64) NOT NULL,
+        trigger_reason TEXT NOT NULL,
+        stagnation_metrics JSONB DEFAULT '{}',
+        adjustments_made JSONB DEFAULT '[]',
+        recalculated_priorities JSONB DEFAULT '[]',
+        recovery_workflow_id VARCHAR(64),
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS opportunity_discoveries (
+        id VARCHAR(64) PRIMARY KEY,
+        user_id VARCHAR(64) NOT NULL,
+        opportunity_type VARCHAR(64) NOT NULL,
+        source_platform VARCHAR(128) NOT NULL,
+        title VARCHAR(255) NOT NULL,
+        organization VARCHAR(255) NOT NULL,
+        description TEXT,
+        opportunity_url VARCHAR(255),
+        match_score DECIMAL(5,2) DEFAULT 85.0,
+        roi_score DECIMAL(5,2) DEFAULT 85.0,
+        time_investment VARCHAR(128),
+        strategic_value TEXT,
+        recommended_action TEXT,
+        status VARCHAR(32) DEFAULT 'Discovered',
+        metadata JSONB DEFAULT '{}',
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS execution_predictions (
+        id VARCHAR(64) PRIMARY KEY,
+        user_id VARCHAR(64) NOT NULL,
+        metric_name VARCHAR(128) NOT NULL,
+        current_value DECIMAL(16,4) NOT NULL,
+        predicted_value_30d DECIMAL(16,4) NOT NULL,
+        predicted_value_90d DECIMAL(16,4) NOT NULL,
+        confidence_level DECIMAL(5,2) DEFAULT 88.0,
+        model_factors JSONB DEFAULT '{}',
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_digital_twins_user ON digital_twins(user_id);
+      CREATE INDEX IF NOT EXISTS idx_future_sims_user ON future_simulations(user_id, timeframe);
+      CREATE INDEX IF NOT EXISTS idx_sim_results_sim ON simulation_results(simulation_id, scenario_type);
+      CREATE INDEX IF NOT EXISTS idx_auto_plans_user ON autonomous_plans(user_id, status);
+      CREATE INDEX IF NOT EXISTS idx_exec_actions_user ON execution_actions(user_id, status);
+      CREATE INDEX IF NOT EXISTS idx_exec_timeline_user ON execution_timelines(user_id, timestamp);
+      CREATE INDEX IF NOT EXISTS idx_opp_discoveries_user ON opportunity_discoveries(user_id, roi_score);
+    `,
+    down: `
+      DROP TABLE IF EXISTS execution_predictions CASCADE;
+      DROP TABLE IF EXISTS opportunity_discoveries CASCADE;
+      DROP TABLE IF EXISTS adaptive_strategy_updates CASCADE;
+      DROP TABLE IF EXISTS execution_timelines CASCADE;
+      DROP TABLE IF EXISTS execution_actions CASCADE;
+      DROP TABLE IF EXISTS autonomous_plans CASCADE;
+      DROP TABLE IF EXISTS simulation_results CASCADE;
+      DROP TABLE IF EXISTS future_simulations CASCADE;
+      DROP TABLE IF EXISTS digital_twin_snapshots CASCADE;
+      DROP TABLE IF EXISTS digital_twins CASCADE;
+    `,
+  },
 ];
 
 export class Migrator {
@@ -1681,7 +3667,7 @@ export class Migrator {
     let currentVersion = "000";
 
     if (!pool) {
-      Database.setMigrationVersion("017");
+      Database.setMigrationVersion("028");
       return {
         applied: [
           "001_initial_schema",
@@ -1698,11 +3684,25 @@ export class Migrator {
           "015_learning_memory_system",
           "016_company_prep_hub",
           "017_voice_ai_mentor",
+          "018_live_collaboration_system",
+          "020_ai_career_platform",
+          "021_learning_intelligence_engine",
+          "022_contest_ecosystem",
+          "023_ai_hiring_assessment_platform",
+          "024_enterprise_learning_ecosystem",
+          "025_project_workspace_ecosystem",
+          "026_research_innovation_ecosystem",
+          "027_ai_operating_system",
+          "028_agent_marketplace_and_builder",
+          "029_enterprise_integrations_platform",
+          "030_agent_operations_platform",
+          "031_knowledge_fabric_platform",
+          "032_strategic_decision_engine",
+          "033_autonomous_execution_layer",
         ],
-        currentVersion: "017",
+        currentVersion: "033",
       };
     }
-
 
     const client = await pool.connect();
 

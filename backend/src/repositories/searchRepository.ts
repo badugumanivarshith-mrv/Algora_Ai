@@ -117,15 +117,15 @@ class SearchRepository {
 
     // 4. Contests
     try {
-      const allContests = await ContestRepository.findAll();
+      const allContests = await ContestRepository.getContests();
       for (const c of allContests) {
-        if (c.title.toLowerCase().includes(q) || c.contestType?.toLowerCase().includes(q) || c.description?.toLowerCase().includes(q)) {
+        if (c.title.toLowerCase().includes(q) || (c as any).contest_type?.toLowerCase().includes(q) || c.description?.toLowerCase().includes(q)) {
           contests.push({
             id: c.id,
             category: "contest",
             title: c.title,
-            subtitle: `${c.contestType} · ${c.durationMinutes} mins · ${c.participantCount || 0} Registered`,
-            badge: c.status?.toUpperCase() || "CONTEST",
+            subtitle: `${(c as any).contest_type} · ${(c as any).duration_minutes} mins`,
+            badge: "CONTEST",
             url: `/contests?id=${c.id}`,
             score: 8,
           });

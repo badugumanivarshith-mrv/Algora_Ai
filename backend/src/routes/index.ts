@@ -30,9 +30,25 @@ import { learningMemoryRoutes } from "./learningMemoryRoutes";
 import { companyPrepRoutes } from "./companyPrepRoutes";
 import { voiceMentorRoutes } from "./voiceMentorRoutes";
 import { collaborationRoutes } from "./collaborationRoutes";
+import { careerRoutes } from "./careerRoutes";
+import { learningIntelligenceRoutes } from "./learningIntelligenceRoutes";
+import { contestRoutes as contestV2Routes } from "./contestRoutes";
+import { hiringRoutes } from "./hiringRoutes";
+import enterpriseRoutes from "./enterpriseRoutes";
+import projectRoutes from "./projectWorkspaceRoutes";
+import researchRoutes from "./researchRoutes";
+import aiosRoutes from "./aiosRoutes";
 
 const router = Router();
 
+router.use("/research", researchRoutes);
+router.use("/aios", aiosRoutes);
+router.use("/enterprise", enterpriseRoutes);
+router.use("/projects", projectRoutes);
+router.use("/hiring", hiringRoutes);
+router.use("/contests-v2", contestV2Routes);
+router.use("/intelligence", learningIntelligenceRoutes);
+router.use("/career", careerRoutes);
 router.use("/collaboration", collaborationRoutes);
 router.use("/voice", voiceMentorRoutes);
 router.use("/company", companyPrepRoutes);

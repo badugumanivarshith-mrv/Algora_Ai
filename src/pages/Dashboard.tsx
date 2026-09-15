@@ -4,7 +4,7 @@ import {
   Zap, Flame, Code2, Trophy, TrendingUp, Brain, ArrowRight,
   ChevronRight, Clock, Target, Play, ArrowUpRight, Plus,
   CheckCircle2, Sparkles, AlertTriangle, Briefcase, RefreshCw,
-  Check, X, BookOpen, Layers
+  Check, X, BookOpen, Layers, Cpu
 } from "lucide-react";
 import {
   AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer,
@@ -144,6 +144,153 @@ export default function Dashboard() {
   return (
     <div style={{ padding: "24px 32px", maxWidth: 1400, margin: "0 auto", display: "flex", flexDirection: "column", gap: 24 }}>
       
+      {/* V3.8 Project & Internship Banner */}
+      <div
+        className="surface-card"
+        style={{
+          padding: "16px 20px",
+          background: "linear-gradient(90deg, rgba(34,197,94,0.12), rgba(16,185,129,0.08))",
+          border: "1px solid rgba(34,197,94,0.3)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          flexWrap: "wrap",
+          gap: 12,
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <div style={{ width: 36, height: 36, borderRadius: "50%", background: "#22c55e", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff" }}>
+            <Briefcase size={18} />
+          </div>
+          <div>
+            <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)", display: "flex", alignItems: "center", gap: 8 }}>
+              Algora V3.8 AI Project Workspace & Internship Platform Active
+              <span style={{ fontSize: 10, padding: "2px 6px", borderRadius: 4, background: "rgba(34,197,94,0.2)", color: "#22c55e" }}>Beta</span>
+            </div>
+            <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 2 }}>
+              Build real-world projects, track project-based skills, and land elite internships with AI-guided mentoring.
+            </div>
+          </div>
+        </div>
+
+        <button
+          onClick={() => navigate("/projects")}
+          style={{
+            padding: "8px 16px",
+            borderRadius: "var(--radius-md)",
+            background: "#22c55e",
+            color: "#fff",
+            fontSize: 12,
+            fontWeight: 700,
+            display: "flex",
+            alignItems: "center",
+            gap: 6,
+            border: "none",
+            cursor: "pointer",
+          }}
+        >
+          Explore Workspaces <ArrowRight size={14} />
+        </button>
+      </div>
+
+      {/* V4.0 AI OS Banner */}
+      <div
+        className="surface-card"
+        style={{
+          padding: "16px 20px",
+          background: "linear-gradient(90deg, rgba(59,130,246,0.12), rgba(37,99,235,0.08))",
+          border: "1px solid rgba(59,130,246,0.3)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          flexWrap: "wrap",
+          gap: 12,
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <div style={{ width: 36, height: 36, borderRadius: "50%", background: "#3b82f6", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff" }}>
+            <Cpu size={18} />
+          </div>
+          <div>
+            <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)", display: "flex", alignItems: "center", gap: 8 }}>
+              Algora V4.0 AI Operating System Active
+              <span style={{ fontSize: 10, padding: "2px 6px", borderRadius: 4, background: "rgba(59,130,246,0.2)", color: "#3b82f6" }}>Autonomous Agents</span>
+            </div>
+            <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 2 }}>
+              Your autonomous agents are monitoring learning, career, and research goals in the background.
+            </div>
+          </div>
+        </div>
+
+        <button
+          onClick={() => navigate("/ai-os")}
+          style={{
+            padding: "8px 16px",
+            borderRadius: "var(--radius-md)",
+            background: "#3b82f6",
+            color: "#fff",
+            fontSize: 12,
+            fontWeight: 700,
+            display: "flex",
+            alignItems: "center",
+            gap: 6,
+            border: "none",
+            cursor: "pointer",
+          }}
+        >
+          Open Command Center <ArrowRight size={14} />
+        </button>
+      </div>
+
+      {/* V3.7 Enterprise Banner */}
+      <div
+        className="surface-card"
+        style={{
+          padding: "16px 20px",
+          background: "linear-gradient(90deg, rgba(99,102,241,0.12), rgba(168,85,247,0.08))",
+          border: "1px solid rgba(99,102,241,0.3)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          flexWrap: "wrap",
+          gap: 12,
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <div style={{ width: 36, height: 36, borderRadius: "50%", background: "var(--brand)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff" }}>
+            <Sparkles size={18} />
+          </div>
+          <div>
+            <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)", display: "flex", alignItems: "center", gap: 8 }}>
+              Algora V3.7 Enterprise & University Ecosystem Active
+              <span style={{ fontSize: 10, padding: "2px 6px", borderRadius: 4, background: "rgba(99,102,241,0.2)", color: "#818cf8" }}>LMS & Placement</span>
+            </div>
+            <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 2 }}>
+              Manage university departments, faculty tools, active classrooms, student attendance, and campus placement drives.
+            </div>
+          </div>
+        </div>
+
+        <button
+          onClick={() => navigate("/enterprise")}
+          style={{
+            padding: "8px 16px",
+            borderRadius: "var(--radius-md)",
+            background: "var(--brand)",
+            color: "#fff",
+            fontSize: 12,
+            fontWeight: 700,
+            display: "flex",
+            alignItems: "center",
+            gap: 6,
+            border: "none",
+            cursor: "pointer",
+          }}
+        >
+          Open University LMS <ArrowRight size={14} />
+        </button>
+      </div>
+
       {/* ── TOP STATS ROW ── */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 14 }}>
         {statData.map(({ label, value, sub, icon: Icon, color, bg }) => (
