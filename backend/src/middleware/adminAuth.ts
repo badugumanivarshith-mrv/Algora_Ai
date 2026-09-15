@@ -37,14 +37,12 @@ export async function requireAdmin(
   try {
     const adminRecord = await adminRepository.getAdminByUserId(user.userId);
     
-    // Check if user has admin/instructor role or has admin record
+    // Check if user has explicit admin/instructor role, admin record, or is default demo admin
     const hasAdminAccess =
       user.role === "admin" ||
       user.role === "instructor" ||
       adminRecord !== null ||
-      user.username === "arjun_patel" || // default demo administrator
-      user.email.endsWith("@algora.edu") ||
-      user.email.includes("admin");
+      user.username === "arjun_patel"; // default demo administrator
 
     if (!hasAdminAccess) {
       logger.warn(`[AdminAuth] Forbidden access attempt by user ${user.userId} (${user.email})`);
@@ -61,7 +59,7 @@ export async function requireAdmin(
     req.adminRecord = {
       id: adminRecord ? adminRecord.id : `adm-${user.userId}`,
       userId: user.userId,
-      isSuperAdmin: adminRecord ? adminRecord.isSuperAdmin : (user.role === "admin" || user.email.includes("admin")),
+      isSuperAdmin: adminRecord ? adminRecord.isSuperAdmin : (user.role === "admin" || user.username === "arjun_patel"),
       roleName: user.role === "admin" ? "Super Admin" : "Content Manager",
       permissions: ["*"],
     };

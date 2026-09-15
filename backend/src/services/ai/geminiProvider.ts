@@ -42,8 +42,20 @@ export class GeminiAIProvider implements IAIProvider {
     return Boolean(process.env.GEMINI_API_KEY);
   }
 
+  public sanitizePrompt(prompt: string, maxLen: number = 8000): string {
+    if (!prompt) return "";
+    let cleaned = String(prompt).trim();
+    if (cleaned.length > maxLen) {
+      cleaned = cleaned.substring(0, maxLen);
+    }
+    // Neutralize prompt injection patterns
+    cleaned = cleaned.replace(/(ignore\s+previous\s+instructions|system\s+override|disregard\s+all\s+prior\s+instructions)/gi, "[redacted_injection_attempt]");
+    return cleaned;
+  }
+
   public async generateRawText(prompt: string, systemInstruction?: string, ttlSeconds: number = 300): Promise<string> {
-    const cacheKey = `ai_raw:${crypto.createHash("md5").update(`${systemInstruction || ""}:${prompt}`).digest("hex")}`;
+    const cleanPrompt = this.sanitizePrompt(prompt);
+    const cacheKey = `ai_raw:${crypto.createHash("md5").update(`${systemInstruction || ""}:${cleanPrompt}`).digest("hex")}`;
     try {
       const cached = await RedisManager.get(cacheKey);
       if (cached) {
@@ -58,7 +70,7 @@ export class GeminiAIProvider implements IAIProvider {
       throw new Error("Gemini AI API key is not configured. Please set GEMINI_API_KEY.");
     }
     const { response } = await this.generateWithFallback(client, {
-      contents: prompt,
+      contents: cleanPrompt,
       config: {
         systemInstruction,
         temperature: 0.7,

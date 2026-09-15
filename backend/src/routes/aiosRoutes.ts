@@ -1,7 +1,12 @@
 import { Router } from "express";
 import { AIOSController } from "../controllers/aiosController";
+import { optionalAuth } from "../middleware/auth";
+import { aiLimiter } from "../middleware/rateLimit";
 
 const router = Router();
+
+router.use(optionalAuth);
+router.use(aiLimiter);
 
 router.get("/agents", AIOSController.getAgents);
 router.post("/agent", AIOSController.createAgent);
