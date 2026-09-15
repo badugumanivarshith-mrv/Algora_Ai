@@ -100,4 +100,19 @@ router.get("/portfolio", AIOSController.getPortfolio);
 router.get("/benchmarks", AIOSController.getBenchmarks);
 router.get("/collaborators", AIOSController.getCollaborators);
 
+// V5.0 Autonomous AI University & Human Capability OS
+router.get("/university", AIOSController.getUniversity);
+router.post("/university/enroll", AIOSController.enrollUniversityDegree);
+router.post("/university/recalculate", AIOSController.recalculateUniversity);
+router.get("/capabilities", AIOSController.getCapabilities);
+router.get("/mentors", AIOSController.getMentors);
+router.post("/mentors/debate", AIOSController.conductMentorDebate);
+router.get("/marketplace/learning", AIOSController.getLearningMarketplace);
+router.get("/credentials", AIOSController.getCredentials);
+router.post("/credentials/verify", AIOSController.verifyCredentialHash);
+router.get("/potential", AIOSController.getPotential);
+router.post("/potential/simulate", AIOSController.simulatePotentialTrajectory);
+router.get("/impact", AIOSController.getGlobalImpact);
+router.post("/impact/event", AIOSController.logImpactEvent);
+
 export default router;

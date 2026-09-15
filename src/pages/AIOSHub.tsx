@@ -42,6 +42,8 @@ import ExecutiveDashboard from '../components/aios/ExecutiveDashboard';
 import ExecutionCenter from '../components/aios/ExecutionCenter';
 import { SimulationCenter } from '../components/aios/SimulationCenter';
 import { TalentMarketplace } from '../components/aios/TalentMarketplace';
+import { UniversityCenter } from '../components/aios/UniversityCenter';
+import { GraduationCap } from 'lucide-react';
 
 const AIOSHub: React.FC = () => {
   const [activeTab, setActiveTab] = useState('command');
@@ -90,6 +92,7 @@ const AIOSHub: React.FC = () => {
   };
 
   const tabs = [
+    { id: 'university', label: 'AI University & HCOS', icon: GraduationCap },
     { id: 'command', label: 'Command Center', icon: Terminal },
     { id: 'talent', label: 'Talent & Reputation', icon: DollarSign },
     { id: 'simulation', label: 'Enterprise Simulation', icon: Building2 },
@@ -367,6 +370,7 @@ const AIOSHub: React.FC = () => {
                 </div>
               )}
 
+              {activeTab === 'university' && <UniversityCenter />}
               {activeTab === 'talent' && <TalentMarketplace />}
               {activeTab === 'simulation' && <SimulationCenter />}
               {activeTab === 'ops' && <OperationsCenter />}

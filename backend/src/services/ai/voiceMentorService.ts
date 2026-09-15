@@ -36,6 +36,12 @@ import { ReputationEngineService } from "./reputationEngineService";
 import { CollaborationIntelligenceService } from "./collaborationIntelligenceService";
 import { IndustryBenchmarkService } from "./industryBenchmarkService";
 import { TalentMarketplaceService } from "./talentMarketplaceService";
+import { AutonomousUniversityService } from "./autonomousUniversityService";
+import { CapabilityGraphService } from "./capabilityGraphService";
+import { MentorCouncilService } from "./mentorCouncilService";
+import { HumanPotentialService } from "./humanPotentialService";
+import { GlobalImpactService } from "./globalImpactService";
+import { CredentialNetworkService } from "./credentialNetworkService";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 export interface VoiceChatResult {
@@ -274,6 +280,92 @@ export class VoiceMentorService {
         });
         await RedisManager.set(`voice:response:${sessionId}`, JSON.stringify({ transcript, aiResponse: benchAnswer }), 3600);
         return { sessionId, transcript, aiResponse: benchAnswer, audioUrl: tts.audioUrl, language };
+      } catch (e) {
+        // Fall through
+      }
+    }
+
+    // V5.0 AI University & Degree Pathway Voice Routing
+    if (lower.includes("degree") || lower.includes("university") || lower.includes("graduation") || lower.includes("credits") || lower.includes("degree audit") || lower.includes("capstone")) {
+      try {
+        const studentDegrees = await AutonomousUniversityService.getStudentDegrees(userId);
+        const activeDeg = studentDegrees[0];
+        const audit = await AutonomousUniversityService.runGraduationAudit(userId, activeDeg?.degreeId || "deg_swe");
+        const univAnswer = `You are enrolled in the ${audit.degreeTitle}. You have completed ${audit.creditsCompleted} out of ${audit.totalCreditsRequired} credits with a GPA of ${audit.currentGpa}. Graduation readiness is ${audit.careerReadinessScore}%. ${audit.isEligible ? 'You are eligible for graduation honors!' : `You have ${audit.remainingCourses.length} remaining courses.`}`;
+        const tts = await TextToSpeechService.generateSpeech(univAnswer, language);
+        await VoiceMentorRepository.saveMessage({
+          id: `vmsg-${Date.now()}`,
+          sessionId,
+          role: "user",
+          transcript,
+          aiResponse: univAnswer,
+          createdAt: new Date().toISOString(),
+        });
+        await RedisManager.set(`voice:response:${sessionId}`, JSON.stringify({ transcript, aiResponse: univAnswer }), 3600);
+        return { sessionId, transcript, aiResponse: univAnswer, audioUrl: tts.audioUrl, language };
+      } catch (e) {
+        // Fall through
+      }
+    }
+
+    // V5.0 Capability Graph & Human Capability Intelligence Voice Routing
+    if (lower.includes("capability") || lower.includes("capabilities") || lower.includes("skill graph") || lower.includes("what should i build next") || lower.includes("mastery level")) {
+      try {
+        const capSummary = await CapabilityGraphService.getCapabilityGraph(userId);
+        const capAnswer = `Your strongest capability is ${capSummary.highestCapability.name} with ${capSummary.highestCapability.masteryScore}% mastery in ${capSummary.highestCapability.domain}. I recommend focusing next on ${capSummary.recommendedFocusCapability.name} to unlock synergies across Distributed Systems and Frontier AI.`;
+        const tts = await TextToSpeechService.generateSpeech(capAnswer, language);
+        await VoiceMentorRepository.saveMessage({
+          id: `vmsg-${Date.now()}`,
+          sessionId,
+          role: "user",
+          transcript,
+          aiResponse: capAnswer,
+          createdAt: new Date().toISOString(),
+        });
+        await RedisManager.set(`voice:response:${sessionId}`, JSON.stringify({ transcript, aiResponse: capAnswer }), 3600);
+        return { sessionId, transcript, aiResponse: capAnswer, audioUrl: tts.audioUrl, language };
+      } catch (e) {
+        // Fall through
+      }
+    }
+
+    // V5.0 Human Potential & Trajectory Voice Routing
+    if (lower.includes("potential") || lower.includes("founder potential") || lower.includes("trajectory") || lower.includes("forecast") || lower.includes("growth curve")) {
+      try {
+        const potSummary = await HumanPotentialService.getHumanPotential(userId);
+        const potAnswer = `Your composite Human Potential Index is ${potSummary.compositePotentialIndex} out of 100 on a ${potSummary.trajectoryClass} trajectory. Your Learning Velocity is ${potSummary.profile.learningVelocity} and Founder Potential is ${potSummary.profile.founderPotential}%. Key accelerator: ${potSummary.profile.strategicAccelerators[0]}.`;
+        const tts = await TextToSpeechService.generateSpeech(potAnswer, language);
+        await VoiceMentorRepository.saveMessage({
+          id: `vmsg-${Date.now()}`,
+          sessionId,
+          role: "user",
+          transcript,
+          aiResponse: potAnswer,
+          createdAt: new Date().toISOString(),
+        });
+        await RedisManager.set(`voice:response:${sessionId}`, JSON.stringify({ transcript, aiResponse: potAnswer }), 3600);
+        return { sessionId, transcript, aiResponse: potAnswer, audioUrl: tts.audioUrl, language };
+      } catch (e) {
+        // Fall through
+      }
+    }
+
+    // V5.0 Global Impact Network Voice Routing
+    if (lower.includes("impact") || lower.includes("people reached") || lower.includes("societal impact") || lower.includes("global impact")) {
+      try {
+        const impSummary = await GlobalImpactService.getGlobalImpact(userId);
+        const impAnswer = `Your Global Impact Score is ${impSummary.impactScoreScaled1000} out of 1000, placing you in the top ${impSummary.globalRankPercentile}% worldwide with ${impSummary.profile.totalPeopleImpacted.toLocaleString()} people reached across Open Source, Research, and Technical Education.`;
+        const tts = await TextToSpeechService.generateSpeech(impAnswer, language);
+        await VoiceMentorRepository.saveMessage({
+          id: `vmsg-${Date.now()}`,
+          sessionId,
+          role: "user",
+          transcript,
+          aiResponse: impAnswer,
+          createdAt: new Date().toISOString(),
+        });
+        await RedisManager.set(`voice:response:${sessionId}`, JSON.stringify({ transcript, aiResponse: impAnswer }), 3600);
+        return { sessionId, transcript, aiResponse: impAnswer, audioUrl: tts.audioUrl, language };
       } catch (e) {
         // Fall through
       }

@@ -19,6 +19,7 @@ interface NavSection {
 const navSections: NavSection[] = [
   {
     items: [
+      { icon: GraduationCap,   label: "AI University", path: "/university", badge: "V5.0" },
       { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
       { icon: Award,            label: "Talent & Reputation", path: "/talent-marketplace", badge: "V4.9" },
       { icon: Building2,       label: "Enterprise Simulation", path: "/simulation", badge: "V4.8" },

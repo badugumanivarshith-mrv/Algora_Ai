@@ -37,6 +37,13 @@ import { TalentMarketplaceService } from "../services/ai/talentMarketplaceServic
 import { CollaborationIntelligenceService } from "../services/ai/collaborationIntelligenceService";
 import { PortfolioIntelligenceService } from "../services/ai/portfolioIntelligenceService";
 import { IndustryBenchmarkService } from "../services/ai/industryBenchmarkService";
+import { AutonomousUniversityService } from "../services/ai/autonomousUniversityService";
+import { CapabilityGraphService } from "../services/ai/capabilityGraphService";
+import { MentorCouncilService } from "../services/ai/mentorCouncilService";
+import { LearningMarketplaceService } from "../services/ai/learningMarketplaceService";
+import { CredentialNetworkService } from "../services/ai/credentialNetworkService";
+import { HumanPotentialService } from "../services/ai/humanPotentialService";
+import { GlobalImpactService } from "../services/ai/globalImpactService";
 import { SimulationRepository } from "../repositories/simulationRepository";
 import { ProductivityRepository } from "../repositories/productivityRepository";
 import { logger } from "../utils/logger";
@@ -860,6 +867,148 @@ export class AIOSController {
       const profile = await CollaborationIntelligenceService.getCollaborationProfile(userId);
       const recommendations = await CollaborationIntelligenceService.getTeamRecommendations(userId);
       res.json({ status: 'success', data: { profile, recommendations } });
+    } catch (e: any) {
+      res.status(500).json({ status: 'error', message: e.message });
+    }
+  }
+
+  // V5.0 Autonomous AI University & Human Capability OS
+  public static async getUniversity(req: Request, res: Response) {
+    try {
+      const userId = (req as any).user?.id || 'usr_demo';
+      const degrees = await AutonomousUniversityService.getDegrees();
+      const studentDegrees = await AutonomousUniversityService.getStudentDegrees(userId);
+      const activeEnrollment = studentDegrees[0];
+      const audit = activeEnrollment
+        ? await AutonomousUniversityService.runGraduationAudit(userId, activeEnrollment.degreeId)
+        : null;
+
+      res.json({ status: 'success', data: { degrees, studentDegrees, audit } });
+    } catch (e: any) {
+      res.status(500).json({ status: 'error', message: e.message });
+    }
+  }
+
+  public static async enrollUniversityDegree(req: Request, res: Response) {
+    try {
+      const userId = (req as any).user?.id || 'usr_demo';
+      const { degreeId } = req.body;
+      const enrollment = await AutonomousUniversityService.enrollDegree(userId, degreeId || 'deg_swe');
+      res.json({ status: 'success', data: enrollment });
+    } catch (e: any) {
+      res.status(500).json({ status: 'error', message: e.message });
+    }
+  }
+
+  public static async recalculateUniversity(req: Request, res: Response) {
+    try {
+      const userId = (req as any).user?.id || 'usr_demo';
+      const result = await AutonomousUniversityService.recalculateAllProgress(userId);
+      res.json({ status: 'success', data: result });
+    } catch (e: any) {
+      res.status(500).json({ status: 'error', message: e.message });
+    }
+  }
+
+  public static async getCapabilities(req: Request, res: Response) {
+    try {
+      const userId = (req as any).user?.id || 'usr_demo';
+      const capabilitySummary = await CapabilityGraphService.getCapabilityGraph(userId);
+      res.json({ status: 'success', data: capabilitySummary });
+    } catch (e: any) {
+      res.status(500).json({ status: 'error', message: e.message });
+    }
+  }
+
+  public static async getMentors(req: Request, res: Response) {
+    try {
+      const userId = (req as any).user?.id || 'usr_demo';
+      const mentors = await MentorCouncilService.getMentors();
+      const sessions = await MentorCouncilService.getMentorSessions(userId);
+      res.json({ status: 'success', data: { mentors, sessions } });
+    } catch (e: any) {
+      res.status(500).json({ status: 'error', message: e.message });
+    }
+  }
+
+  public static async conductMentorDebate(req: Request, res: Response) {
+    try {
+      const userId = (req as any).user?.id || 'usr_demo';
+      const { topic, mentorArchetypes } = req.body;
+      const debate = await MentorCouncilService.conductMentorDebate(userId, topic || 'System Architecture vs Rapid Velocity', mentorArchetypes);
+      res.json({ status: 'success', data: debate });
+    } catch (e: any) {
+      res.status(500).json({ status: 'error', message: e.message });
+    }
+  }
+
+  public static async getLearningMarketplace(req: Request, res: Response) {
+    try {
+      const userId = (req as any).user?.id || 'usr_demo';
+      const summary = await LearningMarketplaceService.getMarketplaceOfferings(userId);
+      res.json({ status: 'success', data: summary });
+    } catch (e: any) {
+      res.status(500).json({ status: 'error', message: e.message });
+    }
+  }
+
+  public static async getCredentials(req: Request, res: Response) {
+    try {
+      const userId = (req as any).user?.id || 'usr_demo';
+      const summary = await CredentialNetworkService.getCredentials(userId);
+      res.json({ status: 'success', data: summary });
+    } catch (e: any) {
+      res.status(500).json({ status: 'error', message: e.message });
+    }
+  }
+
+  public static async verifyCredentialHash(req: Request, res: Response) {
+    try {
+      const { hash } = req.body;
+      const verification = await CredentialNetworkService.verifyCredentialHash(hash);
+      res.json({ status: 'success', data: verification });
+    } catch (e: any) {
+      res.status(500).json({ status: 'error', message: e.message });
+    }
+  }
+
+  public static async getPotential(req: Request, res: Response) {
+    try {
+      const userId = (req as any).user?.id || 'usr_demo';
+      const potential = await HumanPotentialService.getHumanPotential(userId);
+      res.json({ status: 'success', data: potential });
+    } catch (e: any) {
+      res.status(500).json({ status: 'error', message: e.message });
+    }
+  }
+
+  public static async simulatePotentialTrajectory(req: Request, res: Response) {
+    try {
+      const userId = (req as any).user?.id || 'usr_demo';
+      const { targetRole } = req.body;
+      const simulation = await HumanPotentialService.runTrajectorySimulation(userId, targetRole || 'Staff AI Engineer');
+      res.json({ status: 'success', data: simulation });
+    } catch (e: any) {
+      res.status(500).json({ status: 'error', message: e.message });
+    }
+  }
+
+  public static async getGlobalImpact(req: Request, res: Response) {
+    try {
+      const userId = (req as any).user?.id || 'usr_demo';
+      const impact = await GlobalImpactService.getGlobalImpact(userId);
+      res.json({ status: 'success', data: impact });
+    } catch (e: any) {
+      res.status(500).json({ status: 'error', message: e.message });
+    }
+  }
+
+  public static async logImpactEvent(req: Request, res: Response) {
+    try {
+      const userId = (req as any).user?.id || 'usr_demo';
+      const { impactArea, title, metrics, reachCount, verificationSource } = req.body;
+      const event = await GlobalImpactService.logImpactEvent(userId, impactArea, title, metrics, reachCount || 100, verificationSource || 'Algora Verification');
+      res.json({ status: 'success', data: event });
     } catch (e: any) {
       res.status(500).json({ status: 'error', message: e.message });
     }

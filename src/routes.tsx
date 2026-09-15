@@ -30,6 +30,7 @@ import AIOSHub from "./pages/AIOSHub";
 import ExecutionCenterPage from "./pages/ExecutionCenter";
 import SimulationHub from "./pages/SimulationHub";
 import TalentMarketplaceHub from "./pages/TalentMarketplaceHub";
+import UniversityHub from "./pages/UniversityHub";
 import Profile from "./pages/Profile";
 import { AIProblemGenerator } from "./pages/ai/AIProblemGenerator";
 import { AIQuizGenerator } from "./pages/ai/AIQuizGenerator";
@@ -243,5 +244,10 @@ export const router = createBrowserRouter([
     path: "/enterprise-simulation",
     Component: AppShell,
     children: [{ index: true, Component: SimulationHub }],
+  },
+  {
+    path: "/university",
+    Component: AppShell,
+    children: [{ index: true, Component: UniversityHub }],
   },
 ]);
