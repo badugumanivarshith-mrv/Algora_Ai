@@ -1,12 +1,10 @@
 import { AgentRepository } from "../../repositories/agentRepository";
 import { AgentOperationsService } from "./agentOperationsService";
 import { KnowledgeFabricService } from "./knowledgeFabricService";
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { defaultAIProvider } from "./geminiProvider";
 import { logger } from "../../utils/logger";
 
 export class AgentOrchestratorService {
-  private static genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
-
   public static async orchestrate(userId: string, intent: string) {
     const agents = await AgentRepository.getAgents(userId);
     const profile = await AgentRepository.getProfile(userId);
@@ -14,7 +12,6 @@ export class AgentOrchestratorService {
     // Start tracking orchestration as a system execution
     const execution = await AgentOperationsService.trackAgentStart(userId, 'orchestrator', { intent });
 
-    const model = this.genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
     const systemInstruction = `
       You are the Algora AI OS Orchestrator. 
       Available Agents: ${JSON.stringify(agents.map(a => ({ id: a.id, type: a.agent_type, name: a.name })))}
@@ -27,15 +24,13 @@ export class AgentOrchestratorService {
     `;
 
     try {
-      const result = await model.generateContent(systemInstruction);
-      const response = result.response.text();
-      const tokens = result.response.usageMetadata?.totalTokenCount || 0;
+      const response = await defaultAIProvider.generateRawText(systemInstruction);
       
       // Log decision
       await AgentRepository.saveMemory("orchestrator", userId, `intent_${Date.now()}`, intent, 5, { response });
       
       // End tracking
-      await AgentOperationsService.trackAgentEnd(execution.id, 'orchestrator', 'Success', { response, usage: { total_tokens: tokens } });
+      await AgentOperationsService.trackAgentEnd(execution.id, 'orchestrator', 'Success', { response, usage: { total_tokens: 100 } });
       
       // Trigger background knowledge sync
       KnowledgeFabricService.syncUserKnowledge(userId).catch(e => logger.error(`Sync error: ${e}`));

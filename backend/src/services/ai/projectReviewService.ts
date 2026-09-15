@@ -1,12 +1,9 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { defaultAIProvider } from "./geminiProvider";
 import { logger } from "../../utils/logger";
 
 export class ProjectReviewService {
-  private static genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
-
   public static async reviewProject(workspaceName: string, description: string, submissionUrl: string) {
     try {
-      const model = this.genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
       const prompt = `
         Evaluate the following project for production readiness:
         Project: ${workspaceName}
@@ -30,8 +27,7 @@ export class ProjectReviewService {
         }
       `;
 
-      const result = await model.generateContent(prompt);
-      const text = result.response.text();
+      const text = await defaultAIProvider.generateRawText(prompt);
       const cleaned = text.replace(/```json|```/g, "").trim();
       return JSON.parse(cleaned);
     } catch (e: any) {

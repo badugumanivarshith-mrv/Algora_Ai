@@ -6,7 +6,6 @@ import { RecruiterSimulationService } from "../services/ai/recruiterSimulationSe
 import { AssessmentAnalyticsService } from "../services/ai/assessmentAnalyticsService";
 import { HiringPipelineService } from "../services/ai/hiringPipelineService";
 import { BenchmarkService } from "../services/ai/benchmarkService";
-import { HiringRepository } from "../repositories/hiringRepository";
 import { logger } from "../utils/logger";
 
 export class HiringController {
@@ -24,8 +23,7 @@ export class HiringController {
   public static async getAssessmentById(req: Request, res: Response) {
     try {
       const { id } = req.params;
-      const assessment = await HiringRepository.getAssessmentById(id);
-      const questions = await HiringRepository.getQuestions(id);
+      const { assessment, questions } = await AssessmentService.getAssessmentById(id);
       res.json({ success: true, assessment, questions });
     } catch (e: any) {
       logger.error(`[HiringController.getAssessmentById] Error: ${e.message}`);
@@ -91,14 +89,7 @@ export class HiringController {
   public static async getCandidateProfile(req: Request, res: Response) {
     try {
       const userId = (req as any).user?.id || "usr_demo";
-      let profile = await HiringRepository.getCandidateProfile(userId);
-      if (!profile) {
-        profile = await HiringRepository.upsertCandidateProfile({
-          userId,
-          readinessScore: 88,
-          overallRating: 1820,
-        });
-      }
+      const profile = await AssessmentService.getCandidateProfile(userId);
       res.json({ success: true, profile });
     } catch (e: any) {
       logger.error(`[HiringController.getCandidateProfile] Error: ${e.message}`);

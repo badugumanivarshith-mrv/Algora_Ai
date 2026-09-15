@@ -16,6 +16,7 @@ export interface DigitalTwinRecord {
   growthModels: Record<string, any>;
   riskFactors: any[];
   readinessForecast: Record<string, any>;
+  cognitiveTwinLayer?: Record<string, any>;
   updatedAt: string;
   createdAt: string;
 }

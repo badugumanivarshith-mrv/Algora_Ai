@@ -1,12 +1,9 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { defaultAIProvider } from "./geminiProvider";
 import { logger } from "../../utils/logger";
 
 export class TaskPlanningService {
-  private static genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
-
   public static async generateSprintPlan(workspaceName: string, description: string, durationWeeks: number = 2) {
     try {
-      const model = this.genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
       const prompt = `
         As an AI Project Manager, generate a ${durationWeeks}-week sprint plan for a project named "${workspaceName}".
         Project Description: ${description}
@@ -18,8 +15,7 @@ export class TaskPlanningService {
         - roadmap: A short implementation roadmap
       `;
 
-      const result = await model.generateContent(prompt);
-      const text = result.response.text();
+      const text = await defaultAIProvider.generateRawText(prompt);
       const cleaned = text.replace(/```json|```/g, "").trim();
       return JSON.parse(cleaned);
     } catch (e: any) {
@@ -30,7 +26,6 @@ export class TaskPlanningService {
 
   public static async generateMilestoneBreakdown(milestoneTitle: string, description: string) {
     try {
-      const model = this.genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
       const prompt = `
         Break down the milestone "${milestoneTitle}" into actionable tasks.
         Context: ${description}
@@ -38,8 +33,7 @@ export class TaskPlanningService {
         Return a JSON list of task objects with { title: string, description: string, estimatedDays: number }.
       `;
 
-      const result = await model.generateContent(prompt);
-      const text = result.response.text();
+      const text = await defaultAIProvider.generateRawText(prompt);
       const cleaned = text.replace(/```json|```/g, "").trim();
       return JSON.parse(cleaned);
     } catch (e: any) {

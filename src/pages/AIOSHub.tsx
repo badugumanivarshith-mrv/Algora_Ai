@@ -43,6 +43,7 @@ import ExecutionCenter from '../components/aios/ExecutionCenter';
 import { SimulationCenter } from '../components/aios/SimulationCenter';
 import { TalentMarketplace } from '../components/aios/TalentMarketplace';
 import { UniversityCenter } from '../components/aios/UniversityCenter';
+import { CognitiveIntelligenceCenter } from '../components/aios/CognitiveIntelligenceCenter';
 import { GraduationCap } from 'lucide-react';
 
 const AIOSHub: React.FC = () => {
@@ -92,6 +93,7 @@ const AIOSHub: React.FC = () => {
   };
 
   const tabs = [
+    { id: 'cognitive', label: 'Superintelligence & AGI Lab', icon: Brain },
     { id: 'university', label: 'AI University & HCOS', icon: GraduationCap },
     { id: 'command', label: 'Command Center', icon: Terminal },
     { id: 'talent', label: 'Talent & Reputation', icon: DollarSign },
@@ -370,6 +372,7 @@ const AIOSHub: React.FC = () => {
                 </div>
               )}
 
+              {activeTab === 'cognitive' && <CognitiveIntelligenceCenter />}
               {activeTab === 'university' && <UniversityCenter />}
               {activeTab === 'talent' && <TalentMarketplace />}
               {activeTab === 'simulation' && <SimulationCenter />}

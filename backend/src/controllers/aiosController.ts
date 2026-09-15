@@ -44,6 +44,13 @@ import { LearningMarketplaceService } from "../services/ai/learningMarketplaceSe
 import { CredentialNetworkService } from "../services/ai/credentialNetworkService";
 import { HumanPotentialService } from "../services/ai/humanPotentialService";
 import { GlobalImpactService } from "../services/ai/globalImpactService";
+import { CognitiveArchitectureService } from "../services/ai/cognitiveArchitectureService";
+import { LearningDNAService } from "../services/ai/learningDNAService";
+import { AGIResearchLabService } from "../services/ai/agiResearchLabService";
+import { SuperintelligenceSimulator } from "../services/ai/superintelligenceSimulator";
+import { MetaLearningService } from "../services/ai/metaLearningService";
+import { CognitiveBottleneckService } from "../services/ai/cognitiveBottleneckService";
+import { KnowledgeCompoundingService } from "../services/ai/knowledgeCompoundingService";
 import { SimulationRepository } from "../repositories/simulationRepository";
 import { ProductivityRepository } from "../repositories/productivityRepository";
 import { logger } from "../utils/logger";
@@ -1009,6 +1016,108 @@ export class AIOSController {
       const { impactArea, title, metrics, reachCount, verificationSource } = req.body;
       const event = await GlobalImpactService.logImpactEvent(userId, impactArea, title, metrics, reachCount || 100, verificationSource || 'Algora Verification');
       res.json({ status: 'success', data: event });
+    } catch (e: any) {
+      res.status(500).json({ status: 'error', message: e.message });
+    }
+  }
+
+  // V5.1 Cognitive Architecture & Personal Superintelligence Endpoints
+  public static async getCognitiveProfile(req: Request, res: Response) {
+    try {
+      const userId = (req as any).user?.id || 'usr_demo';
+      const profile = await CognitiveArchitectureService.getCognitiveProfile(userId);
+      res.json({ status: 'success', data: profile });
+    } catch (e: any) {
+      res.status(500).json({ status: 'error', message: e.message });
+    }
+  }
+
+  public static async getLearningDNA(req: Request, res: Response) {
+    try {
+      const userId = (req as any).user?.id || 'usr_demo';
+      const dna = await LearningDNAService.getLearningDNA(userId);
+      res.json({ status: 'success', data: dna });
+    } catch (e: any) {
+      res.status(500).json({ status: 'error', message: e.message });
+    }
+  }
+
+  public static async getAGIResearchSummary(req: Request, res: Response) {
+    try {
+      const userId = (req as any).user?.id || 'usr_demo';
+      const summary = await AGIResearchLabService.getAGIResearchSummary(userId);
+      res.json({ status: 'success', data: summary });
+    } catch (e: any) {
+      res.status(500).json({ status: 'error', message: e.message });
+    }
+  }
+
+  public static async generateResearchPlan(req: Request, res: Response) {
+    try {
+      const userId = (req as any).user?.id || 'usr_demo';
+      const { title, domain, objective } = req.body;
+      const project = await AGIResearchLabService.generateResearchPlan(
+        userId,
+        title || 'Autonomous Agent Memory Benchmark',
+        domain || 'Reasoning Systems',
+        objective || 'Sub-linear vector memory retrieval'
+      );
+      res.json({ status: 'success', data: project });
+    } catch (e: any) {
+      res.status(500).json({ status: 'error', message: e.message });
+    }
+  }
+
+  public static async getSuperintelligenceSummary(req: Request, res: Response) {
+    try {
+      const userId = (req as any).user?.id || 'usr_demo';
+      const summary = await SuperintelligenceSimulator.getSuperintelligenceSummary(userId);
+      res.json({ status: 'success', data: summary });
+    } catch (e: any) {
+      res.status(500).json({ status: 'error', message: e.message });
+    }
+  }
+
+  public static async runSuperintelligenceSimulation(req: Request, res: Response) {
+    try {
+      const userId = (req as any).user?.id || 'usr_demo';
+      const { simulationName, timeHorizonYears } = req.body;
+      const sim = await SuperintelligenceSimulator.runSimulation(
+        userId,
+        simulationName || 'Personal Superintelligence Forecast',
+        timeHorizonYears ? parseInt(timeHorizonYears, 10) : 5
+      );
+      res.json({ status: 'success', data: sim });
+    } catch (e: any) {
+      res.status(500).json({ status: 'error', message: e.message });
+    }
+  }
+
+  public static async getMetaLearningSummary(req: Request, res: Response) {
+    try {
+      const userId = (req as any).user?.id || 'usr_demo';
+      const summary = await MetaLearningService.getMetaLearningSummary(userId);
+      res.json({ status: 'success', data: summary });
+    } catch (e: any) {
+      res.status(500).json({ status: 'error', message: e.message });
+    }
+  }
+
+  public static async getCognitiveBottleneckSummary(req: Request, res: Response) {
+    try {
+      const userId = (req as any).user?.id || 'usr_demo';
+      const summary = await CognitiveBottleneckService.getBottleneckSummary(userId);
+      res.json({ status: 'success', data: summary });
+    } catch (e: any) {
+      res.status(500).json({ status: 'error', message: e.message });
+    }
+  }
+
+  public static async getKnowledgeCompoundingSummary(req: Request, res: Response) {
+    try {
+      const userId = (req as any).user?.id || 'usr_demo';
+      const summary = await KnowledgeCompoundingService.getCompoundingSummary(userId);
+      res.json({ status: 'success', data: summary });
     } catch (e: any) {
       res.status(500).json({ status: 'error', message: e.message });
     }

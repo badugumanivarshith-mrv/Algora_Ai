@@ -13,6 +13,24 @@ export class AssessmentService {
     return assessments;
   }
 
+  public static async getAssessmentById(id: string): Promise<{ assessment: AssessmentEntity | null; questions: any[] }> {
+    const assessment = await HiringRepository.getAssessmentById(id);
+    const questions = await HiringRepository.getQuestions(id);
+    return { assessment, questions };
+  }
+
+  public static async getCandidateProfile(userId: string) {
+    let profile = await HiringRepository.getCandidateProfile(userId);
+    if (!profile) {
+      profile = await HiringRepository.upsertCandidateProfile({
+        userId,
+        readinessScore: 88,
+        overallRating: 1820,
+      });
+    }
+    return profile;
+  }
+
   public static async submitAttempt(params: {
     assessmentId: string;
     userId: string;

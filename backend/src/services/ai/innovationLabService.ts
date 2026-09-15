@@ -1,10 +1,7 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { defaultAIProvider } from "./geminiProvider";
 
 export class InnovationLabService {
-  private static genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
-
   public static async evaluateIdea(idea: { title: string; problem: string; solution: string }) {
-    const model = this.genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
     const prompt = `
       Evaluate the following startup idea:
       Title: ${idea.title}
@@ -19,15 +16,11 @@ export class InnovationLabService {
       5. Suggested architecture
     `;
 
-    const result = await model.generateContent(prompt);
-    return result.response.text();
+    return await defaultAIProvider.generateRawText(prompt);
   }
 
   public static async generateMvpPlan(idea: string) {
-    const model = this.genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
     const prompt = `Generate a 4-week MVP execution roadmap for this idea: "${idea}". Focus on core value delivery with minimal complexity.`;
-    
-    const result = await model.generateContent(prompt);
-    return result.response.text();
+    return await defaultAIProvider.generateRawText(prompt);
   }
 }

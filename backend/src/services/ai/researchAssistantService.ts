@@ -1,16 +1,12 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { defaultAIProvider } from "./geminiProvider";
 import { AgentRepository } from "../../repositories/agentRepository";
 
 export class ResearchAssistantService {
-  private static genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
-
   public static async analyzePaper(paperText: string, task: 'summarize' | 'explain' | 'methodology' | 'prerequisites', userId?: string) {
     // V4.0 AI OS Integration: Log to Research Agent memory
     if (userId) {
       await AgentRepository.saveMemory("research-agent", userId, `paper_analysis_${Date.now()}`, `User analyzed a paper using task: ${task}`, 6);
     }
-
-    const model = this.genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
     
     let prompt = "";
     switch (task) {
@@ -28,15 +24,11 @@ export class ResearchAssistantService {
         break;
     }
 
-    const result = await model.generateContent(prompt);
-    return result.response.text();
+    return await defaultAIProvider.generateRawText(prompt);
   }
 
   public static async suggestResearchDirections(topic: string, currentState: string) {
-    const model = this.genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
     const prompt = `Based on the research topic "${topic}" and its current state: "${currentState}", suggest 5 potential future research directions or gaps to explore.`;
-    
-    const result = await model.generateContent(prompt);
-    return result.response.text();
+    return await defaultAIProvider.generateRawText(prompt);
   }
 }

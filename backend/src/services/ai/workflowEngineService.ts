@@ -2,7 +2,7 @@ import { AgentRepository } from "../../repositories/agentRepository";
 import { AgentOperationsRepository } from "../../repositories/agentOperationsRepository";
 import { AgentOperationsService } from "./agentOperationsService";
 import { KnowledgeFabricService } from "./knowledgeFabricService";
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { defaultAIProvider } from "./geminiProvider";
 import { logger } from "../../utils/logger";
 
 export interface WorkflowStep {
@@ -12,7 +12,6 @@ export interface WorkflowStep {
 }
 
 export class WorkflowEngineService {
-  private static genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 
   public static async executeWorkflow(userId: string, workflowId: string, initialInput: any = {}) {
     const workflows = await AgentRepository.getWorkflows(userId);
@@ -80,7 +79,6 @@ export class WorkflowEngineService {
   }
 
   private static async executeAgentStep(userId: string, config: any, input: any) {
-    const model = this.genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
     const prompt = `
       Workflow Step: ${config.instruction || 'Process input'}
       Agent Role: ${config.role || 'Assistant'}
@@ -88,8 +86,8 @@ export class WorkflowEngineService {
       
       Task: Perform the role-specific task on the input.
     `;
-    const result = await model.generateContent(prompt);
-    return { response: result.response.text(), metadata: { role: config.role } };
+    const text = await defaultAIProvider.generateRawText(prompt);
+    return { response: text, metadata: { role: config.role } };
   }
 
   private static async executeMemoryStep(userId: string, config: any, input: any) {
@@ -104,25 +102,21 @@ export class WorkflowEngineService {
   }
 
   private static async executeConditionStep(config: any, input: any) {
-    // Simple logic evaluation using Gemini
-    const model = this.genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
     const prompt = `
       Condition: ${config.condition}
       Input: ${JSON.stringify(input)}
       Return "TRUE" or "FALSE" based on whether the input satisfies the condition.
     `;
-    const result = await model.generateContent(prompt);
-    return result.response.text().includes('TRUE');
+    const text = await defaultAIProvider.generateRawText(prompt);
+    return text.includes('TRUE');
   }
 
   public static async suggestWorkflow(userId: string, goal: string) {
-    const model = this.genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
     const prompt = `
       User Goal: "${goal}"
       As a Workflow Architect, suggest a multi-step agent workflow to achieve this goal.
       Return a JSON array of steps with types: Trigger, Action, Agent, Memory.
     `;
-    const result = await model.generateContent(prompt);
-    return result.response.text();
+    return await defaultAIProvider.generateRawText(prompt);
   }
 }

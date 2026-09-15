@@ -578,6 +578,61 @@ export class UniversityRepository {
         corePrinciples: ['Psychological safety unlocks extreme output', 'Extreme clarity of mission', 'Lead through empathetic conviction'],
         debatePersonality: 'Diplomatic yet resolute, focused on sustainable human energy, team multipliers, and high-trust dynamics.',
         avatarColor: 'from-indigo-600 to-violet-600'
+      },
+      {
+        id: 'mnt_cog_sci',
+        name: 'Dr. Nathan Cross',
+        role: 'Lead Cognitive Scientist',
+        specialty: 'Working Memory & Neural Problem Solving',
+        archetype: 'CognitiveScientist' as any,
+        bio: 'Pioneered computational models of cognitive load and retrieval mechanics at MIT Brain & Cognitive Sciences.',
+        corePrinciples: ['Identify working memory bottlenecks', 'Deconstruct abstract concepts into fundamental schema', 'Optimize cognitive bandwidth'],
+        debatePersonality: 'Rigorous cognitive diagnostics, focused on mental model clarity and memory retrieval efficiency.',
+        avatarColor: 'from-cyan-600 to-teal-600'
+      },
+      {
+        id: 'mnt_agi_res',
+        name: 'Dr. Alistair Vance',
+        role: 'AGI Safety & Alignment Principal',
+        specialty: 'Test-Time Compute & Mechanistic Interpretability',
+        archetype: 'AGIResearcher' as any,
+        bio: 'Directs research on scalable oversight and reasoning verification in foundation model swarms.',
+        corePrinciples: ['Safety is an architectural property', 'Verify test-time reasoning steps explicitly', 'Align agent incentives'],
+        debatePersonality: 'Deeply focused on formal verification, alignment safety bounds, and test-time reasoning compute.',
+        avatarColor: 'from-purple-600 to-indigo-600'
+      },
+      {
+        id: 'mnt_learn_sci',
+        name: 'Prof. Sophia Chen',
+        role: 'Director of Learning Intelligence',
+        specialty: 'Meta-Learning & Spaced Compounding',
+        archetype: 'LearningScientist' as any,
+        bio: 'Author of "The Compounding Mind", specializing in accelerated skill acquisition and active recall optimization.',
+        corePrinciples: ['Spaced retrieval outperforms passive review', 'Meta-cognition is the ultimate leverage', 'Match mode to DNA'],
+        debatePersonality: 'Encouraging, scientific, laser-focused on learning velocity and cognitive retention curves.',
+        avatarColor: 'from-emerald-600 to-green-600'
+      },
+      {
+        id: 'mnt_sys_think',
+        name: 'Vikram Patel',
+        role: 'Principal Systems Thinker',
+        specialty: 'Complex Systems & Second-Order Effects',
+        archetype: 'SystemsThinker' as any,
+        bio: 'Consultant for DARPA and tier-1 tech enterprises on non-linear system dynamics and emergent failure modes.',
+        corePrinciples: ['Look for second-order feedback loops', 'Optimize for system-wide flow not local max', 'Build robust anti-fragile structures'],
+        debatePersonality: 'Holistic, macro-focused, mapping interconnected feedback loops across engineering, market, and cognitive domains.',
+        avatarColor: 'from-amber-600 to-yellow-600'
+      },
+      {
+        id: 'mnt_perf_psych',
+        name: 'Dr. Kairos Thorne',
+        role: 'High-Performance Psychologist',
+        specialty: 'Cognitive Endurance & Flow State Engineering',
+        archetype: 'PerformancePsychologist' as any,
+        bio: 'Coaches Olympic athletes, chess grandmasters, and principal tech leaders on sustained cognitive focus under extreme pressure.',
+        corePrinciples: ['Manage energy not just time', 'Flow state requires structured challenge-skill balance', 'Prevent burnout through systematic recovery'],
+        debatePersonality: 'Empathetic, highly attuned to stress signals, focused on mental endurance and optimal focus capacity.',
+        avatarColor: 'from-rose-600 to-pink-600'
       }
     ];
 

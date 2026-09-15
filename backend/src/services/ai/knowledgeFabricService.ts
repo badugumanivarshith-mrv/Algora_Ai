@@ -3,12 +3,11 @@ import { LearningMemoryRepository } from "../../repositories/learningMemoryRepos
 import { AgentRepository } from "../../repositories/agentRepository";
 import { ProductivityRepository } from "../../repositories/productivityRepository";
 import { DigitalTwinService } from "./digitalTwinService";
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { defaultAIProvider } from "./geminiProvider";
 import { RedisManager } from "../../redis/redisClient";
 import { logger } from "../../utils/logger";
 
 export class KnowledgeFabricService {
-  private static genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
   private static CACHE_TTL = 3600;
 
   // Global Knowledge Graph Initialization
@@ -72,8 +71,25 @@ export class KnowledgeFabricService {
     await KnowledgeFabricRepository.upsertRelationship({
       sourceId: 'ent_out_master_rating', targetId: 'ent_impact_l4_offer', relationshipType: 'DrivesCareerImpact', weight: 0.95
     });
+
+    // Seed Cognitive Knowledge Graph V5.1 (Learning -> Mastery -> Capability -> Opportunity -> Outcome -> Impact)
+    const cogEntities = [
+      { id: 'ent_cog_learn', name: 'Cognitive Learning: Active Recall & Deep Project Sprints', entityType: 'Learning', description: 'Meta-learning sprint execution.' },
+      { id: 'ent_cog_mast', name: 'Mastery: Distributed Consensus & Agent Swarm Reasoning', entityType: 'Mastery', description: 'Verified top 1% domain mastery.' },
+      { id: 'ent_cog_cap', name: 'Capability: Frontier AI Architecture & Systems Design', entityType: 'Capability', description: 'Multi-vector capability node.' },
+      { id: 'ent_cog_opp', name: 'Opportunity: Staff AI Engineer / AGI Lab Lead', entityType: 'Opportunity', description: 'Matched high-impact career role.' },
+      { id: 'ent_cog_out', name: 'Outcome: Frontier AI Platform Launch & Peer-Reviewed Breakthrough', entityType: 'Outcome', description: 'Quantifiable technical output.' },
+      { id: 'ent_cog_imp', name: 'Impact: Global Reach of 100,000+ Engineers & High-Equity Valuation', entityType: 'Impact', description: 'Compound societal & financial impact.' }
+    ];
+    for (const ce of cogEntities) await KnowledgeFabricRepository.upsertEntity(ce);
+
+    await KnowledgeFabricRepository.upsertRelationship({ sourceId: 'ent_cog_learn', targetId: 'ent_cog_mast', relationshipType: 'BuildsMastery', weight: 0.95 });
+    await KnowledgeFabricRepository.upsertRelationship({ sourceId: 'ent_cog_mast', targetId: 'ent_cog_cap', relationshipType: 'UnlocksCapability', weight: 0.95 });
+    await KnowledgeFabricRepository.upsertRelationship({ sourceId: 'ent_cog_cap', targetId: 'ent_cog_opp', relationshipType: 'AttractsOpportunity', weight: 0.92 });
+    await KnowledgeFabricRepository.upsertRelationship({ sourceId: 'ent_cog_opp', targetId: 'ent_cog_out', relationshipType: 'DeliversOutcome', weight: 0.90 });
+    await KnowledgeFabricRepository.upsertRelationship({ sourceId: 'ent_cog_out', targetId: 'ent_cog_imp', relationshipType: 'GeneratesImpact', weight: 0.98 });
     
-    logger.info("[KnowledgeFabric] Fabric and Executive Knowledge Graph initialization complete.");
+    logger.info("[KnowledgeFabric] Fabric, Executive, and Cognitive Knowledge Graph initialization complete.");
   }
 
   // Memory Consolidation
@@ -134,8 +150,6 @@ export class KnowledgeFabricService {
 
   // Gemini Insight Generation
   private static async generateCrossDomainInsights(userId: string, profile: any) {
-    const model = this.genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-    
     const prompt = `
       User Intelligence Profile: ${JSON.stringify(profile)}
       Recent Memory Events: (System Log for user ${userId})
@@ -148,8 +162,7 @@ export class KnowledgeFabricService {
     `;
 
     try {
-      const result = await model.generateContent(prompt);
-      const text = result.response.text();
+      const text = await defaultAIProvider.generateRawText(prompt);
       const insights = JSON.parse(text.substring(text.indexOf('['), text.lastIndexOf(']') + 1));
       
       for (const ins of insights) {
@@ -198,7 +211,6 @@ export class KnowledgeFabricService {
 
   // Agent Unified Access Layer
   public static async agentQueryGraph(userId: string, queryText: string) {
-    const model = this.genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
     const graph = await this.getGlobalGraph();
     const profile = await this.getUserIntelligence(userId);
 
@@ -210,8 +222,7 @@ export class KnowledgeFabricService {
       Return the response in a structured way that an AI agent can use.
     `;
 
-    const result = await model.generateContent(prompt);
-    return result.response.text();
+    return await defaultAIProvider.generateRawText(prompt);
   }
 
   public static async recordExperienceFragment(userId: string, category: string, details: any) {

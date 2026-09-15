@@ -1,12 +1,10 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { defaultAIProvider } from "./geminiProvider";
 import { AgentRepository } from "../../repositories/agentRepository";
 import { logger } from "../../utils/logger";
+import { Database } from "../../db/connection";
 
 export class GoalPlanningService {
-  private static genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
-
   public static async createGoalPlan(userId: string, goalTitle: string, targetDate: string) {
-    const model = this.genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
     const prompt = `
       Create a detailed execution plan for the following goal:
       Goal: "${goalTitle}"
@@ -18,8 +16,8 @@ export class GoalPlanningService {
     `;
 
     try {
-      const result = await model.generateContent(prompt);
-      const plan = JSON.parse(result.response.text().replace(/```json|```/g, ''));
+      const text = await defaultAIProvider.generateRawText(prompt);
+      const plan = JSON.parse(text.replace(/```json|```/g, '').trim());
       
       const goal = await AgentRepository.createGoal(userId, {
         title: goalTitle,
@@ -41,6 +39,3 @@ export class GoalPlanningService {
     }
   }
 }
-
-// Internal Database Import for the helper
-import { Database } from "../../db/connection";

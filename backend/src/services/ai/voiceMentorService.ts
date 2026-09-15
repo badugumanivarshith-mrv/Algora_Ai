@@ -41,8 +41,12 @@ import { CapabilityGraphService } from "./capabilityGraphService";
 import { MentorCouncilService } from "./mentorCouncilService";
 import { HumanPotentialService } from "./humanPotentialService";
 import { GlobalImpactService } from "./globalImpactService";
+import { CognitiveArchitectureService } from "./cognitiveArchitectureService";
+import { LearningDNAService } from "./learningDNAService";
+import { CognitiveBottleneckService } from "./cognitiveBottleneckService";
+import { SuperintelligenceSimulator } from "./superintelligenceSimulator";
 import { CredentialNetworkService } from "./credentialNetworkService";
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { defaultAIProvider } from "./geminiProvider";
 
 export interface VoiceChatResult {
   sessionId: string;
@@ -371,20 +375,54 @@ export class VoiceMentorService {
       }
     }
 
+    // V5.1 Cognitive Intelligence & Personal Superintelligence Voice Routing
+    if (lower.includes("cognitive") || lower.includes("stuck") || lower.includes("improving") || lower.includes("bottleneck") || lower.includes("learning style") || lower.includes("superintelligence") || lower.includes("learning dna")) {
+      try {
+        const cogSummary = await CognitiveArchitectureService.getCognitiveProfile(userId);
+        const dnaSummary = await LearningDNAService.getLearningDNA(userId);
+        const btnSummary = await CognitiveBottleneckService.getBottleneckSummary(userId);
+        const simSummary = await SuperintelligenceSimulator.getSuperintelligenceSummary(userId);
+
+        let cogAnswer = "";
+        if (lower.includes("stuck") || lower.includes("bottleneck")) {
+          cogAnswer = btnSummary.highestSeverityBottleneck
+            ? `Your primary cognitive bottleneck is "${btnSummary.highestSeverityBottleneck.title}". Severe impact on ${btnSummary.highestSeverityBottleneck.impactArea}. Suggested recovery: ${btnSummary.highestSeverityBottleneck.recoveryPlan[0]}`
+            : `No severe cognitive bottlenecks detected. Your composite cognitive index is ${cogSummary.compositeCognitiveIndex} with strong working memory and abstraction scores.`;
+        } else if (lower.includes("superintelligence") || lower.includes("forecast") || lower.includes("future")) {
+          cogAnswer = `Your 5-Year Superintelligence forecast predicts a ${simSummary.activeForecast.fiveYear.careerTier} role with an estimated ${simSummary.activeForecast.fiveYear.researchImpactPapers} research breakthroughs and a ${simSummary.activeForecast.fiveYear.startupProbabilityPct}% startup success probability.`;
+        } else {
+          cogAnswer = `Your composite Cognitive Index is ${cogSummary.compositeCognitiveIndex}. Your dominant learning DNA archetype is ${dnaSummary.profile.archetype} with a ${dnaSummary.profile.retentionRatePct}% 1-week retention rate. Primary superpower: ${dnaSummary.profile.learningSuperpowers[0]}.`;
+        }
+
+        const tts = await TextToSpeechService.generateSpeech(cogAnswer, language);
+        await VoiceMentorRepository.saveMessage({
+          id: `vmsg-${Date.now()}`,
+          sessionId,
+          role: "user",
+          transcript,
+          aiResponse: cogAnswer,
+          createdAt: new Date().toISOString(),
+        });
+        await RedisManager.set(`voice:response:${sessionId}`, JSON.stringify({ transcript, aiResponse: cogAnswer }), 3600);
+        return { sessionId, transcript, aiResponse: cogAnswer, audioUrl: tts.audioUrl, language };
+      } catch (e) {
+        // Fall through
+      }
+    }
+
     // V4.0 AI OS Integration: Detect agent and workflow commands
     if (lower.includes("agent") || lower.includes("execute") || lower.includes("plan") || lower.includes("automate") || lower.includes("workflow")) {
       // Check for workflow specific command
       if (lower.includes("workflow") || lower.includes("automation")) {
         const workflows = await ProductivityRepository.getWorkflows(userId);
-        const model = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!).getGenerativeModel({ model: "gemini-1.5-flash" });
         const mappingPrompt = `
           User Input: "${transcript}"
           Available Workflows: ${JSON.stringify(workflows.map(w => ({ id: w.id, name: w.name })))}
           Identify if the user wants to execute a specific workflow. 
           Return ONLY the workflow ID if found, otherwise return "NONE".
         `;
-        const mappingResult = await model.generateContent(mappingPrompt);
-        const workflowId = mappingResult.response.text().trim();
+        const mappingText = await defaultAIProvider.generateRawText(mappingPrompt);
+        const workflowId = mappingText.trim();
 
         if (workflowId !== "NONE" && workflowId.length > 5) {
           await WorkflowAutomationService.executeAutomation(userId, workflowId, { trigger: 'voice_command', transcript });

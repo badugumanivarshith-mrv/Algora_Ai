@@ -1,12 +1,11 @@
 import { AgentOperationsRepository } from "../../repositories/agentOperationsRepository";
 import { AgentRepository } from "../../repositories/agentRepository";
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { defaultAIProvider } from "./geminiProvider";
 import { logger } from "../../utils/logger";
 import { RedisManager } from "../../redis/redisClient";
 import { v4 as uuidv4 } from "uuid";
 
 export class AgentOperationsService {
-  private static genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
   private static CACHE_TTL = 3600;
 
   // Real-time Execution Tracking
@@ -59,7 +58,6 @@ export class AgentOperationsService {
   }
 
   private static async diagnoseFailure(agentId: string, error: string) {
-    const model = this.genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
     const prompt = `
       Agent ID: ${agentId}
       Error Message: ${error}
@@ -71,8 +69,7 @@ export class AgentOperationsService {
     `;
     
     try {
-      const result = await model.generateContent(prompt);
-      const text = result.response.text();
+      const text = await defaultAIProvider.generateRawText(prompt);
       return JSON.parse(text.substring(text.indexOf('{'), text.lastIndexOf('}') + 1));
     } catch (e) {
       return { reason: error, retryable: false, severity: 'Critical', recommendation: 'Manual intervention required' };
@@ -130,7 +127,6 @@ export class AgentOperationsService {
   // Gemini Intelligence for Optimization
   public static async optimizeWorkflow(workflowId: string) {
     const events = await this.getRecentWorkflowEvents(workflowId);
-    const model = this.genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
     
     const prompt = `
       Analyze these workflow execution events and suggest performance optimizations or failure prevention rules.
@@ -139,8 +135,7 @@ export class AgentOperationsService {
       Provide a detailed optimization plan.
     `;
     
-    const result = await model.generateContent(prompt);
-    return result.response.text();
+    return await defaultAIProvider.generateRawText(prompt);
   }
 
   private static async getRecentWorkflowEvents(workflowId: string) {

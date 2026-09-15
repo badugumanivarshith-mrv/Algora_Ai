@@ -1,10 +1,7 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { defaultAIProvider } from "./geminiProvider";
 
 export class LiteratureReviewService {
-  private static genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
-
   public static async generateReview(topic: string, papers: string[]) {
-    const model = this.genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
     const prompt = `
       Generate a comprehensive literature review for the topic: "${topic}".
       Use the following paper summaries/abstracts as references:
@@ -18,15 +15,11 @@ export class LiteratureReviewService {
       5. Conclusion
     `;
 
-    const result = await model.generateContent(prompt);
-    return result.response.text();
+    return await defaultAIProvider.generateRawText(prompt);
   }
 
   public static async analyzeTrends(topic: string) {
-    const model = this.genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
     const prompt = `Analyze the current research trends in "${topic}". Identify the most active sub-fields and emerging technologies.`;
-    
-    const result = await model.generateContent(prompt);
-    return result.response.text();
+    return await defaultAIProvider.generateRawText(prompt);
   }
 }

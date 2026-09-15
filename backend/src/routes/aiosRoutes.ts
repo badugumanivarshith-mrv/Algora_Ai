@@ -115,4 +115,15 @@ router.post("/potential/simulate", AIOSController.simulatePotentialTrajectory);
 router.get("/impact", AIOSController.getGlobalImpact);
 router.post("/impact/event", AIOSController.logImpactEvent);
 
+// V5.1 Personal Superintelligence & AGI Research Lab
+router.get("/cognitive/profile", AIOSController.getCognitiveProfile);
+router.get("/cognitive/dna", AIOSController.getLearningDNA);
+router.get("/cognitive/agi-research", AIOSController.getAGIResearchSummary);
+router.post("/cognitive/agi-research/plan", AIOSController.generateResearchPlan);
+router.get("/cognitive/superintelligence", AIOSController.getSuperintelligenceSummary);
+router.post("/cognitive/superintelligence/simulate", AIOSController.runSuperintelligenceSimulation);
+router.get("/cognitive/meta-learning", AIOSController.getMetaLearningSummary);
+router.get("/cognitive/bottlenecks", AIOSController.getCognitiveBottleneckSummary);
+router.get("/cognitive/compounding", AIOSController.getKnowledgeCompoundingSummary);
+
 export default router;

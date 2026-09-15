@@ -1,11 +1,9 @@
 import { ProductivityRepository } from "../../repositories/productivityRepository";
 import { logger } from "../../utils/logger";
 import { RedisManager } from "../../redis/redisClient";
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { defaultAIProvider } from "./geminiProvider";
 
 export class PersonalProductivityService {
-  private static genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
-
   public static async getAnalytics(userId: string) {
     const cacheKey = `productivity:${userId}`;
     const cached = await RedisManager.get(cacheKey);
@@ -42,7 +40,6 @@ export class PersonalProductivityService {
 
   public static async getAIAssistantSuggestions(userId: string) {
     const analytics = await this.getAnalytics(userId);
-    const model = this.genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
     const prompt = `
       Analyze the user's productivity data and suggest optimizations.
@@ -54,8 +51,7 @@ export class PersonalProductivityService {
       Respond with a JSON array of suggestions: [{"type": "workflow", "title": "...", "description": "..."}]
     `;
 
-    const result = await model.generateContent(prompt);
-    const text = result.response.text();
+    const text = await defaultAIProvider.generateRawText(prompt);
     try {
       return JSON.parse(text.substring(text.indexOf('['), text.lastIndexOf(']') + 1));
     } catch {

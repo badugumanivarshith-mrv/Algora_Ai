@@ -3,7 +3,6 @@ import { KnowledgeFabricRepository } from "../../repositories/knowledgeFabricRep
 import { LearningMemoryRepository } from "../../repositories/learningMemoryRepository";
 import { CareerRepository } from "../../repositories/careerRepository";
 import { logger } from "../../utils/logger";
-import { GoogleGenerativeAI } from "@google/generative-ai";
 
 export interface GraduationAuditResult {
   degreeId: string;
@@ -22,8 +21,6 @@ export interface GraduationAuditResult {
 }
 
 export class AutonomousUniversityService {
-  private static genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || 'demo-key');
-
   public static async getDegrees(): Promise<DegreeProgramRecord[]> {
     return await UniversityRepository.getDegrees();
   }

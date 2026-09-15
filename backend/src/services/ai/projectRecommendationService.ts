@@ -1,4 +1,4 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { defaultAIProvider } from "./geminiProvider";
 import { MasteryTrackingService } from "./masteryTrackingService";
 import { KnowledgeGapService } from "./knowledgeGapService";
 import { CareerProfileService } from "./careerProfileService";
@@ -6,8 +6,6 @@ import { AgentRepository } from "../../repositories/agentRepository";
 import { logger } from "../../utils/logger";
 
 export class ProjectRecommendationService {
-  private static genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
-
   public static async recommendProjects(userId: string) {
     try {
       const mastery = await MasteryTrackingService.getTopicMastery(userId);
@@ -17,7 +15,6 @@ export class ProjectRecommendationService {
       // V4.0 AI OS Integration: Log to Project Agent memory
       await AgentRepository.saveMemory("project-agent", userId, `recommendations_${Date.now()}`, `Generated new project recommendations based on ${gaps.length} gaps.`, 5);
 
-      const model = this.genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
       const prompt = `
         Based on user profile:
         Mastery Scores: ${JSON.stringify(mastery)}
@@ -36,8 +33,7 @@ export class ProjectRecommendationService {
         Return JSON list of objects.
       `;
 
-      const result = await model.generateContent(prompt);
-      const text = result.response.text();
+      const text = await defaultAIProvider.generateRawText(prompt);
       const cleaned = text.replace(/```json|```/g, "").trim();
       return JSON.parse(cleaned);
     } catch (e: any) {

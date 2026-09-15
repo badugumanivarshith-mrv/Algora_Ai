@@ -1,10 +1,7 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { defaultAIProvider } from "./geminiProvider";
 
 export class StartupAdvisorService {
-  private static genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
-
   public static async getBusinessGuidance(idea: string) {
-    const model = this.genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
     const prompt = `
       Provide strategic startup advice for: "${idea}".
       Include:
@@ -14,7 +11,6 @@ export class StartupAdvisorService {
       4. Key metrics to track for Product-Market Fit
     `;
 
-    const result = await model.generateContent(prompt);
-    return result.response.text();
+    return await defaultAIProvider.generateRawText(prompt);
   }
 }

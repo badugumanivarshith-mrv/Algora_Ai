@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import { createBrowserRouter } from "react-router";
 import Layout from "./components/Layout";
 import Landing from "./pages/Landing";
@@ -10,7 +11,6 @@ import DailyReview from "./pages/DailyReview";
 import Contest from "./pages/Contest";
 import Leaderboard from "./pages/Leaderboard";
 import Faculty from "./pages/Faculty";
-import AdminDashboard from "./pages/admin/AdminDashboard";
 import Community from "./pages/Community";
 import PlacementHub from "./pages/PlacementHub";
 import InterviewHub from "./pages/InterviewHub";
@@ -18,19 +18,6 @@ import Certifications from "./pages/Certifications";
 import AdaptiveRoadmapV2 from "./pages/AdaptiveRoadmapV2";
 import CompanyPrep from "./pages/CompanyPrep";
 import VoiceMentor from "./pages/VoiceMentor";
-import { CollaborationWorkspace } from "./pages/CollaborationWorkspace";
-import { CareerHub } from "./pages/CareerHub";
-import { LearningIntelligence } from "./pages/LearningIntelligence";
-import { ContestHub } from "./pages/ContestHub";
-import { HiringHub } from "./pages/HiringHub";
-import EnterpriseHub from "./pages/EnterpriseHub";
-import ProjectWorkspaceHub from "./pages/ProjectWorkspaceHub";
-import ResearchLab from "./pages/ResearchLab";
-import AIOSHub from "./pages/AIOSHub";
-import ExecutionCenterPage from "./pages/ExecutionCenter";
-import SimulationHub from "./pages/SimulationHub";
-import TalentMarketplaceHub from "./pages/TalentMarketplaceHub";
-import UniversityHub from "./pages/UniversityHub";
 import Profile from "./pages/Profile";
 import { AIProblemGenerator } from "./pages/ai/AIProblemGenerator";
 import { AIQuizGenerator } from "./pages/ai/AIQuizGenerator";
@@ -39,10 +26,38 @@ import { AIInterviewGenerator } from "./pages/ai/AIInterviewGenerator";
 import { AIContestGenerator } from "./pages/ai/AIContestGenerator";
 import { ThemeProvider } from "./components/ThemeContext";
 
+// Lazy-loaded heavy hubs for bundle size optimization & performance
+const AIOSHub = lazy(() => import("./pages/AIOSHub"));
+const ResearchLab = lazy(() => import("./pages/ResearchLab"));
+const SimulationHub = lazy(() => import("./pages/SimulationHub"));
+const EnterpriseHub = lazy(() => import("./pages/EnterpriseHub"));
+const UniversityHub = lazy(() => import("./pages/UniversityHub"));
+const CognitiveHub = lazy(() => import("./pages/CognitiveHub"));
+const TalentMarketplaceHub = lazy(() => import("./pages/TalentMarketplaceHub"));
+const ProjectWorkspaceHub = lazy(() => import("./pages/ProjectWorkspaceHub"));
+const ExecutionCenterPage = lazy(() => import("./pages/ExecutionCenter"));
+const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"));
+const CollaborationWorkspace = lazy(() => import("./pages/CollaborationWorkspace").then((m) => ({ default: m.CollaborationWorkspace })));
+const CareerHub = lazy(() => import("./pages/CareerHub").then((m) => ({ default: m.CareerHub })));
+const LearningIntelligence = lazy(() => import("./pages/LearningIntelligence").then((m) => ({ default: m.LearningIntelligence })));
+const ContestHub = lazy(() => import("./pages/ContestHub").then((m) => ({ default: m.ContestHub })));
+const HiringHub = lazy(() => import("./pages/HiringHub").then((m) => ({ default: m.HiringHub })));
+
+function PageFallback() {
+  return (
+    <div className="flex flex-col items-center justify-center min-h-[400px] text-slate-400">
+      <div className="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin mb-3" />
+      <span className="text-sm font-medium">Loading section...</span>
+    </div>
+  );
+}
+
 function AppShell() {
   return (
     <ThemeProvider>
-      <Layout />
+      <Suspense fallback={<PageFallback />}>
+        <Layout />
+      </Suspense>
     </ThemeProvider>
   );
 }
@@ -82,6 +97,7 @@ export const router = createBrowserRouter([
       { path: "enterprise", Component: EnterpriseHub },
       { path: "projects", Component: ProjectWorkspaceHub },
       { path: "research", Component: ResearchLab },
+      { path: "cognitive-hub", Component: CognitiveHub },
       { path: "ai-os", Component: AIOSHub },
       { path: "execution-center", Component: ExecutionCenterPage },
       { path: "simulation", Component: SimulationHub },
@@ -249,5 +265,10 @@ export const router = createBrowserRouter([
     path: "/university",
     Component: AppShell,
     children: [{ index: true, Component: UniversityHub }],
+  },
+  {
+    path: "/cognitive-hub",
+    Component: AppShell,
+    children: [{ index: true, Component: CognitiveHub }],
   },
 ]);

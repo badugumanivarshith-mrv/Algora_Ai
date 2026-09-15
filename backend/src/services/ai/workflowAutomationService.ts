@@ -4,11 +4,10 @@ import { AgentOperationsRepository } from "../../repositories/agentOperationsRep
 import { AgentOperationsService } from "./agentOperationsService";
 import { logger } from "../../utils/logger";
 import { Database } from "../../db/connection";
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { defaultAIProvider } from "./geminiProvider";
 import { RedisManager } from "../../redis/redisClient";
 
 export class WorkflowAutomationService {
-  private static genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 
   public static async createWorkflow(userId: string, data: any) {
     return await ProductivityRepository.saveWorkflow(userId, data);
@@ -61,14 +60,12 @@ export class WorkflowAutomationService {
   }
 
   private static async checkAICondition(prompt: string, payload: any): Promise<boolean> {
-    const model = this.genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-    const result = await model.generateContent(`
+    const text = await defaultAIProvider.generateRawText(`
       Check if the following condition is met based on the payload.
       Condition: ${prompt}
       Payload: ${JSON.stringify(payload)}
       Respond only with JSON: {"passed": true} or {"passed": false}
     `);
-    const text = result.response.text();
     try {
       const json = JSON.parse(text.substring(text.indexOf('{'), text.lastIndexOf('}') + 1));
       return json.passed === true;

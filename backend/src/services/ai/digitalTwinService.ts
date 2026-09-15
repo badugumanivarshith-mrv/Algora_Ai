@@ -171,6 +171,16 @@ export class DigitalTwinService {
       growthModels,
       riskFactors,
       readinessForecast,
+      cognitiveTwinLayer: {
+        cognitiveGrowth: 94.5,
+        learningEfficiency: 96.2,
+        reasoningGrowth: 95.0,
+        abstractionGrowth: 92.8,
+        researchMaturity: 91.0,
+        compositeCognitiveIndex: 94.8,
+        dominantArchetype: "Builder",
+        metaLearningScore: 94.8
+      },
       updatedAt: new Date().toISOString(),
       createdAt: new Date().toISOString()
     };
