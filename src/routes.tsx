@@ -29,6 +29,7 @@ import ResearchLab from "./pages/ResearchLab";
 import AIOSHub from "./pages/AIOSHub";
 import ExecutionCenterPage from "./pages/ExecutionCenter";
 import SimulationHub from "./pages/SimulationHub";
+import TalentMarketplaceHub from "./pages/TalentMarketplaceHub";
 import Profile from "./pages/Profile";
 import { AIProblemGenerator } from "./pages/ai/AIProblemGenerator";
 import { AIQuizGenerator } from "./pages/ai/AIQuizGenerator";
@@ -84,6 +85,8 @@ export const router = createBrowserRouter([
       { path: "execution-center", Component: ExecutionCenterPage },
       { path: "simulation", Component: SimulationHub },
       { path: "enterprise-simulation", Component: SimulationHub },
+      { path: "talent-marketplace", Component: TalentMarketplaceHub },
+      { path: "skill-economy", Component: TalentMarketplaceHub },
       { path: "contests", Component: Contest },
       { path: "leaderboard", Component: Leaderboard },
       { path: "community", Component: Community },

@@ -22,6 +22,8 @@ const META: Record<string, { title: string; subtitle?: string }> = {
   "/profile":          { title: "Profile & Badges", subtitle: "Your developer identity & stats" },
   "/simulation":       { title: "Enterprise Simulation", subtitle: "Real-world engineering, startup & career sandbox" },
   "/enterprise-simulation": { title: "Enterprise Simulation", subtitle: "Real-world engineering, startup & career sandbox" },
+  "/talent-marketplace":    { title: "Talent & Reputation Network", subtitle: "Autonomous skill economy, cryptographic reputation & global opportunities" },
+  "/skill-economy":         { title: "Talent & Reputation Network", subtitle: "Autonomous skill economy, cryptographic reputation & global opportunities" },
 };
 
 export default function Layout() {

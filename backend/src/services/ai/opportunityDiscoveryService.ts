@@ -146,7 +146,7 @@ export class OpportunityDiscoveryService {
         },
         createdAt: new Date().toISOString()
       },
-      // 4. Open Source: GSoC, LFX, Outreachy
+      // 4. Open Source: GSoC, LFX, MLH Fellowship, Outreachy
       {
         id: `opp-oss-1-${uuidv4()}`,
         userId,
@@ -170,9 +170,55 @@ export class OpportunityDiscoveryService {
         },
         createdAt: new Date().toISOString()
       },
+      {
+        id: `opp-oss-mlh-${uuidv4()}`,
+        userId,
+        opportunityType: "Open_Source",
+        sourcePlatform: "MLH Global Fellowship",
+        title: "Major League Hacking (MLH) Open Source Fellowship (Core Track)",
+        organization: "Major League Hacking & GitHub",
+        description: "12-week intensive remote internship contributing directly to mission-critical open-source devtools.",
+        opportunityUrl: "/projects",
+        matchScore: 91.0,
+        roiScore: 93.0,
+        timeInvestment: "15 hours/week ($5,000 stipend)",
+        strategicValue: "Direct fast-track interviews with sponsor partners (GitHub, Datadog, Stripe).",
+        recommendedAction: "Link Algora verified project proofs and submit early-batch application.",
+        status: "Discovered",
+        metadata: {
+          category: "Open_Source",
+          subCategory: "MLH Fellowship",
+          difficulty: "Intermediate",
+          successProbability: 88.0
+        },
+        createdAt: new Date().toISOString()
+      },
       // 5. Startup: Grants, Accelerators, Incubators
       {
-        id: `opp-startup-1-${uuidv4()}`,
+        id: `opp-startup-yc-${uuidv4()}`,
+        userId,
+        opportunityType: "Project",
+        sourcePlatform: "Venture Accelerator Network",
+        title: "Y Combinator W26 Batch ($500,000 Standard Deal)",
+        organization: "Y Combinator",
+        description: "Early-stage venture accelerator for frontier AI infrastructure, autonomous systems, and developer tooling.",
+        opportunityUrl: "/projects",
+        matchScore: 89.5,
+        roiScore: 97.0,
+        timeInvestment: "3 months in San Francisco",
+        strategicValue: "World's most powerful founder network and instant Series A investor access.",
+        recommendedAction: "Finalize live prototype and complete YC application video using Startup Executive guidance.",
+        status: "Discovered",
+        metadata: {
+          category: "Startup",
+          subCategory: "Startup Accelerators",
+          difficulty: "Elite",
+          successProbability: 74.0
+        },
+        createdAt: new Date().toISOString()
+      },
+      {
+        id: `opp-startup-grant-${uuidv4()}`,
         userId,
         opportunityType: "Project",
         sourcePlatform: "Venture Innovation Hub",
@@ -188,9 +234,56 @@ export class OpportunityDiscoveryService {
         status: "Discovered",
         metadata: {
           category: "Startup",
-          subCategory: "Grants & Accelerators",
+          subCategory: "Research Grants & Accelerators",
           difficulty: "Intermediate",
           successProbability: 72.0
+        },
+        createdAt: new Date().toISOString()
+      },
+      // 6. Scholarships & Kaggle Competitions
+      {
+        id: `opp-fellowship-deepmind-${uuidv4()}`,
+        userId,
+        opportunityType: "Research",
+        sourcePlatform: "Academic Fellowships",
+        title: "DeepMind / Cambridge Frontier AI Systems Scholarship",
+        organization: "Google DeepMind Academic Alliance",
+        description: "Full tuition + £25,000 annual living stipend for postgraduate research in large-scale machine learning efficiency.",
+        opportunityUrl: "/research",
+        matchScore: 92.0,
+        roiScore: 96.0,
+        timeInvestment: "Academic Year 2026-2027",
+        strategicValue: "Prestige scholarship placing you among top 0.1% of global AI research talent.",
+        recommendedAction: "Attach NeurIPS paper draft and submit formal academic CV.",
+        status: "Discovered",
+        metadata: {
+          category: "Scholarships",
+          subCategory: "Fellowships & Grants",
+          difficulty: "Elite",
+          successProbability: 81.0
+        },
+        createdAt: new Date().toISOString()
+      },
+      {
+        id: `opp-kaggle-grandmaster-${uuidv4()}`,
+        userId,
+        opportunityType: "Contest",
+        sourcePlatform: "Kaggle Grandmaster Platform",
+        title: "Kaggle LLM Science & Speculative Decoding Benchmark ($100,000)",
+        organization: "Kaggle / Google AI",
+        description: "Global competitive ML challenge optimizing throughput-per-watt on frontier reasoning benchmarks.",
+        opportunityUrl: "/contests",
+        matchScore: 94.0,
+        roiScore: 95.0,
+        timeInvestment: "20 hours over 3 weeks",
+        strategicValue: "Gold medal placement guarantees Kaggle Master badge and FAANG AI engineering invitations.",
+        recommendedAction: "Spin up Algora Triton pipeline template and submit baseline ensemble.",
+        status: "Discovered",
+        metadata: {
+          category: "Competitive",
+          subCategory: "Kaggle Programs",
+          difficulty: "Advanced",
+          successProbability: 85.0
         },
         createdAt: new Date().toISOString()
       }

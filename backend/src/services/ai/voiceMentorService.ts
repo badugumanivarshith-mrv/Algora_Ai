@@ -32,6 +32,10 @@ import { AgentCouncilService } from "./agentCouncilService";
 import { ExecutiveDebateService } from "./executiveDebateService";
 import { LifePlannerService } from "./lifePlannerService";
 import { StrategicCampaignService } from "./strategicCampaignService";
+import { ReputationEngineService } from "./reputationEngineService";
+import { CollaborationIntelligenceService } from "./collaborationIntelligenceService";
+import { IndustryBenchmarkService } from "./industryBenchmarkService";
+import { TalentMarketplaceService } from "./talentMarketplaceService";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 export interface VoiceChatResult {
@@ -209,6 +213,69 @@ export class VoiceMentorService {
         };
       } catch (e) {
         // Fall through to general pipeline if executive lookup fails
+      }
+    }
+
+    // V4.9 Skill Economy, Reputation & Talent Marketplace Voice Routing
+    if (lower.includes("reputation") || lower.includes("trust score") || lower.includes("my score") || lower.includes("verified rank")) {
+      try {
+        const rep = await ReputationEngineService.getReputation(userId);
+        const repAnswer = `Your Algora Reputation Score is ${rep.reputationScore} out of 1000, placing you in the top ${Math.max(1, 100 - rep.percentileRank)}% globally. Your Trust Index is ${rep.trustScore}%, backed by ${rep.verifiedCredentials?.length || 3} cryptographic proofs across Distributed Systems, Open Source, and Enterprise Incident response.`;
+        const tts = await TextToSpeechService.generateSpeech(repAnswer, language);
+        await VoiceMentorRepository.saveMessage({
+          id: `vmsg-${Date.now()}`,
+          sessionId,
+          role: "user",
+          transcript,
+          aiResponse: repAnswer,
+          createdAt: new Date().toISOString(),
+        });
+        await RedisManager.set(`voice:response:${sessionId}`, JSON.stringify({ transcript, aiResponse: repAnswer }), 3600);
+        return { sessionId, transcript, aiResponse: repAnswer, audioUrl: tts.audioUrl, language };
+      } catch (e) {
+        // Fall through
+      }
+    }
+
+    if (lower.includes("collaborat") || lower.includes("partner") || lower.includes("teammate") || lower.includes("co-founder") || lower.includes("cofounder")) {
+      try {
+        const recs = await CollaborationIntelligenceService.getTeamRecommendations(userId);
+        const topRec = recs[0];
+        const collabAnswer = `I recommend connecting with ${topRec.candidateName} for ${topRec.recommendationType}. Synergy score is ${topRec.synergyScore}%. ${topRec.whyMatched}`;
+        const tts = await TextToSpeechService.generateSpeech(collabAnswer, language);
+        await VoiceMentorRepository.saveMessage({
+          id: `vmsg-${Date.now()}`,
+          sessionId,
+          role: "user",
+          transcript,
+          aiResponse: collabAnswer,
+          createdAt: new Date().toISOString(),
+        });
+        await RedisManager.set(`voice:response:${sessionId}`, JSON.stringify({ transcript, aiResponse: collabAnswer }), 3600);
+        return { sessionId, transcript, aiResponse: collabAnswer, audioUrl: tts.audioUrl, language };
+      } catch (e) {
+        // Fall through
+      }
+    }
+
+    if (lower.includes("compare") || lower.includes("benchmark") || lower.includes("google engineer") || lower.includes("openai") || lower.includes("how do i compare")) {
+      try {
+        const benchmarks = await IndustryBenchmarkService.getBenchmarks(userId);
+        const googleBench = benchmarks.find(b => b.targetRole.includes("Google")) || benchmarks[0];
+        const benchAnswer = `Against the ${googleBench.targetRole} benchmark, your overall readiness is ${googleBench.overallReadinessPct}%, ranking in the ${googleBench.rankingPercentile}th percentile. Strengths: ${googleBench.strengths[0]}. Estimated time to offer is ${googleBench.estimatedTimeToHireWeeks} weeks.`;
+        const tts = await TextToSpeechService.generateSpeech(benchAnswer, language);
+        await VoiceMentorRepository.saveMessage({
+          id: `vmsg-${Date.now()}`,
+          sessionId,
+          role: "user",
+          transcript,
+          aiResponse: benchAnswer,
+          createdAt: new Date().toISOString(),
+        });
+        await RedisManager.set(`voice:response:${sessionId}`, JSON.stringify({ transcript, aiResponse: benchAnswer }), 3600);
+        return { sessionId, transcript, aiResponse: benchAnswer, audioUrl: tts.audioUrl, language };
+      } catch (e) {
+        // Fall through
       }
     }
 

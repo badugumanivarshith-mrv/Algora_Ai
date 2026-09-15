@@ -31,6 +31,12 @@ import { ProductionEngineeringService } from "../services/ai/productionEngineeri
 import { StartupSimulationService } from "../services/ai/startupSimulationService";
 import { ResearchSimulationService } from "../services/ai/researchSimulationService";
 import { CareerSandboxService } from "../services/ai/careerSandboxService";
+import { ReputationEngineService } from "../services/ai/reputationEngineService";
+import { SkillEconomyService } from "../services/ai/skillEconomyService";
+import { TalentMarketplaceService } from "../services/ai/talentMarketplaceService";
+import { CollaborationIntelligenceService } from "../services/ai/collaborationIntelligenceService";
+import { PortfolioIntelligenceService } from "../services/ai/portfolioIntelligenceService";
+import { IndustryBenchmarkService } from "../services/ai/industryBenchmarkService";
 import { SimulationRepository } from "../repositories/simulationRepository";
 import { ProductivityRepository } from "../repositories/productivityRepository";
 import { logger } from "../utils/logger";
@@ -763,6 +769,97 @@ export class AIOSController {
         details: result.promotionDelta
       });
       res.json({ status: 'success', data: result });
+    } catch (e: any) {
+      res.status(500).json({ status: 'error', message: e.message });
+    }
+  }
+
+  // ================= V4.9 TALENT MARKETPLACE & REPUTATION CONTROLLERS =================
+
+  public static async getReputation(req: Request, res: Response) {
+    try {
+      const userId = (req as any).user?.id || 'usr_demo';
+      const profile = await ReputationEngineService.getReputation(userId);
+      const events = await ReputationEngineService.getReputationEvents(userId);
+      res.json({ status: 'success', data: { profile, events } });
+    } catch (e: any) {
+      res.status(500).json({ status: 'error', message: e.message });
+    }
+  }
+
+  public static async recalculateReputation(req: Request, res: Response) {
+    try {
+      const userId = (req as any).user?.id || 'usr_demo';
+      const profile = await ReputationEngineService.calculateReputation(userId);
+      const events = await ReputationEngineService.getReputationEvents(userId);
+      res.json({ status: 'success', data: { profile, events } });
+    } catch (e: any) {
+      res.status(500).json({ status: 'error', message: e.message });
+    }
+  }
+
+  public static async getSkills(req: Request, res: Response) {
+    try {
+      const userId = (req as any).user?.id || 'usr_demo';
+      const assets = await SkillEconomyService.getUserSkillAssets(userId);
+      const valuations = await SkillEconomyService.getGlobalSkillValuations();
+      const summary = await SkillEconomyService.calculateTotalPortfolioAssetValue(userId);
+      res.json({ status: 'success', data: { assets, valuations, summary } });
+    } catch (e: any) {
+      res.status(500).json({ status: 'error', message: e.message });
+    }
+  }
+
+  public static async getTalentMarketplace(req: Request, res: Response) {
+    try {
+      const userId = (req as any).user?.id || 'usr_demo';
+      const type = req.query.type as string | undefined;
+      const profile = await TalentMarketplaceService.getTalentProfile(userId);
+      const opportunities = await TalentMarketplaceService.getMarketplaceOpportunities(type);
+      const analytics = await TalentMarketplaceService.getMarketplaceAnalytics();
+      res.json({ status: 'success', data: { profile, opportunities, analytics } });
+    } catch (e: any) {
+      res.status(500).json({ status: 'error', message: e.message });
+    }
+  }
+
+  public static async getMatchedOpportunities(req: Request, res: Response) {
+    try {
+      const userId = (req as any).user?.id || 'usr_demo';
+      const matches = await TalentMarketplaceService.getOpportunityMatches(userId);
+      const discovered = await OpportunityDiscoveryService.getOpportunities(userId);
+      res.json({ status: 'success', data: { matches, discovered } });
+    } catch (e: any) {
+      res.status(500).json({ status: 'error', message: e.message });
+    }
+  }
+
+  public static async getPortfolio(req: Request, res: Response) {
+    try {
+      const userId = (req as any).user?.id || 'usr_demo';
+      const portfolio = await PortfolioIntelligenceService.getPortfolio(userId);
+      res.json({ status: 'success', data: { portfolio } });
+    } catch (e: any) {
+      res.status(500).json({ status: 'error', message: e.message });
+    }
+  }
+
+  public static async getBenchmarks(req: Request, res: Response) {
+    try {
+      const userId = (req as any).user?.id || 'usr_demo';
+      const benchmarks = await IndustryBenchmarkService.getBenchmarks(userId);
+      res.json({ status: 'success', data: { benchmarks } });
+    } catch (e: any) {
+      res.status(500).json({ status: 'error', message: e.message });
+    }
+  }
+
+  public static async getCollaborators(req: Request, res: Response) {
+    try {
+      const userId = (req as any).user?.id || 'usr_demo';
+      const profile = await CollaborationIntelligenceService.getCollaborationProfile(userId);
+      const recommendations = await CollaborationIntelligenceService.getTeamRecommendations(userId);
+      res.json({ status: 'success', data: { profile, recommendations } });
     } catch (e: any) {
       res.status(500).json({ status: 'error', message: e.message });
     }

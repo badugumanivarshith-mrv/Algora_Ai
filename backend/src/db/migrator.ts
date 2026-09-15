@@ -4035,6 +4035,215 @@ export const MIGRATIONS: Migration[] = [
       DROP TABLE IF EXISTS simulation_companies CASCADE;
     `,
   },
+  {
+    version: "036",
+    name: "036_skill_economy_talent_marketplace",
+    up: `
+      CREATE TABLE IF NOT EXISTS reputation_profiles (
+        id VARCHAR(64) PRIMARY KEY,
+        user_id VARCHAR(64) NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        reputation_score DECIMAL(6,2) DEFAULT 750.0,
+        trust_score DECIMAL(5,2) DEFAULT 88.0,
+        expertise_score DECIMAL(5,2) DEFAULT 84.0,
+        influence_score DECIMAL(5,2) DEFAULT 79.0,
+        growth_score DECIMAL(5,2) DEFAULT 91.0,
+        learning_reputation DECIMAL(5,2) DEFAULT 82.0,
+        contest_reputation DECIMAL(5,2) DEFAULT 85.0,
+        research_reputation DECIMAL(5,2) DEFAULT 78.0,
+        open_source_reputation DECIMAL(5,2) DEFAULT 86.0,
+        project_reputation DECIMAL(5,2) DEFAULT 89.0,
+        collaboration_reputation DECIMAL(5,2) DEFAULT 83.0,
+        leadership_reputation DECIMAL(5,2) DEFAULT 80.0,
+        hiring_reputation DECIMAL(5,2) DEFAULT 87.0,
+        percentile_rank DECIMAL(5,2) DEFAULT 94.5,
+        breakdown JSONB DEFAULT '{}',
+        verified_credentials JSONB DEFAULT '[]',
+        updated_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS reputation_events (
+        id VARCHAR(64) PRIMARY KEY,
+        user_id VARCHAR(64) NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        event_type VARCHAR(64) NOT NULL,
+        category VARCHAR(64) NOT NULL,
+        title VARCHAR(255) NOT NULL,
+        delta DECIMAL(5,2) NOT NULL,
+        proof_url TEXT,
+        verification_source VARCHAR(64) DEFAULT 'AlgoraConsensus',
+        metadata JSONB DEFAULT '{}',
+        timestamp TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS skill_assets (
+        id VARCHAR(64) PRIMARY KEY,
+        user_id VARCHAR(64) NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        skill_category VARCHAR(64) NOT NULL,
+        skill_name VARCHAR(128) NOT NULL,
+        proficiency_level VARCHAR(32) DEFAULT 'Advanced',
+        mastery_score DECIMAL(5,2) DEFAULT 85.0,
+        verified_proofs JSONB DEFAULT '[]',
+        market_demand_score DECIMAL(5,2) DEFAULT 92.0,
+        scarcity_index DECIMAL(5,2) DEFAULT 78.0,
+        industry_relevance DECIMAL(5,2) DEFAULT 95.0,
+        estimated_asset_value DECIMAL(10,2) DEFAULT 45000.0,
+        growth_rate_pct DECIMAL(5,2) DEFAULT 14.5,
+        updated_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS skill_valuations (
+        id VARCHAR(64) PRIMARY KEY,
+        skill_name VARCHAR(128) NOT NULL,
+        category VARCHAR(64) NOT NULL,
+        market_demand_index DECIMAL(5,2) NOT NULL,
+        scarcity_score DECIMAL(5,2) NOT NULL,
+        average_comp_premium DECIMAL(10,2) NOT NULL,
+        trend_direction VARCHAR(32) DEFAULT 'Rising',
+        top_employers JSONB DEFAULT '[]',
+        calculated_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS talent_profiles (
+        id VARCHAR(64) PRIMARY KEY,
+        user_id VARCHAR(64) NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        headline VARCHAR(255) NOT NULL,
+        preferred_roles JSONB DEFAULT '[]',
+        availability_status VARCHAR(64) DEFAULT 'Actively_Exploring',
+        target_compensation DECIMAL(12,2) DEFAULT 185000.0,
+        preferred_locations JSONB DEFAULT '["Remote", "San Francisco", "New York", "Bangalore"]',
+        reputation_badge VARCHAR(64) DEFAULT 'Top 1% Algora Verified Engineer',
+        verified_skills JSONB DEFAULT '[]',
+        profile_summary TEXT,
+        visibility VARCHAR(32) DEFAULT 'Public',
+        updated_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS opportunities (
+        id VARCHAR(64) PRIMARY KEY,
+        title VARCHAR(255) NOT NULL,
+        opportunity_type VARCHAR(64) NOT NULL,
+        organization VARCHAR(128) NOT NULL,
+        location VARCHAR(128) DEFAULT 'Remote',
+        compensation_range VARCHAR(128),
+        equity_range VARCHAR(64),
+        description TEXT NOT NULL,
+        required_skills JSONB DEFAULT '[]',
+        minimum_reputation INTEGER DEFAULT 650,
+        urgency VARCHAR(32) DEFAULT 'High',
+        application_url TEXT,
+        expires_at TIMESTAMPTZ,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS opportunity_matches (
+        id VARCHAR(64) PRIMARY KEY,
+        opportunity_id VARCHAR(64) NOT NULL REFERENCES opportunities(id) ON DELETE CASCADE,
+        user_id VARCHAR(64) NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        match_percentage DECIMAL(5,2) NOT NULL,
+        roi_score DECIMAL(5,2) NOT NULL,
+        success_probability DECIMAL(5,2) NOT NULL,
+        skill_overlap JSONB DEFAULT '[]',
+        missing_prerequisites JSONB DEFAULT '[]',
+        strategic_rationale TEXT,
+        status VARCHAR(32) DEFAULT 'Matched',
+        matched_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS collaboration_profiles (
+        id VARCHAR(64) PRIMARY KEY,
+        user_id VARCHAR(64) NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        team_effectiveness_score DECIMAL(5,2) DEFAULT 88.5,
+        communication_style VARCHAR(64) DEFAULT 'Asynchronous & Direct',
+        collaboration_strengths JSONB DEFAULT '[]',
+        preferred_collab_types JSONB DEFAULT '["Hackathons", "Research Papers", "Startup Co-founding", "Open Source"]',
+        leadership_growth_score DECIMAL(5,2) DEFAULT 82.0,
+        project_success_rate DECIMAL(5,2) DEFAULT 94.0,
+        past_collaborations_count INTEGER DEFAULT 8,
+        updated_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS team_recommendations (
+        id VARCHAR(64) PRIMARY KEY,
+        user_id VARCHAR(64) NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        candidate_id VARCHAR(64) NOT NULL,
+        candidate_name VARCHAR(128) NOT NULL,
+        candidate_headline VARCHAR(255) NOT NULL,
+        candidate_reputation INTEGER DEFAULT 820,
+        recommendation_type VARCHAR(64) NOT NULL,
+        synergy_score DECIMAL(5,2) NOT NULL,
+        complementary_skills JSONB DEFAULT '[]',
+        recommended_project_topic VARCHAR(255),
+        why_matched TEXT NOT NULL,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS portfolio_snapshots (
+        id VARCHAR(64) PRIMARY KEY,
+        user_id VARCHAR(64) NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        portfolio_title VARCHAR(255) NOT NULL,
+        career_narrative TEXT NOT NULL,
+        executive_summary TEXT NOT NULL,
+        aggregated_projects JSONB DEFAULT '[]',
+        aggregated_contests JSONB DEFAULT '[]',
+        aggregated_research JSONB DEFAULT '[]',
+        aggregated_simulations JSONB DEFAULT '[]',
+        aggregated_internships JSONB DEFAULT '[]',
+        achievement_timeline JSONB DEFAULT '[]',
+        verified_proof_count INTEGER DEFAULT 14,
+        shareable_slug VARCHAR(128) UNIQUE,
+        generated_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS industry_benchmarks (
+        id VARCHAR(64) PRIMARY KEY,
+        target_role VARCHAR(128) NOT NULL,
+        overall_readiness_pct DECIMAL(5,2) NOT NULL,
+        ranking_percentile DECIMAL(5,2) NOT NULL,
+        skill_gap_analysis JSONB DEFAULT '[]',
+        strengths JSONB DEFAULT '[]',
+        improvement_paths JSONB DEFAULT '[]',
+        estimated_time_to_hire_weeks INTEGER DEFAULT 6,
+        benchmark_data JSONB DEFAULT '{}',
+        calculated_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS marketplace_analytics (
+        id VARCHAR(64) PRIMARY KEY,
+        total_opportunities_active INTEGER DEFAULT 350,
+        total_matches_generated INTEGER DEFAULT 1850,
+        average_talent_reputation DECIMAL(6,2) DEFAULT 742.0,
+        top_demanded_skills JSONB DEFAULT '[]',
+        highest_paying_verticals JSONB DEFAULT '[]',
+        talent_liquidity_index DECIMAL(5,2) DEFAULT 88.5,
+        recorded_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_reputation_profiles_user ON reputation_profiles(user_id);
+      CREATE INDEX IF NOT EXISTS idx_reputation_events_user ON reputation_events(user_id, category);
+      CREATE INDEX IF NOT EXISTS idx_skill_assets_user ON skill_assets(user_id, skill_category);
+      CREATE INDEX IF NOT EXISTS idx_skill_valuations_name ON skill_valuations(skill_name);
+      CREATE INDEX IF NOT EXISTS idx_talent_profiles_user ON talent_profiles(user_id);
+      CREATE INDEX IF NOT EXISTS idx_opportunities_type ON opportunities(opportunity_type, urgency);
+      CREATE INDEX IF NOT EXISTS idx_opportunity_matches_user ON opportunity_matches(user_id, opportunity_id);
+      CREATE INDEX IF NOT EXISTS idx_collab_profiles_user ON collaboration_profiles(user_id);
+      CREATE INDEX IF NOT EXISTS idx_team_recs_user ON team_recommendations(user_id, recommendation_type);
+      CREATE INDEX IF NOT EXISTS idx_portfolio_snapshots_user ON portfolio_snapshots(user_id, shareable_slug);
+      CREATE INDEX IF NOT EXISTS idx_benchmarks_role ON industry_benchmarks(target_role);
+    `,
+    down: `
+      DROP TABLE IF EXISTS marketplace_analytics CASCADE;
+      DROP TABLE IF EXISTS industry_benchmarks CASCADE;
+      DROP TABLE IF EXISTS portfolio_snapshots CASCADE;
+      DROP TABLE IF EXISTS team_recommendations CASCADE;
+      DROP TABLE IF EXISTS collaboration_profiles CASCADE;
+      DROP TABLE IF EXISTS opportunity_matches CASCADE;
+      DROP TABLE IF EXISTS opportunities CASCADE;
+      DROP TABLE IF EXISTS talent_profiles CASCADE;
+      DROP TABLE IF EXISTS skill_valuations CASCADE;
+      DROP TABLE IF EXISTS skill_assets CASCADE;
+      DROP TABLE IF EXISTS reputation_events CASCADE;
+      DROP TABLE IF EXISTS reputation_profiles CASCADE;
+    `,
+  },
 ];
 
 export class Migrator {
@@ -4078,8 +4287,9 @@ export class Migrator {
           "033_autonomous_execution_layer",
           "034_multi_agent_executive_council",
           "035_enterprise_simulation_ecosystem",
+          "036_skill_economy_talent_marketplace",
         ],
-        currentVersion: "035",
+        currentVersion: "036",
       };
     }
 

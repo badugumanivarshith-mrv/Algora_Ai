@@ -90,4 +90,14 @@ router.post("/enterprise-simulations/startup/pitch", AIOSController.pitchStartup
 router.post("/enterprise-simulations/research/rebuttal", AIOSController.submitResearchRebuttal);
 router.post("/enterprise-simulations/career/promote", AIOSController.simulatePromotion);
 
+// V4.9 Autonomous Skill Economy, Reputation Network & Talent Marketplace
+router.get("/reputation", AIOSController.getReputation);
+router.post("/reputation/recalculate", AIOSController.recalculateReputation);
+router.get("/skills", AIOSController.getSkills);
+router.get("/marketplace", AIOSController.getTalentMarketplace);
+router.get("/opportunities", AIOSController.getMatchedOpportunities);
+router.get("/portfolio", AIOSController.getPortfolio);
+router.get("/benchmarks", AIOSController.getBenchmarks);
+router.get("/collaborators", AIOSController.getCollaborators);
+
 export default router;
