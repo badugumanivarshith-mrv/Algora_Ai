@@ -66,4 +66,14 @@ router.get("/opportunities", AIOSController.getOpportunities);
 router.get("/execution-timeline", AIOSController.getExecutionTimeline);
 router.post("/adaptive-strategy/adapt", AIOSController.adaptStrategy);
 
+// Multi-Agent Executive Council & Autonomous Career OS Routes (V4.7)
+router.get("/executive/council", AIOSController.getCouncil);
+router.post("/executive/debate", AIOSController.runExecutiveDebate);
+router.get("/executive/plans", AIOSController.getLifePlans);
+router.get("/executive/campaigns", AIOSController.getStrategicCampaigns);
+router.get("/executive/opportunities", AIOSController.getExecutiveOpportunities);
+router.get("/executive/forecast", AIOSController.getExecutiveForecastModel);
+router.get("/executive/memory", AIOSController.getExecutiveMemories);
+router.post("/executive/recalculate", AIOSController.recalculateExecutiveCouncil);
+
 export default router;

@@ -3658,6 +3658,180 @@ export const MIGRATIONS: Migration[] = [
       DROP TABLE IF EXISTS digital_twins CASCADE;
     `,
   },
+  {
+    version: "034",
+    name: "034_multi_agent_executive_council",
+    up: `
+      CREATE TABLE IF NOT EXISTS executive_agents (
+        id VARCHAR(64) PRIMARY KEY,
+        agent_type VARCHAR(64) NOT NULL UNIQUE,
+        name VARCHAR(128) NOT NULL,
+        role VARCHAR(128) NOT NULL,
+        avatar_url VARCHAR(255),
+        description TEXT,
+        mandate TEXT,
+        core_metrics JSONB DEFAULT '[]',
+        is_active BOOLEAN DEFAULT TRUE,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS agent_councils (
+        id VARCHAR(64) PRIMARY KEY,
+        user_id VARCHAR(64) NOT NULL,
+        session_name VARCHAR(255) NOT NULL,
+        status VARCHAR(32) DEFAULT 'Completed',
+        summary TEXT,
+        consensus_score DECIMAL(5,2) DEFAULT 88.0,
+        dominant_theme VARCHAR(128),
+        prioritized_actions JSONB DEFAULT '[]',
+        conflict_resolutions JSONB DEFAULT '[]',
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS agent_recommendations (
+        id VARCHAR(64) PRIMARY KEY,
+        council_id VARCHAR(64) NOT NULL,
+        user_id VARCHAR(64) NOT NULL,
+        agent_id VARCHAR(64) NOT NULL,
+        agent_name VARCHAR(128) NOT NULL,
+        agent_type VARCHAR(64) NOT NULL,
+        title VARCHAR(255) NOT NULL,
+        proposal TEXT NOT NULL,
+        priority_score DECIMAL(5,2) NOT NULL,
+        urgency VARCHAR(32) DEFAULT 'High',
+        estimated_roi DECIMAL(5,2) DEFAULT 85.0,
+        effort_hours DECIMAL(5,2) DEFAULT 4.0,
+        status VARCHAR(32) DEFAULT 'Proposed',
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS executive_debates (
+        id VARCHAR(64) PRIMARY KEY,
+        user_id VARCHAR(64) NOT NULL,
+        topic VARCHAR(255) NOT NULL,
+        challenger_agent VARCHAR(64) NOT NULL,
+        defender_agent VARCHAR(64) NOT NULL,
+        transcript JSONB DEFAULT '[]',
+        winner_agent VARCHAR(64) NOT NULL,
+        justification TEXT NOT NULL,
+        opportunity_cost_analysis TEXT NOT NULL,
+        expected_roi DECIMAL(5,2) NOT NULL,
+        resource_allocation JSONB DEFAULT '{}',
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS executive_memories (
+        id VARCHAR(64) PRIMARY KEY,
+        user_id VARCHAR(64) NOT NULL,
+        memory_type VARCHAR(64) NOT NULL,
+        title VARCHAR(255) NOT NULL,
+        context TEXT,
+        rationale TEXT,
+        impact_score DECIMAL(5,2) DEFAULT 80.0,
+        associated_agents JSONB DEFAULT '[]',
+        metadata JSONB DEFAULT '{}',
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS life_plans (
+        id VARCHAR(64) PRIMARY KEY,
+        user_id VARCHAR(64) NOT NULL,
+        horizon VARCHAR(32) NOT NULL,
+        title VARCHAR(255) NOT NULL,
+        pillars JSONB DEFAULT '{}',
+        status VARCHAR(32) DEFAULT 'Active',
+        completion_rate DECIMAL(5,2) DEFAULT 0.0,
+        target_date TIMESTAMPTZ,
+        created_at TIMESTAMPTZ DEFAULT NOW(),
+        updated_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS strategic_campaigns (
+        id VARCHAR(64) PRIMARY KEY,
+        user_id VARCHAR(64) NOT NULL,
+        campaign_type VARCHAR(64) NOT NULL,
+        title VARCHAR(255) NOT NULL,
+        description TEXT,
+        status VARCHAR(32) DEFAULT 'In_Progress',
+        target_company VARCHAR(128),
+        success_probability DECIMAL(5,2) DEFAULT 75.0,
+        weekly_objectives JSONB DEFAULT '[]',
+        critical_blockers JSONB DEFAULT '[]',
+        recovery_plans JSONB DEFAULT '[]',
+        created_at TIMESTAMPTZ DEFAULT NOW(),
+        updated_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS campaign_milestones (
+        id VARCHAR(64) PRIMARY KEY,
+        campaign_id VARCHAR(64) NOT NULL,
+        user_id VARCHAR(64) NOT NULL,
+        milestone_index INT NOT NULL,
+        title VARCHAR(255) NOT NULL,
+        description TEXT,
+        due_week INT NOT NULL,
+        status VARCHAR(32) DEFAULT 'Pending',
+        deliverables JSONB DEFAULT '[]',
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS opportunity_rankings (
+        id VARCHAR(64) PRIMARY KEY,
+        user_id VARCHAR(64) NOT NULL,
+        opportunity_id VARCHAR(64) NOT NULL,
+        category VARCHAR(64) NOT NULL,
+        sub_category VARCHAR(64),
+        title VARCHAR(255) NOT NULL,
+        organization VARCHAR(255) NOT NULL,
+        match_score DECIMAL(5,2) DEFAULT 85.0,
+        roi_score DECIMAL(5,2) DEFAULT 85.0,
+        time_cost VARCHAR(128),
+        difficulty VARCHAR(32),
+        success_probability DECIMAL(5,2) DEFAULT 80.0,
+        recommended_action TEXT,
+        status VARCHAR(32) DEFAULT 'Active',
+        metadata JSONB DEFAULT '{}',
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS executive_decisions (
+        id VARCHAR(64) PRIMARY KEY,
+        user_id VARCHAR(64) NOT NULL,
+        title VARCHAR(255) NOT NULL,
+        decision_type VARCHAR(64) NOT NULL,
+        lead_agent VARCHAR(64) NOT NULL,
+        summary TEXT NOT NULL,
+        tradeoffs TEXT,
+        expected_roi DECIMAL(5,2) DEFAULT 85.0,
+        confidence_score DECIMAL(5,2) DEFAULT 90.0,
+        action_items JSONB DEFAULT '[]',
+        status VARCHAR(32) DEFAULT 'Approved',
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_councils_user ON agent_councils(user_id);
+      CREATE INDEX IF NOT EXISTS idx_recommendations_council ON agent_recommendations(council_id, priority_score);
+      CREATE INDEX IF NOT EXISTS idx_debates_user ON executive_debates(user_id);
+      CREATE INDEX IF NOT EXISTS idx_exec_memories_user ON executive_memories(user_id, memory_type);
+      CREATE INDEX IF NOT EXISTS idx_life_plans_user ON life_plans(user_id, horizon);
+      CREATE INDEX IF NOT EXISTS idx_campaigns_user ON strategic_campaigns(user_id, campaign_type);
+      CREATE INDEX IF NOT EXISTS idx_camp_milestones ON campaign_milestones(campaign_id, due_week);
+      CREATE INDEX IF NOT EXISTS idx_opp_rankings_user ON opportunity_rankings(user_id, category, roi_score);
+      CREATE INDEX IF NOT EXISTS idx_exec_decisions_user ON executive_decisions(user_id);
+    `,
+    down: `
+      DROP TABLE IF EXISTS executive_decisions CASCADE;
+      DROP TABLE IF EXISTS opportunity_rankings CASCADE;
+      DROP TABLE IF EXISTS campaign_milestones CASCADE;
+      DROP TABLE IF EXISTS strategic_campaigns CASCADE;
+      DROP TABLE IF EXISTS life_plans CASCADE;
+      DROP TABLE IF EXISTS executive_memories CASCADE;
+      DROP TABLE IF EXISTS executive_debates CASCADE;
+      DROP TABLE IF EXISTS agent_recommendations CASCADE;
+      DROP TABLE IF EXISTS agent_councils CASCADE;
+      DROP TABLE IF EXISTS executive_agents CASCADE;
+    `,
+  },
 ];
 
 export class Migrator {
@@ -3699,8 +3873,9 @@ export class Migrator {
           "031_knowledge_fabric_platform",
           "032_strategic_decision_engine",
           "033_autonomous_execution_layer",
+          "034_multi_agent_executive_council",
         ],
-        currentVersion: "033",
+        currentVersion: "034",
       };
     }
 

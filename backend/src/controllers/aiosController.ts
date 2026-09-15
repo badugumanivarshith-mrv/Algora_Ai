@@ -19,6 +19,11 @@ import { AutonomousExecutionPlanner } from "../services/ai/autonomousExecutionPl
 import { AdaptiveStrategyService } from "../services/ai/adaptiveStrategyService";
 import { OpportunityDiscoveryService } from "../services/ai/opportunityDiscoveryService";
 import { ExecutionTimelineService } from "../services/ai/executionTimelineService";
+import { AgentCouncilService } from "../services/ai/agentCouncilService";
+import { ExecutiveDebateService } from "../services/ai/executiveDebateService";
+import { LifePlannerService } from "../services/ai/lifePlannerService";
+import { StrategicCampaignService } from "../services/ai/strategicCampaignService";
+import { ExecutiveMemoryService } from "../services/ai/executiveMemoryService";
 import { ProductivityRepository } from "../repositories/productivityRepository";
 import { logger } from "../utils/logger";
 
@@ -526,6 +531,90 @@ export class AIOSController {
     try {
       const userId = (req as any).user?.id || 'user_1';
       const result = await AdaptiveStrategyService.evaluateAndAdapt(userId);
+      res.json({ status: 'success', data: result });
+    } catch (e: any) {
+      res.status(500).json({ status: 'error', message: e.message });
+    }
+  }
+
+  // Multi-Agent Executive Council & Autonomous Career OS (V4.7)
+  public static async getCouncil(req: Request, res: Response) {
+    try {
+      const userId = (req as any).user?.id || 'user_1';
+      const councilData = await AgentCouncilService.getCouncil(userId);
+      res.json({ status: 'success', data: councilData });
+    } catch (e: any) {
+      res.status(500).json({ status: 'error', message: e.message });
+    }
+  }
+
+  public static async runExecutiveDebate(req: Request, res: Response) {
+    try {
+      const userId = (req as any).user?.id || 'user_1';
+      const { topic, agentAId, agentBId } = req.body;
+      const debate = await ExecutiveDebateService.runDebate(userId, { topic, agentAId, agentBId });
+      res.json({ status: 'success', data: debate });
+    } catch (e: any) {
+      res.status(500).json({ status: 'error', message: e.message });
+    }
+  }
+
+  public static async getLifePlans(req: Request, res: Response) {
+    try {
+      const userId = (req as any).user?.id || 'user_1';
+      const plans = await LifePlannerService.getLifePlans(userId);
+      res.json({ status: 'success', data: plans });
+    } catch (e: any) {
+      res.status(500).json({ status: 'error', message: e.message });
+    }
+  }
+
+  public static async getStrategicCampaigns(req: Request, res: Response) {
+    try {
+      const userId = (req as any).user?.id || 'user_1';
+      const campaigns = await StrategicCampaignService.getCampaigns(userId);
+      res.json({ status: 'success', data: campaigns });
+    } catch (e: any) {
+      res.status(500).json({ status: 'error', message: e.message });
+    }
+  }
+
+  public static async getExecutiveOpportunities(req: Request, res: Response) {
+    try {
+      const userId = (req as any).user?.id || 'user_1';
+      const opps = await OpportunityDiscoveryService.getOpportunities(userId);
+      res.json({ status: 'success', data: opps });
+    } catch (e: any) {
+      res.status(500).json({ status: 'error', message: e.message });
+    }
+  }
+
+  public static async getExecutiveForecastModel(req: Request, res: Response) {
+    try {
+      const userId = (req as any).user?.id || 'user_1';
+      const forecast = await FutureSimulationService.runCouncilImpactModeling(userId);
+      res.json({ status: 'success', data: forecast });
+    } catch (e: any) {
+      res.status(500).json({ status: 'error', message: e.message });
+    }
+  }
+
+  public static async getExecutiveMemories(req: Request, res: Response) {
+    try {
+      const userId = (req as any).user?.id || 'user_1';
+      const memories = await ExecutiveMemoryService.getMemories(userId);
+      res.json({ status: 'success', data: memories });
+    } catch (e: any) {
+      res.status(500).json({ status: 'error', message: e.message });
+    }
+  }
+
+  public static async recalculateExecutiveCouncil(req: Request, res: Response) {
+    try {
+      const userId = (req as any).user?.id || 'user_1';
+      const result = await AgentCouncilService.conveneCouncil(userId);
+      await LifePlannerService.generateLifePlans(userId);
+      await OpportunityDiscoveryService.discoverOpportunities(userId);
       res.json({ status: 'success', data: result });
     } catch (e: any) {
       res.status(500).json({ status: 'error', message: e.message });

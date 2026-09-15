@@ -28,6 +28,10 @@ import { DigitalTwinService } from "./digitalTwinService";
 import { FutureSimulationService } from "./futureSimulationService";
 import { OpportunityDiscoveryService } from "./opportunityDiscoveryService";
 import { AdaptiveStrategyService } from "./adaptiveStrategyService";
+import { AgentCouncilService } from "./agentCouncilService";
+import { ExecutiveDebateService } from "./executiveDebateService";
+import { LifePlannerService } from "./lifePlannerService";
+import { StrategicCampaignService } from "./strategicCampaignService";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 export interface VoiceChatResult {
@@ -63,6 +67,64 @@ export class VoiceMentorService {
     const transcript = await SpeechToTextService.transcribeAudio(audioInput, language);
     const userId = "usr_demo";
     const lower = transcript.toLowerCase();
+
+    // V4.7 Multi-Agent Executive Council Voice Routing
+    if (
+      lower.includes("executive council") ||
+      lower.includes("council prioritize") ||
+      lower.includes("run executive council") ||
+      lower.includes("biggest blocker") ||
+      lower.includes("contests or projects") ||
+      lower.includes("fastest path to google") ||
+      lower.includes("fastest path") ||
+      lower.includes("weekly executive plan") ||
+      lower.includes("life plan") ||
+      lower.includes("executive plan")
+    ) {
+      try {
+        let aiAnswer = "";
+        if (lower.includes("run executive council") || lower.includes("council prioritize") || lower.includes("executive council")) {
+          const councilData = await AgentCouncilService.getCouncil(userId);
+          const topActions = councilData.council?.prioritizedActions?.slice(0, 2).map((a: any) => `${a.executive}: ${a.action}`).join(". Also, ") || "focus on dynamic programming and mock technical screens.";
+          aiAnswer = `Your Executive Council met with consensus score ${councilData.council?.consensusScore || 94}%. Dominant Theme: ${councilData.council?.dominantTheme || 'Targeted Big Tech Sprint'}. Top Priorities: ${topActions}.`;
+        } else if (lower.includes("biggest blocker") || lower.includes("blocker")) {
+          const twin = await DigitalTwinService.getDigitalTwin(userId);
+          const topGap = twin.riskFactors?.[0]?.title || "Dynamic Programming Subproblem Trees";
+          aiAnswer = `Your biggest critical blocker is ${topGap}. The Learning and Career Executives recommend a 3-day recovery sprint of timed drills to eradicate this risk.`;
+        } else if (lower.includes("contests or projects") || lower.includes("debate")) {
+          const debate = await ExecutiveDebateService.runDebate(userId, { topic: "Contests vs Projects: Optimal Time Allocation" });
+          aiAnswer = `The Executive Council debated Contests versus Projects. Conclusion: ${debate.winnerAgent}. Recommendation: ${debate.justification} Allocation: 60% algorithmic speed drills and 40% Raft distributed systems capstone.`;
+        } else if (lower.includes("fastest path")) {
+          aiAnswer = `Your fastest path to Google L4 is the Dual-Cadence strategy: 1) Elevate contest rating past 1850 with Saturday speed rounds, 2) Pass 2 timed 45-minute OA mock screens, and 3) Finalize your Raft Distributed KV Store capstone as undeniable proof-of-work. Expected offer timeline: 3.2 months.`;
+        } else if (lower.includes("plan") || lower.includes("weekly")) {
+          const plans = await LifePlannerService.getLifePlans(userId);
+          const weekly = plans.find(p => p.horizon === "Weekly") || plans[0];
+          aiAnswer = `Here is your Weekly Executive Plan: 8 hours on ${weekly.pillars?.learning?.focus || 'DP & Graph Mastery'}, ${weekly.pillars?.career?.focus || 'Big Tech Mock Screenings'}, and delivering the ${weekly.pillars?.projects?.focus || 'Raft Distributed Consensus'} module.`;
+        }
+
+        if (aiAnswer) {
+          const tts = await TextToSpeechService.generateSpeech(aiAnswer, language);
+          await VoiceMentorRepository.saveMessage({
+            id: `vmsg-${Date.now()}`,
+            sessionId,
+            role: "user",
+            transcript,
+            aiResponse: aiAnswer,
+            createdAt: new Date().toISOString(),
+          });
+          await RedisManager.set(`voice:response:${sessionId}`, JSON.stringify({ transcript, aiResponse: aiAnswer }), 3600);
+          return {
+            sessionId,
+            transcript,
+            aiResponse: aiAnswer,
+            audioUrl: tts.audioUrl,
+            language,
+          };
+        }
+      } catch (e) {
+        // Fall through
+      }
+    }
 
     // V4.6 Autonomous Execution & Digital Twin Voice Routing
     if (

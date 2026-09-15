@@ -266,4 +266,94 @@ Provide an authoritative, highly quantitative simulation prediction (2-3 sentenc
       return `If you maintain ${hours} hours daily focused on high-yield DSA and distributed systems, your projected contest rating will increase by +180 points to ${((twin.contestRatings?.rating || 1650) + 180)} in 90 days, increasing your ${twin.readinessForecast?.targetCompany || 'Google'} win probability from 74% to 88%.`;
     }
   }
+
+  // Executive Council Impact Modeling
+  public static async runCouncilImpactModeling(userId: string) {
+    const cacheKey = `executive:forecast:${userId}`;
+    const cached = await RedisManager.get(cacheKey);
+    if (cached) {
+      try {
+        return JSON.parse(cached);
+      } catch {}
+    }
+
+    const twin = await DigitalTwinService.getDigitalTwin(userId);
+    const currRating = twin.contestRatings?.rating || 1650;
+    const currMastery = twin.masteryScores?.overall || 78.5;
+    const currHiring = twin.hiringReadiness?.probability || 74.0;
+    const target = twin.readinessForecast?.targetCompany || "Google";
+
+    const modeling = {
+      userContext: {
+        userId,
+        targetCompany: target,
+        baselineRating: currRating,
+        baselineMastery: currMastery,
+        baselineHiring: currHiring
+      },
+      scenarios: [
+        {
+          focusDomain: "Contests (Competitive Track)",
+          leadExecutive: "Kaelen Voss (Contest Executive)",
+          description: "Maximal focus on weekly speed rounds, LeetCode Hard rating drills, and division championships.",
+          projectedMetrics: {
+            hiringReadiness: Math.min(94.0, currHiring + 12.0),
+            masteryGrowth: Math.min(95.0, currMastery + 11.5),
+            contestRating: Math.min(2350, currRating + 320),
+            salaryTrajectory: "$210,000 - $240,000 Total Comp"
+          },
+          timeToTargetMonths: 2.5,
+          strategicTradeoff: "Exceptional initial screening pass rate; slight risk of low architectural system design depth."
+        },
+        {
+          focusDomain: "Research (Frontier AI & Systems)",
+          leadExecutive: "Dr. Julian Thorne (Research Executive)",
+          description: "Focus on empirical benchmarks, speculative decoding optimization preprints, and workshop submissions.",
+          projectedMetrics: {
+            hiringReadiness: Math.min(92.0, currHiring + 8.5),
+            masteryGrowth: Math.min(96.0, currMastery + 14.0),
+            contestRating: Math.min(2100, currRating + 120),
+            salaryTrajectory: "$240,000 - $300,000 (Research Scientist / AI Fellow)"
+          },
+          timeToTargetMonths: 4.5,
+          strategicTradeoff: "Highest compensation ceiling and publication prestige; slower entry-level hiring screen turnaround."
+        },
+        {
+          focusDomain: "Projects (Distributed Systems Capstone)",
+          leadExecutive: "Aria Chen (Project Executive)",
+          description: "Deep engineering on Raft consensus KV Store, lock-free ring buffers, and chaos testing benchmarks.",
+          projectedMetrics: {
+            hiringReadiness: Math.min(95.0, currHiring + 15.0),
+            masteryGrowth: Math.min(94.5, currMastery + 13.0),
+            contestRating: Math.min(2150, currRating + 140),
+            salaryTrajectory: "$225,000 - $265,000 (L4 Systems Engineer)"
+          },
+          timeToTargetMonths: 3.0,
+          strategicTradeoff: "Unbeatable technical authority during onsite system architecture loops; requires maintaining core DSA baseline."
+        },
+        {
+          focusDomain: "Interviews & Placements (Targeted Big Tech)",
+          leadExecutive: "Marcus Sterling (Career Executive)",
+          description: "Intensive 45-min timed OA mock loops, STAR behavioral prep, and company-specific question pattern mastery.",
+          projectedMetrics: {
+            hiringReadiness: Math.min(97.5, currHiring + 19.5),
+            masteryGrowth: Math.min(92.0, currMastery + 9.0),
+            contestRating: Math.min(2050, currRating + 110),
+            salaryTrajectory: "$230,000 - $275,000 (Direct Big Tech Offer)"
+          },
+          timeToTargetMonths: 1.8,
+          strategicTradeoff: "Fastest path to signed high-comp offer; optimized specifically for current interview rubric."
+        }
+      ],
+      executiveConsensusRecommendation: {
+        recommendedStrategy: "Balanced Dual-Cadence (60% Interview/Contest + 40% Systems Project)",
+        expectedOfferMonth: "Month 3.2",
+        expectedStartingComp: "$245,000 Total Compensation",
+        topTargetCompany: target
+      }
+    };
+
+    await RedisManager.set(cacheKey, JSON.stringify(modeling), this.CACHE_TTL);
+    return modeling;
+  }
 }

@@ -43,15 +43,37 @@ export class KnowledgeFabricService {
     ];
     for (const c of companies) await KnowledgeFabricRepository.upsertEntity(c);
 
-    // Seed Relationships
+    // Seed Executive Knowledge Graph Architecture (Goal → Strategy → Action → Outcome → Career Impact)
+    const execEntities = [
+      { id: 'ent_goal_google', name: 'Goal: Google SWE L4 Ready', entityType: 'ExecutiveGoal', description: 'Reach top-percentile hiring readiness for Google Systems L4.' },
+      { id: 'ent_strat_dual_cadence', name: 'Strategy: Dual-Cadence 60/40 Split', entityType: 'ExecutiveStrategy', description: '60% algorithmic speed & contest rating, 40% distributed systems capstone.' },
+      { id: 'ent_act_dp_drills', name: 'Action: DP Subproblem Drills & OA Mocks', entityType: 'ExecutiveAction', description: 'Daily 45-min timed technical problem solving and mock screens.' },
+      { id: 'ent_out_master_rating', name: 'Outcome: 1850+ Contest Rating & Zero Blindspots', entityType: 'ExecutiveOutcome', description: 'Demonstrated mastery across all interview topic bars.' },
+      { id: 'ent_impact_l4_offer', name: 'Career Impact: $240,000 Total Compensation Offer', entityType: 'CareerImpact', description: 'Conversion to full-time tier-1 systems engineering role.' }
+    ];
+    for (const e of execEntities) await KnowledgeFabricRepository.upsertEntity(e);
+
+    // Seed Relationships (Goal → Strategy → Action → Outcome → Career Impact)
     await KnowledgeFabricRepository.upsertRelationship({
       sourceId: 'ent_arr', targetId: 'ent_sw', relationshipType: 'Prerequisite', weight: 1.0
     });
     await KnowledgeFabricRepository.upsertRelationship({
       sourceId: 'ent_sw', targetId: 'ent_google', relationshipType: 'RelatedToInterview', weight: 0.8
     });
+    await KnowledgeFabricRepository.upsertRelationship({
+      sourceId: 'ent_goal_google', targetId: 'ent_strat_dual_cadence', relationshipType: 'RequiresStrategy', weight: 1.0
+    });
+    await KnowledgeFabricRepository.upsertRelationship({
+      sourceId: 'ent_strat_dual_cadence', targetId: 'ent_act_dp_drills', relationshipType: 'ExecutesAction', weight: 0.95
+    });
+    await KnowledgeFabricRepository.upsertRelationship({
+      sourceId: 'ent_act_dp_drills', targetId: 'ent_out_master_rating', relationshipType: 'YieldsOutcome', weight: 0.9
+    });
+    await KnowledgeFabricRepository.upsertRelationship({
+      sourceId: 'ent_out_master_rating', targetId: 'ent_impact_l4_offer', relationshipType: 'DrivesCareerImpact', weight: 0.95
+    });
     
-    logger.info("[KnowledgeFabric] Fabric initialization complete.");
+    logger.info("[KnowledgeFabric] Fabric and Executive Knowledge Graph initialization complete.");
   }
 
   // Memory Consolidation

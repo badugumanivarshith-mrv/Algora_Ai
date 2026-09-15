@@ -196,5 +196,39 @@ export const aiosApi = {
   adaptStrategy: async () => {
     const { data } = await axios.post(`${API_BASE}/adaptive-strategy/adapt`);
     return data;
+  },
+
+  // V4.7 Multi-Agent Executive Council & Autonomous Career OS API
+  getExecutiveCouncil: async () => {
+    const { data } = await axios.get(`${API_BASE}/executive/council`);
+    return data;
+  },
+  runExecutiveDebate: async (params: { topic?: string; agentAId?: string; agentBId?: string }) => {
+    const { data } = await axios.post(`${API_BASE}/executive/debate`, params);
+    return data;
+  },
+  getLifePlans: async () => {
+    const { data } = await axios.get(`${API_BASE}/executive/plans`);
+    return data;
+  },
+  getStrategicCampaigns: async () => {
+    const { data } = await axios.get(`${API_BASE}/executive/campaigns`);
+    return data;
+  },
+  getExecutiveOpportunities: async () => {
+    const { data } = await axios.get(`${API_BASE}/executive/opportunities`);
+    return data;
+  },
+  getExecutiveForecastModel: async () => {
+    const { data } = await axios.get(`${API_BASE}/executive/forecast`);
+    return data;
+  },
+  getExecutiveMemories: async () => {
+    const { data } = await axios.get(`${API_BASE}/executive/memory`);
+    return data;
+  },
+  recalculateExecutiveCouncil: async () => {
+    const { data } = await axios.post(`${API_BASE}/executive/recalculate`);
+    return data;
   }
 };
