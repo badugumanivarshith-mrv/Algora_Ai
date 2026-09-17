@@ -1,5 +1,5 @@
 import { lazy, Suspense } from "react";
-import { createBrowserRouter } from "react-router";
+import { createBrowserRouter, Navigate, useLocation } from "react-router";
 import Layout from "./components/Layout";
 import Landing from "./pages/Landing";
 import Dashboard from "./pages/Dashboard";
@@ -25,6 +25,10 @@ import { AIAssignmentGenerator } from "./pages/ai/AIAssignmentGenerator";
 import { AIInterviewGenerator } from "./pages/ai/AIInterviewGenerator";
 import { AIContestGenerator } from "./pages/ai/AIContestGenerator";
 import { ThemeProvider } from "./components/ThemeContext";
+import FeaturesPage from "./pages/public/FeaturesPage";
+import LearningPathsPage from "./pages/public/LearningPathsPage";
+import ConceptsPage from "./pages/public/ConceptsPage";
+import BlogPage from "./pages/public/BlogPage";
 
 // Lazy-loaded heavy hubs for bundle size optimization & performance
 const AIOSHub = lazy(() => import("./pages/AIOSHub"));
@@ -52,7 +56,16 @@ function PageFallback() {
   );
 }
 
+function isAuthenticated() {
+  return !!localStorage.getItem("algora_token") || !!localStorage.getItem("token") || !!localStorage.getItem("algora_user");
+}
+
 function AppShell() {
+  const location = useLocation();
+  if (!isAuthenticated()) {
+    const redirectUrl = location.pathname + location.search;
+    return <Navigate to={`/?auth=login&redirect=${encodeURIComponent(redirectUrl)}`} replace />;
+  }
   return (
     <ThemeProvider>
       <Suspense fallback={<PageFallback />}>
@@ -70,10 +83,58 @@ function LandingWrapper() {
   );
 }
 
+function FeaturesWrapper() {
+  return (
+    <ThemeProvider>
+      <FeaturesPage />
+    </ThemeProvider>
+  );
+}
+
+function LearningPathsWrapper() {
+  return (
+    <ThemeProvider>
+      <LearningPathsPage />
+    </ThemeProvider>
+  );
+}
+
+function ConceptsWrapper() {
+  return (
+    <ThemeProvider>
+      <ConceptsPage />
+    </ThemeProvider>
+  );
+}
+
+function BlogWrapper() {
+  return (
+    <ThemeProvider>
+      <BlogPage />
+    </ThemeProvider>
+  );
+}
+
 export const router = createBrowserRouter([
   {
     path: "/",
     Component: LandingWrapper,
+  },
+  {
+    path: "/features",
+    Component: FeaturesWrapper,
+  },
+  {
+    path: "/learning-paths",
+    Component: LearningPathsWrapper,
+  },
+  {
+    path: "/concepts",
+    Component: ConceptsWrapper,
+  },
+  {
+    path: "/blog",
+    Component: BlogWrapper,
   },
   {
     path: "/app",
@@ -270,5 +331,45 @@ export const router = createBrowserRouter([
     path: "/cognitive-hub",
     Component: AppShell,
     children: [{ index: true, Component: CognitiveHub }],
+  },
+  {
+    path: "/voice-mentor",
+    Component: AppShell,
+    children: [{ index: true, Component: VoiceMentor }],
+  },
+  {
+    path: "/talent-marketplace",
+    Component: AppShell,
+    children: [{ index: true, Component: TalentMarketplaceHub }],
+  },
+  {
+    path: "/skill-economy",
+    Component: AppShell,
+    children: [{ index: true, Component: TalentMarketplaceHub }],
+  },
+  {
+    path: "/ai-generator/problem",
+    Component: AppShell,
+    children: [{ index: true, Component: AIProblemGenerator }],
+  },
+  {
+    path: "/ai-generator/quiz",
+    Component: AppShell,
+    children: [{ index: true, Component: AIQuizGenerator }],
+  },
+  {
+    path: "/ai-generator/assignment",
+    Component: AppShell,
+    children: [{ index: true, Component: AIAssignmentGenerator }],
+  },
+  {
+    path: "/ai-generator/interview",
+    Component: AppShell,
+    children: [{ index: true, Component: AIInterviewGenerator }],
+  },
+  {
+    path: "/ai-generator/contest",
+    Component: AppShell,
+    children: [{ index: true, Component: AIContestGenerator }],
   },
 ]);

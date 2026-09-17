@@ -61,10 +61,13 @@ export default function AuthModal({
         }
         setSuccessMsg("Welcome back! Loading your profile...");
         setTimeout(() => {
-          if (onSuccess) onSuccess(data.data?.user);
           onClose();
-          window.location.reload();
-        }, 500);
+          if (onSuccess) {
+            onSuccess(data.data?.user);
+          } else {
+            window.location.reload();
+          }
+        }, 400);
       } else {
         const res = await fetch("/api/auth/register", {
           method: "POST",
@@ -84,10 +87,13 @@ export default function AuthModal({
         }
         setSuccessMsg("Account created successfully!");
         setTimeout(() => {
-          if (onSuccess) onSuccess(data.data?.user);
           onClose();
-          window.location.reload();
-        }, 500);
+          if (onSuccess) {
+            onSuccess(data.data?.user);
+          } else {
+            window.location.reload();
+          }
+        }, 400);
       }
     } catch (err: any) {
       setError(err.message || "An unexpected error occurred.");
@@ -97,12 +103,22 @@ export default function AuthModal({
   };
 
   const handleOAuthSuccess = (result: any) => {
+    if (result.authResult?.token) {
+      localStorage.setItem("algora_token", result.authResult.token);
+      localStorage.setItem("token", result.authResult.token);
+    }
+    if (result.authResult?.user) {
+      localStorage.setItem("algora_user", JSON.stringify(result.authResult.user));
+    }
     setSuccessMsg("Authentication successful! Redirecting...");
     setTimeout(() => {
-      if (onSuccess) onSuccess(result.authResult?.user);
       onClose();
-      window.location.reload();
-    }, 500);
+      if (onSuccess) {
+        onSuccess(result.authResult?.user);
+      } else {
+        window.location.reload();
+      }
+    }, 400);
   };
 
   return (

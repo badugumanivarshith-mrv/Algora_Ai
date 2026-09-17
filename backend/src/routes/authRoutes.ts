@@ -44,7 +44,6 @@ router.get("/oauth/config", OAuthController.getConfig);
 router.get("/oauth/identities", requireAuth, OAuthController.getIdentities);
 router.get("/oauth/:provider/url", authLimiter, OAuthController.getAuthUrl);
 router.get("/oauth/:provider/callback", authLimiter, OAuthController.handleCallback);
-router.get("/oauth/:provider/sandbox", OAuthController.handleSandboxConsent);
 router.post("/oauth/:provider/unlink", requireAuth, OAuthController.unlink);
 
 export default router;

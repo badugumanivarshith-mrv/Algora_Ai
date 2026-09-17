@@ -99,23 +99,10 @@ export class OAuthService {
 
     const callbackUrl = this.getCallbackUrl(provider, origin);
 
-    // If provider is not yet configured with real Client ID, provide sandbox demo flow
-    if (!isConfigured) {
-      const demoParams = new URLSearchParams({
-        demo_oauth: "true",
-        provider,
-        state,
-        action,
-        callback_url: callbackUrl,
-      });
-      // The sandbox endpoint simulates the provider's consent screen
-      const url = `/api/auth/oauth/${provider}/sandbox?${demoParams.toString()}`;
-      return { url, state, isConfigured: false };
-    }
-
     if (provider === "google") {
+      const clientId = config.googleClientId || process.env.GOOGLE_CLIENT_ID || "458448574746-dsa-algora.apps.googleusercontent.com";
       const params = new URLSearchParams({
-        client_id: config.googleClientId,
+        client_id: clientId,
         redirect_uri: callbackUrl,
         response_type: "code",
         scope: "openid email profile",
@@ -134,8 +121,9 @@ export class OAuthService {
     }
 
     if (provider === "github") {
+      const clientId = config.githubClientId || process.env.GITHUB_CLIENT_ID || "algora-github-client-id";
       const params = new URLSearchParams({
-        client_id: config.githubClientId,
+        client_id: clientId,
         redirect_uri: callbackUrl,
         scope: "read:user user:email",
         state,

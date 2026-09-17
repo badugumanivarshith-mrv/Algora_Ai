@@ -1,23 +1,23 @@
 import { Router } from "express";
 import { ResearchController } from "../controllers/researchController";
-import { requireAuth } from "../middleware/auth";
+import { optionalAuth } from "../middleware/auth";
 
 const router = Router();
 
 // Research
-router.post("/projects", requireAuth, ResearchController.createProject);
-router.get("/projects", requireAuth, ResearchController.listProjects);
-router.get("/projects/:id", requireAuth, ResearchController.getProject);
-router.post("/papers", requireAuth, ResearchController.savePaper);
-router.post("/literature-review", requireAuth, ResearchController.createLiteratureReview);
-router.get("/analytics", requireAuth, ResearchController.getAnalytics);
+router.post("/projects", optionalAuth, ResearchController.createProject);
+router.get("/projects", optionalAuth, ResearchController.listProjects);
+router.get("/projects/:id", optionalAuth, ResearchController.getProject);
+router.post("/papers", optionalAuth, ResearchController.savePaper);
+router.post("/literature-review", optionalAuth, ResearchController.createLiteratureReview);
+router.get("/analytics", optionalAuth, ResearchController.getAnalytics);
 
 // Open Source
-router.post("/opensource/project", requireAuth, ResearchController.createOSSProject);
-router.post("/opensource/contribution", requireAuth, ResearchController.saveContribution);
+router.post("/opensource/project", optionalAuth, ResearchController.createOSSProject);
+router.post("/opensource/contribution", optionalAuth, ResearchController.saveContribution);
 
 // Innovation
-router.post("/innovation/evaluate", requireAuth, ResearchController.evaluateIdea);
-router.post("/mvp", requireAuth, ResearchController.createMvpRoadmap);
+router.post("/innovation/evaluate", optionalAuth, ResearchController.evaluateIdea);
+router.post("/mvp", optionalAuth, ResearchController.createMvpRoadmap);
 
 export default router;

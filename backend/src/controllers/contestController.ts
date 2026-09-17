@@ -11,9 +11,20 @@ export class ContestController {
   public static async getContests(req: Request, res: Response) {
     try {
       const contests = await ContestService.getContests();
-      res.json({ success: true, contests });
+      res.json({ success: true, data: contests, contests });
     } catch (e: any) {
       logger.error(`[ContestController.getContests] Error: ${e.message}`);
+      res.status(500).json({ success: false, error: e.message });
+    }
+  }
+
+  public static async getLeaderboardByContestId(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+      const leaderboard = await ContestService.getLeaderboard(id);
+      res.json({ success: true, data: leaderboard, leaderboard });
+    } catch (e: any) {
+      logger.error(`[ContestController.getLeaderboardByContestId] Error: ${e.message}`);
       res.status(500).json({ success: false, error: e.message });
     }
   }

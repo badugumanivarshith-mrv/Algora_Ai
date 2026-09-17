@@ -13,8 +13,11 @@ const contestLimiter = rateLimit({
 
 router.use(contestLimiter);
 
+router.get("/", ContestController.getContests);
 router.get("/list", requireAuth, ContestController.getContests);
+router.get("/:id/leaderboard", ContestController.getLeaderboardByContestId);
 router.get("/detail/:id", requireAuth, ContestController.getContestById);
+router.get("/:id", ContestController.getContestById);
 router.post("/register", requireAuth, ContestController.registerParticipant);
 router.post("/submit", requireAuth, ContestController.submitSolution);
 router.post("/team", requireAuth, ContestController.createTeam);

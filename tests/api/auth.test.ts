@@ -72,11 +72,14 @@ describe("Auth & OAuth API Integration Tests", () => {
   });
 
   describe("GET /api/auth/oauth/:provider/url", () => {
-    it("should generate a secure Google OAuth flow URL", async () => {
+    it("should generate a secure Google OAuth flow URL with direct account picker", async () => {
       const res = await request(app).get("/api/auth/oauth/google/url");
       expect(res.status).toBe(200);
       expect(res.body.success).toBe(true);
       expect(res.body.data).toBeDefined();
+      expect(res.body.data.url).toContain("accounts.google.com");
+      expect(res.body.data.url).toContain("prompt=select_account");
+      expect(res.body.data.url).toContain("code_challenge=");
     });
 
     it("should generate a secure GitHub OAuth flow URL", async () => {
@@ -84,17 +87,7 @@ describe("Auth & OAuth API Integration Tests", () => {
       expect(res.status).toBe(200);
       expect(res.body.success).toBe(true);
       expect(res.body.data).toBeDefined();
-    });
-  });
-
-  describe("GET /api/auth/oauth/:provider/sandbox", () => {
-    it("should handle sandbox flow parameter settings", async () => {
-      const res = await request(app)
-        .get("/api/auth/oauth/google/sandbox")
-        .query({ state: "test-state", code: "test-code" });
-      
-      expect(res.status).toBe(200);
-      expect(res.text).toContain("Google OAuth Sign In");
+      expect(res.body.data.url).toContain("github.com/login/oauth/authorize");
     });
   });
 });

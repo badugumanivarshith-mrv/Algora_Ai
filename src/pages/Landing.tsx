@@ -1,5 +1,5 @@
-import { useState, type ReactNode } from "react";
-import { useNavigate } from "react-router";
+import { useState, useEffect, type ReactNode } from "react";
+import { useNavigate, useSearchParams } from "react-router";
 import {
   ArrowRight, Brain, BarChart2, Code2, Trophy, Zap, Target, Flame,
   CheckCircle2, Star, ChevronRight, Sparkles, TrendingUp, Users,
@@ -380,19 +380,54 @@ const companies = ["Google", "Microsoft", "Amazon", "Meta", "Adobe", "Flipkart",
 
 export default function Landing() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { theme, setTheme } = useTheme();
   const [activeTestimonial, setActiveTestimonial] = useState(0);
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [authMode, setAuthMode] = useState<"login" | "register">("login");
+  const [redirectTarget, setRedirectTarget] = useState<string>("/dashboard");
+
+  useEffect(() => {
+    const authParam = searchParams.get("auth");
+    const redirectParam = searchParams.get("redirect");
+
+    if (redirectParam) {
+      setRedirectTarget(redirectParam);
+    }
+
+    if (authParam === "login" || authParam === "signin") {
+      setAuthMode("login");
+      setIsAuthOpen(true);
+    } else if (authParam === "register" || authParam === "signup") {
+      setAuthMode("register");
+      setIsAuthOpen(true);
+    }
+  }, [searchParams]);
 
   const openLogin = () => {
     setAuthMode("login");
+    setRedirectTarget("/dashboard");
     setIsAuthOpen(true);
   };
 
   const openRegister = () => {
     setAuthMode("register");
+    setRedirectTarget("/dashboard");
     setIsAuthOpen(true);
+  };
+
+  const isAuthenticated = () => {
+    return !!localStorage.getItem("algora_token") || !!localStorage.getItem("token") || !!localStorage.getItem("algora_user");
+  };
+
+  const handleProtectedNavigation = (path: string) => {
+    if (isAuthenticated()) {
+      navigate(path);
+    } else {
+      setRedirectTarget(path);
+      setAuthMode("login");
+      setIsAuthOpen(true);
+    }
   };
 
 
@@ -426,13 +461,19 @@ export default function Landing() {
         <AlgoraLogo size={30} />
 
         <div style={{ display: "flex", alignItems: "center", gap: 2, marginLeft: 32 }}>
-          {["Features", "Learning Paths", "Contests", "Blog"].map((item) => (
+          {[
+            { label: "Features", path: "/features" },
+            { label: "Learning Paths", path: "/learning-paths" },
+            { label: "Concepts", path: "/concepts" },
+            { label: "Blog", path: "/blog" },
+          ].map((item) => (
             <button
-              key={item}
+              key={item.label}
               className="btn btn-ghost btn-sm hide-mobile"
               style={{ fontSize: 13 }}
+              onClick={() => navigate(item.path)}
             >
-              {item}
+              {item.label}
             </button>
           ))}
         </div>
@@ -546,14 +587,14 @@ export default function Landing() {
           <div style={{ display: "flex", justifyContent: "center", gap: 10, flexWrap: "wrap" }}>
             <button
               className="btn btn-primary btn-lg"
-              onClick={() => navigate("/dashboard")}
+              onClick={() => handleProtectedNavigation("/dashboard")}
               style={{ gap: 7 }}
             >
               Start learning free <ArrowRight size={15} />
             </button>
             <button
               className="btn btn-secondary btn-lg"
-              onClick={() => navigate("/workspace")}
+              onClick={() => handleProtectedNavigation("/workspace")}
               style={{ gap: 7 }}
             >
               <Play size={14} /> Try a problem
@@ -621,7 +662,7 @@ export default function Landing() {
       </div>
 
       {/* ── Features ── */}
-      <section style={{ padding: "96px clamp(20px,5vw,80px)" }}>
+      <section id="features" style={{ padding: "96px clamp(20px,5vw,80px)" }}>
         <div style={{ maxWidth: 1100, margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: 56 }}>
             <Chip color="var(--blue)">Everything you need</Chip>
@@ -636,7 +677,7 @@ export default function Landing() {
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
+              gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))",
               gap: 16,
             }}
           >
@@ -645,7 +686,7 @@ export default function Landing() {
                 key={title}
                 className="surface-card"
                 style={{ padding: 24, cursor: "pointer", transition: "all 0.15s" }}
-                onClick={() => navigate(path)}
+                onClick={() => handleProtectedNavigation(path)}
                 onMouseEnter={(e) => Object.assign(e.currentTarget.style, { transform: "translateY(-2px)", boxShadow: "var(--shadow-lg)" })}
                 onMouseLeave={(e) => Object.assign(e.currentTarget.style, { transform: "translateY(0)", boxShadow: "var(--shadow-card)" })}
               >
@@ -703,7 +744,7 @@ export default function Landing() {
                 </li>
               ))}
             </ul>
-            <button className="btn btn-primary" onClick={() => navigate("/ai-mentor")} style={{ gap: 6 }}>
+            <button className="btn btn-primary" onClick={() => handleProtectedNavigation("/ai-mentor")} style={{ gap: 6 }}>
               Try AI Mentor <ChevronRight size={14} />
             </button>
           </div>
@@ -807,61 +848,9 @@ export default function Landing() {
                 </div>
               ))}
             </div>
-            <button className="btn btn-primary" onClick={() => navigate("/ai-analyst")} style={{ gap: 6 }}>
+            <button className="btn btn-primary" onClick={() => handleProtectedNavigation("/ai-analyst")} style={{ gap: 6 }}>
               View your analytics <ChevronRight size={14} />
             </button>
-          </div>
-        </div>
-      </section>
-
-      {/* ── Learning Paths ── */}
-      <section style={{ padding: "96px clamp(20px,5vw,80px)", background: "var(--bg-surface)" }}>
-        <div style={{ maxWidth: 1100, margin: "0 auto" }}>
-          <div style={{ textAlign: "center", marginBottom: 52 }}>
-            <Chip color="var(--violet)">Structured mastery</Chip>
-            <h2 className="text-h1" style={{ margin: "16px 0 14px" }}>
-              Learning paths that actually go somewhere
-            </h2>
-            <p style={{ color: "var(--text-secondary)", maxWidth: 480, margin: "0 auto", fontSize: 15 }}>
-              No more random grinding. Every problem serves a purpose in your journey.
-            </p>
-          </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(280px,1fr))", gap: 16 }}>
-            {[
-              { title: "DSA Fundamentals", desc: "Arrays · Linked Lists · Trees · Graphs", prog: 68, problems: 45, color: "var(--blue)", level: "Beginner" },
-              { title: "Placement Prep", desc: "FAANG-focused DSA + System Design basics", prog: 34, problems: 120, color: "var(--violet)", level: "Intermediate" },
-              { title: "Competitive CP", desc: "Segment trees, network flow, advanced DP", prog: 12, problems: 200, color: "var(--cyan)", level: "Advanced" },
-            ].map(({ title, desc, prog, problems, color, level }) => (
-              <div
-                key={title}
-                className="surface-card"
-                style={{ padding: 24, cursor: "pointer" }}
-                onClick={() => navigate("/learning")}
-              >
-                <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, marginBottom: 16 }}>
-                  <div>
-                    <span
-                      className="badge"
-                      style={{ background: `color-mix(in srgb, ${color} 10%, transparent)`, color, marginBottom: 8, display: "inline-flex" }}
-                    >
-                      {level}
-                    </span>
-                    <h3 className="text-h3" style={{ color: "var(--text-primary)", margin: 0 }}>{title}</h3>
-                    <p style={{ fontSize: 12, color: "var(--text-muted)", margin: "4px 0 0" }}>{desc}</p>
-                  </div>
-                </div>
-                <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "var(--text-muted)", marginBottom: 6 }}>
-                  <span>{prog}% complete</span>
-                  <span>{problems} problems</span>
-                </div>
-                <div className="progress">
-                  <div className="progress-fill" style={{ width: `${prog}%`, background: color }} />
-                </div>
-                <div style={{ display: "flex", alignItems: "center", gap: 4, marginTop: 14, color, fontSize: 12, fontWeight: 500 }}>
-                  Continue <ChevronRight size={12} />
-                </div>
-              </div>
-            ))}
           </div>
         </div>
       </section>
@@ -981,7 +970,7 @@ export default function Landing() {
                   alignItems: "center",
                   gap: 7,
                 }}
-                onClick={() => navigate("/dashboard")}
+                onClick={() => handleProtectedNavigation("/dashboard")}
               >
                 Get started free <ArrowRight size={14} />
               </button>
@@ -1000,7 +989,7 @@ export default function Landing() {
                   alignItems: "center",
                   gap: 7,
                 }}
-                onClick={() => navigate("/workspace")}
+                onClick={() => handleProtectedNavigation("/workspace")}
               >
                 <Play size={13} /> View demo
               </button>
@@ -1038,9 +1027,17 @@ export default function Landing() {
       {/* Auth Modal with OAuth 2.0 and Email Auth */}
       <AuthModal
         isOpen={isAuthOpen}
-        onClose={() => setIsAuthOpen(false)}
+        onClose={() => {
+          setIsAuthOpen(false);
+          if (searchParams.get("auth") || searchParams.get("redirect")) {
+            setSearchParams({}, { replace: true });
+          }
+        }}
         initialMode={authMode}
-        onSuccess={() => navigate("/dashboard")}
+        onSuccess={() => {
+          const destination = redirectTarget || "/dashboard";
+          navigate(destination);
+        }}
       />
     </div>
   );
