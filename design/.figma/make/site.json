@@ -1,0 +1,10 @@
+{
+  "description": "An AI-powered coding education platform that offers personalized learning paths, skill assessments, and mentorship for students and beginner programmers.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}
