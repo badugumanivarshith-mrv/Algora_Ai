@@ -1,0 +1,6 @@
+{
+  "name": "ALGORA — AI-Powered Coding Learning Platform",
+  "description": "Personalized coding education platform with adaptive learning roadmaps, real-world project guided builds, spaced repetition, AI mentor with Socratic guidance, company interview preparation tracks, and placement readiness analytics.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
