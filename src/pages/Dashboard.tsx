@@ -253,6 +253,7 @@ export default function Dashboard() {
               {recommendations.map(({ title, desc, tag, tagColor, icon: Icon }) => (
                 <div
                   key={title}
+                  onClick={() => navigate("/interview-coach")}
                   style={{
                     display: "flex",
                     alignItems: "flex-start",

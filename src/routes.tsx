@@ -19,16 +19,27 @@ import Faculty from "./pages/Faculty";
 import Projects from "./pages/Projects";
 import CompanyPrep from "./pages/CompanyPrep";
 import VoiceMentor from "./pages/VoiceMentor";
+import InterviewCoach from "./pages/InterviewCoach";
+import Community from "./pages/Community";
+import RecruiterPortal from "./pages/RecruiterPortal";
+import CampusPlacements from "./pages/CampusPlacements";
+import CareerOS from "./pages/CareerOS";
+import ProjectsMarketplace from "./pages/ProjectsMarketplace";
+import { ProfilePage } from "./pages/student/ProfilePage";
+import { AnalyticsPage } from "./pages/student/AnalyticsPage";
 import { ThemeProvider } from "./components/ThemeContext";
 import { AuthProvider } from "./context/AuthContext";
+import { RealtimeProvider } from "./context/RealtimeContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 function AppShell() {
   return (
     <AuthProvider>
-      <ThemeProvider>
-        <Layout />
-      </ThemeProvider>
+      <RealtimeProvider>
+        <ThemeProvider>
+          <Layout />
+        </ThemeProvider>
+      </RealtimeProvider>
     </AuthProvider>
   );
 }
@@ -64,6 +75,14 @@ export const router = createBrowserRouter([
       { path: "projects", Component: () => <ProtectedRoute><Projects /></ProtectedRoute> },
       { path: "company-prep", Component: () => <ProtectedRoute><CompanyPrep /></ProtectedRoute> },
       { path: "voice-mentor", Component: () => <ProtectedRoute><VoiceMentor /></ProtectedRoute> },
+      { path: "interview-coach", Component: () => <ProtectedRoute><InterviewCoach /></ProtectedRoute> },
+      { path: "analytics", Component: () => <ProtectedRoute requireAuthUser><AnalyticsPage /></ProtectedRoute> },
+      { path: "profile", Component: () => <ProtectedRoute requireAuthUser><ProfilePage /></ProtectedRoute> },
+      { path: "community", Component: () => <ProtectedRoute requireAuthUser><Community /></ProtectedRoute> },
+      { path: "recruiter", Component: () => <ProtectedRoute requireAuthUser><RecruiterPortal /></ProtectedRoute> },
+      { path: "campus-placements", Component: () => <ProtectedRoute requireAuthUser><CampusPlacements /></ProtectedRoute> },
+      { path: "career-os", Component: () => <ProtectedRoute requireAuthUser><CareerOS /></ProtectedRoute> },
+      { path: "marketplace", Component: () => <ProtectedRoute requireAuthUser><ProjectsMarketplace /></ProtectedRoute> },
       { path: "faculty", Component: () => <ProtectedRoute requireAuthUser><Faculty /></ProtectedRoute> },
     ],
   },
@@ -122,6 +141,46 @@ export const router = createBrowserRouter([
     path: "/voice-mentor",
     Component: AppShell,
     children: [{ index: true, Component: () => <ProtectedRoute><VoiceMentor /></ProtectedRoute> }],
+  },
+  {
+    path: "/interview-coach",
+    Component: AppShell,
+    children: [{ index: true, Component: () => <ProtectedRoute><InterviewCoach /></ProtectedRoute> }],
+  },
+  {
+    path: "/analytics",
+    Component: AppShell,
+    children: [{ index: true, Component: () => <ProtectedRoute requireAuthUser><AnalyticsPage /></ProtectedRoute> }],
+  },
+  {
+    path: "/profile",
+    Component: AppShell,
+    children: [{ index: true, Component: () => <ProtectedRoute requireAuthUser><ProfilePage /></ProtectedRoute> }],
+  },
+  {
+    path: "/community",
+    Component: AppShell,
+    children: [{ index: true, Component: () => <ProtectedRoute requireAuthUser><Community /></ProtectedRoute> }],
+  },
+  {
+    path: "/recruiter",
+    Component: AppShell,
+    children: [{ index: true, Component: () => <ProtectedRoute requireAuthUser><RecruiterPortal /></ProtectedRoute> }],
+  },
+  {
+    path: "/campus-placements",
+    Component: AppShell,
+    children: [{ index: true, Component: () => <ProtectedRoute requireAuthUser><CampusPlacements /></ProtectedRoute> }],
+  },
+  {
+    path: "/career-os",
+    Component: AppShell,
+    children: [{ index: true, Component: () => <ProtectedRoute requireAuthUser><CareerOS /></ProtectedRoute> }],
+  },
+  {
+    path: "/marketplace",
+    Component: AppShell,
+    children: [{ index: true, Component: () => <ProtectedRoute requireAuthUser><ProjectsMarketplace /></ProtectedRoute> }],
   },
   {
     path: "/faculty",

@@ -223,6 +223,12 @@ export const COMPANY_TRACKS_DATA: CompanyData[] = [
     tagline: "Algorithmic Precision, Graph Theory & Googleyness",
     description: "Google tests deep algorithmic problem solving, clean bug-free code writeups without compiler IDE, and Googleyness collaboration values.",
     avgPackage: "$50,000 - $80,000 (40 - 65 LPA)",
+    hiringFocus: [
+      "Deep Graph Algorithms & Topological Sorting",
+      "Advanced Dynamic Programming & Mathematical Predicates",
+      "Trie & Complex String Matching",
+      "Googleyness & Collaboration Values"
+    ],
     frequentlyAskedTopics: [
       {
         topic: "Graphs & Topological Sort",
@@ -316,6 +322,12 @@ export const COMPANY_TRACKS_DATA: CompanyData[] = [
     tagline: "Systems Engineering, Object-Oriented Design & Problem Solving",
     description: "Microsoft focuses on Arrays, Linked Lists, Trees, Systems OOP Design, and core CS fundamentals (OS, DBMS, Computer Networks).",
     avgPackage: "$38,000 - $55,000 (30 - 45 LPA)",
+    hiringFocus: [
+      "Arrays, Strings & Linked Lists Problem Solving",
+      "Object-Oriented Design & System Architecture",
+      "Operating System Concurrency & DBMS Indexing",
+      "Behavioral & Problem Solving Fundamentals"
+    ],
     frequentlyAskedTopics: [
       {
         topic: "Arrays, Strings & Linked Lists",
@@ -362,6 +374,12 @@ export const COMPANY_TRACKS_DATA: CompanyData[] = [
     tagline: "Database Engineering, Multithreading & High Concurrency",
     description: "Oracle places heavy emphasis on SQL queries, Indexing, Multithreading, Concurrency, and Core Java / C++ memory management.",
     avgPackage: "$25,000 - $40,000 (20 - 32 LPA)",
+    hiringFocus: [
+      "SQL Query Optimization & Database Indexing",
+      "Java/C++ Multithreading & Memory Management",
+      "ACID Transactions & Database Concurrency Locks",
+      "Core Data Structures & Algorithms"
+    ],
     frequentlyAskedTopics: [
       {
         topic: "Database Systems & SQL Optimization",
@@ -391,6 +409,12 @@ export const COMPANY_TRACKS_DATA: CompanyData[] = [
     tagline: "Document Engineering, Geometry, Math & C++ Systems",
     description: "Adobe technical rounds focus on Mathematical problem solving, Strings, Matrices, Geometry algorithms, and C++ memory layouts.",
     avgPackage: "$28,000 - $45,000 (22 - 36 LPA)",
+    hiringFocus: [
+      "C++ Systems Engineering & Memory Layouts",
+      "Computational Geometry & Matrix Algorithms",
+      "Bit Manipulation & Mathematical Logic",
+      "Document Engineering & Performance Optimization"
+    ],
     frequentlyAskedTopics: [
       {
         topic: "Matrix, Geometry & Bit Manipulation",
@@ -420,6 +444,12 @@ export const COMPANY_TRACKS_DATA: CompanyData[] = [
     tagline: "Mass Hiring, Aptitude, Core Programming & Behavioral HR",
     description: "Service company drives focus on Quantitative Aptitude, Logical Reasoning, Verbal Ability, basic Coding in C/Java/Python, and Managerial HR rounds.",
     avgPackage: "$5,000 - $12,000 (4 - 9 LPA / Digital / Ninja)",
+    hiringFocus: [
+      "Quantitative Aptitude & Logical Speed",
+      "Basic Array & String Manipulation",
+      "Core Programming Fundamentals (C/Java/Python)",
+      "Communication Skills & Managerial HR"
+    ],
     frequentlyAskedTopics: [
       {
         topic: "Aptitude, Logical Reasoning & Math",
@@ -466,6 +496,12 @@ export const COMPANY_TRACKS_DATA: CompanyData[] = [
     tagline: "Product Speed, Full-Stack Mastery & Practical Problem Solving",
     description: "Startups evaluate speed of execution, full-stack product building, API integrations, database design, and real-world debugging.",
     avgPackage: "$20,000 - $50,000 (16 - 40 LPA + Equity)",
+    hiringFocus: [
+      "Full-Stack Web Development & Real-Time APIs",
+      "Database Schema Design & Query Performance",
+      "Rapid Prototyping & Independent Ownership",
+      "System Debugging & Clean Code Architecture"
+    ],
     frequentlyAskedTopics: [
       {
         topic: "Full-Stack Web & Real-Time APIs",

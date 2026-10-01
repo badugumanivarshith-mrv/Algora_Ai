@@ -9,7 +9,7 @@ import { useNavigate, useLocation } from "react-router";
 import {
   LayoutDashboard, BookOpen, Code2, Brain, BarChart2, CalendarCheck,
   Trophy, Users, GraduationCap, LogOut, ChevronRight, UserPlus, ShieldAlert,
-  FolderKanban, Briefcase, Mic
+  FolderKanban, Briefcase, Mic, Target, LineChart, User, MessageSquare, Building, Compass
 } from "lucide-react";
 import AlgoraLogo from "./AlgoraLogo";
 import { useAuth } from "../context/AuthContext";
@@ -21,12 +21,20 @@ const nav = [
   { icon: Code2,           label: "Workspace",  path: "/workspace"  },
   { icon: FolderKanban,    label: "Project Hub",path: "/projects"   },
   { icon: Briefcase,       label: "Company Prep",path: "/company-prep"},
+  { icon: Target,          label: "Interview Coach", path: "/interview-coach"},
   { icon: Mic,             label: "Voice Mentor",path: "/voice-mentor"},
   { icon: Brain,           label: "AI Mentor",  path: "/ai-mentor"  },
   { icon: BarChart2,       label: "AI Analyst", path: "/ai-analyst" },
+  { icon: LineChart,       label: "Analytics",  path: "/analytics"  },
   { icon: CalendarCheck,   label: "Daily Review",path: "/daily-review"},
   { icon: Trophy,          label: "Contests",   path: "/contests"   },
   { icon: Users,           label: "Leaderboard",path: "/leaderboard"},
+  { icon: MessageSquare,   label: "Community",  path: "/community"  },
+  { icon: Briefcase,       label: "Recruiter Hub", path: "/recruiter" },
+  { icon: Building,        label: "Campus Placements", path: "/campus-placements" },
+  { icon: Compass,         label: "Career OS",  path: "/career-os"  },
+  { icon: FolderKanban,    label: "Marketplace",path: "/marketplace"},
+  { icon: User,            label: "Profile",    path: "/profile"    },
   { icon: GraduationCap,   label: "Faculty",    path: "/faculty"    },
 ];
 

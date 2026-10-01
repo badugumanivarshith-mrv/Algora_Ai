@@ -115,13 +115,13 @@ CREATE TABLE IF NOT EXISTS problems (
     description TEXT NOT NULL,
     examples JSONB NOT NULL DEFAULT '[]'::jsonb,
     constraints JSONB NOT NULL DEFAULT '[]'::jsonb,
-    tags TEXT[] DEFAULT ARRAY[]::TEXT[],
-    companies TEXT[] DEFAULT ARRAY[]::TEXT[],
+    tags JSONB DEFAULT '[]'::jsonb,
+    companies JSONB DEFAULT '[]'::jsonb,
     starter_code JSONB NOT NULL DEFAULT '{}'::jsonb,
     solution_code JSONB NOT NULL DEFAULT '{}'::jsonb,
     test_cases JSONB NOT NULL DEFAULT '[]'::jsonb,
     acceptance_rate NUMERIC(5,2) DEFAULT 75.0,
-    learning_objectives TEXT[] DEFAULT ARRAY[]::TEXT[],
+    learning_objectives JSONB DEFAULT '[]'::jsonb,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -174,8 +174,8 @@ CREATE TABLE IF NOT EXISTS projects (
     overview TEXT NOT NULL,
     architecture_overview TEXT,
     estimated_hours INTEGER DEFAULT 10,
-    learning_goals TEXT[] DEFAULT ARRAY[]::TEXT[],
-    prerequisites TEXT[] DEFAULT ARRAY[]::TEXT[],
+    learning_goals JSONB DEFAULT '[]'::jsonb,
+    prerequisites JSONB DEFAULT '[]'::jsonb,
     evaluation_criteria JSONB DEFAULT '[]'::jsonb,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
@@ -190,7 +190,7 @@ CREATE TABLE IF NOT EXISTS project_milestones (
     title VARCHAR(255) NOT NULL,
     description TEXT NOT NULL,
     tasks JSONB NOT NULL DEFAULT '[]'::jsonb,
-    learning_tips TEXT[] DEFAULT ARRAY[]::TEXT[],
+    learning_tips JSONB DEFAULT '[]'::jsonb,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -202,7 +202,7 @@ CREATE TABLE IF NOT EXISTS user_projects (
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     project_id VARCHAR(100) NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
     status VARCHAR(50) DEFAULT 'in_progress' CHECK (status IN ('in_progress', 'completed', 'submitted')),
-    completed_task_ids TEXT[] DEFAULT ARRAY[]::TEXT[],
+    completed_task_ids JSONB DEFAULT '[]'::jsonb,
     reflection_notes TEXT DEFAULT '',
     repo_url TEXT,
     demo_url TEXT,
@@ -273,3 +273,423 @@ CREATE TABLE IF NOT EXISTS user_analytics (
 );
 
 CREATE INDEX IF NOT EXISTS idx_user_analytics ON user_analytics(user_id);
+
+-- 16. PERSISTENT NOTIFICATIONS
+CREATE TABLE IF NOT EXISTS notifications (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    title VARCHAR(255) NOT NULL,
+    message TEXT NOT NULL,
+    type VARCHAR(50) DEFAULT 'info',
+    is_read BOOLEAN DEFAULT FALSE NOT NULL,
+    metadata JSONB DEFAULT '{}'::jsonb,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_notifications_user_read ON notifications(user_id, is_read);
+
+CREATE TABLE IF NOT EXISTS notification_preferences (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    email_enabled BOOLEAN DEFAULT TRUE,
+    push_enabled BOOLEAN DEFAULT TRUE,
+    contest_enabled BOOLEAN DEFAULT TRUE,
+    review_enabled BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 17. CONTEST SYSTEM
+CREATE TABLE IF NOT EXISTS contests (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    title VARCHAR(255) NOT NULL,
+    slug VARCHAR(100) NOT NULL UNIQUE,
+    description TEXT NOT NULL,
+    start_time TIMESTAMP WITH TIME ZONE NOT NULL,
+    end_time TIMESTAMP WITH TIME ZONE NOT NULL,
+    duration_minutes INTEGER DEFAULT 90 NOT NULL,
+    status VARCHAR(50) DEFAULT 'upcoming' NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS contest_problems (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    contest_id UUID NOT NULL REFERENCES contests(id) ON DELETE CASCADE,
+    problem_id VARCHAR(100) NOT NULL REFERENCES problems(id) ON DELETE CASCADE,
+    order_index INTEGER DEFAULT 1 NOT NULL,
+    points INTEGER DEFAULT 100 NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS contest_registrations (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    contest_id UUID NOT NULL REFERENCES contests(id) ON DELETE CASCADE,
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    registered_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT unique_user_contest_reg UNIQUE(user_id, contest_id)
+);
+
+CREATE TABLE IF NOT EXISTS contest_submissions (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    contest_id UUID NOT NULL REFERENCES contests(id) ON DELETE CASCADE,
+    problem_id VARCHAR(100) NOT NULL REFERENCES problems(id) ON DELETE CASCADE,
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    submission_id UUID REFERENCES submissions(id) ON DELETE SET NULL,
+    status VARCHAR(50) NOT NULL,
+    points_awarded INTEGER DEFAULT 0,
+    penalty_minutes INTEGER DEFAULT 0,
+    submitted_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS contest_leaderboards (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    contest_id UUID NOT NULL REFERENCES contests(id) ON DELETE CASCADE,
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    total_score INTEGER DEFAULT 0 NOT NULL,
+    total_penalty_minutes INTEGER DEFAULT 0 NOT NULL,
+    rank INTEGER DEFAULT 0,
+    solved_count INTEGER DEFAULT 0 NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT unique_user_contest_lb UNIQUE(user_id, contest_id)
+);
+
+-- ==========================================
+-- 8. STUDY GROUPS & DISCUSSIONS
+-- ==========================================
+
+-- Alter users table safely
+ALTER TABLE users ADD COLUMN IF NOT EXISTS reputation_score INTEGER DEFAULT 100 NOT NULL;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS contribution_score INTEGER DEFAULT 50 NOT NULL;
+
+CREATE TABLE IF NOT EXISTS study_groups (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    name VARCHAR(255) NOT NULL,
+    description TEXT NOT NULL,
+    category VARCHAR(100) DEFAULT 'General' NOT NULL,
+    created_by UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS study_group_members (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    group_id UUID NOT NULL REFERENCES study_groups(id) ON DELETE CASCADE,
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    joined_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    CONSTRAINT unique_user_group UNIQUE(user_id, group_id)
+);
+
+CREATE TABLE IF NOT EXISTS study_group_chats (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    group_id UUID NOT NULL REFERENCES study_groups(id) ON DELETE CASCADE,
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    user_name VARCHAR(255) NOT NULL,
+    avatar_url TEXT,
+    message TEXT NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS forum_posts (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    title VARCHAR(255) NOT NULL,
+    content TEXT NOT NULL,
+    category VARCHAR(50) NOT NULL,
+    reference_id VARCHAR(100),
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    user_name VARCHAR(255) NOT NULL,
+    avatar_url TEXT,
+    upvotes INTEGER DEFAULT 0 NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS forum_comments (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    post_id UUID NOT NULL REFERENCES forum_posts(id) ON DELETE CASCADE,
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    user_name VARCHAR(255) NOT NULL,
+    avatar_url TEXT,
+    content TEXT NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS solution_reviews (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    problem_id VARCHAR(100) NOT NULL REFERENCES problems(id) ON DELETE CASCADE,
+    code TEXT NOT NULL,
+    language VARCHAR(50) NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    description TEXT NOT NULL,
+    is_resolved BOOLEAN DEFAULT FALSE NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS solution_review_comments (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    review_id UUID NOT NULL REFERENCES solution_reviews(id) ON DELETE CASCADE,
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    user_name VARCHAR(255) NOT NULL,
+    avatar_url TEXT,
+    comment TEXT NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+-- ==========================================
+-- 10. AI STUDY PLANS & FACULTY INTERVENTIONS
+-- ==========================================
+
+CREATE TABLE IF NOT EXISTS student_study_plans (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    plan_json JSONB NOT NULL,
+    weekly_goal_minutes INTEGER DEFAULT 200 NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS faculty_interventions (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    student_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    faculty_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    recommendation TEXT NOT NULL,
+    status VARCHAR(50) DEFAULT 'pending' NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+-- ==========================================
+-- 11. RECRUITER PORTAL & PLACEMENTS
+-- ==========================================
+
+CREATE TABLE IF NOT EXISTS jobs (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    title VARCHAR(255) NOT NULL,
+    company VARCHAR(255) NOT NULL,
+    description TEXT NOT NULL,
+    location VARCHAR(255) DEFAULT 'Remote' NOT NULL,
+    type VARCHAR(50) DEFAULT 'Full-Time' NOT NULL,
+    salary VARCHAR(100),
+    requirements TEXT NOT NULL,
+    created_by UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS applications (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    job_id UUID NOT NULL REFERENCES jobs(id) ON DELETE CASCADE,
+    student_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    status VARCHAR(50) DEFAULT 'Applied' NOT NULL,
+    feedback TEXT,
+    applied_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+-- ==========================================
+-- 12. ENTERPRISE PLACEMENT ECOSYSTEM
+-- ==========================================
+
+CREATE TABLE IF NOT EXISTS placement_drives (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    title VARCHAR(255) NOT NULL,
+    company VARCHAR(255) NOT NULL,
+    eligibility_cgpa REAL DEFAULT 7.0 NOT NULL,
+    eligibility_xp INTEGER DEFAULT 100 NOT NULL,
+    status VARCHAR(50) DEFAULT 'upcoming' NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS drive_registrations (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    drive_id UUID NOT NULL REFERENCES placement_drives(id) ON DELETE CASCADE,
+    student_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    registered_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS interview_rounds (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    registration_id UUID NOT NULL REFERENCES drive_registrations(id) ON DELETE CASCADE,
+    round_number INTEGER DEFAULT 1 NOT NULL,
+    round_type VARCHAR(100) NOT NULL,
+    interviewer_feedback TEXT,
+    score INTEGER,
+    status VARCHAR(50) DEFAULT 'scheduled' NOT NULL,
+    scheduled_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS offers (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    registration_id UUID NOT NULL REFERENCES drive_registrations(id) ON DELETE CASCADE,
+    package_amount VARCHAR(100) NOT NULL,
+    status VARCHAR(50) DEFAULT 'pending' NOT NULL,
+    offered_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS company_partnerships (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    company_name VARCHAR(255) NOT NULL,
+    partnership_tier VARCHAR(100) DEFAULT 'Gold' NOT NULL,
+    signed_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+-- ==========================================
+-- 13. AI KNOWLEDGE GRAPH & SKILLS
+-- ==========================================
+
+CREATE TABLE IF NOT EXISTS skill_graph_nodes (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    name VARCHAR(255) NOT NULL,
+    type VARCHAR(100) NOT NULL,
+    difficulty_level VARCHAR(50) DEFAULT 'Medium' NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS skill_graph_edges (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    from_node_id UUID NOT NULL REFERENCES skill_graph_nodes(id) ON DELETE CASCADE,
+    to_node_id UUID NOT NULL REFERENCES skill_graph_nodes(id) ON DELETE CASCADE,
+    relationship_type VARCHAR(100) DEFAULT 'prerequisite' NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS learning_recommendations (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    node_id UUID NOT NULL REFERENCES skill_graph_nodes(id) ON DELETE CASCADE,
+    priority VARCHAR(50) DEFAULT 'Medium' NOT NULL,
+    status VARCHAR(50) DEFAULT 'active' NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS skill_gap_reports (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    score INTEGER DEFAULT 70 NOT NULL,
+    report_json JSONB NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+-- ==========================================
+-- 14. AI CAREER OPERATING SYSTEM
+-- ==========================================
+
+CREATE TABLE IF NOT EXISTS career_paths (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    title VARCHAR(255) NOT NULL,
+    description TEXT NOT NULL,
+    target_role VARCHAR(100) NOT NULL,
+    required_skills_json JSONB NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS user_career_profiles (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    target_role_id VARCHAR(100) DEFAULT 'Software Engineer' NOT NULL,
+    resume_score INTEGER DEFAULT 85 NOT NULL,
+    interview_readiness_score INTEGER DEFAULT 78 NOT NULL,
+    placement_probability INTEGER DEFAULT 82 NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS career_milestones (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    title VARCHAR(255) NOT NULL,
+    status VARCHAR(50) DEFAULT 'pending' NOT NULL,
+    target_date VARCHAR(100),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS career_skill_gaps (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    skill_name VARCHAR(255) NOT NULL,
+    gap_level VARCHAR(50) DEFAULT 'Moderate' NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+-- ==========================================
+-- 15. INDUSTRY PROJECTS MARKETPLACE
+-- ==========================================
+
+CREATE TABLE IF NOT EXISTS marketplace_projects (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    title VARCHAR(255) NOT NULL,
+    company VARCHAR(255) NOT NULL,
+    description TEXT NOT NULL,
+    techStack VARCHAR(255) NOT NULL,
+    status VARCHAR(50) DEFAULT 'open' NOT NULL,
+    created_by UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS marketplace_applications (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    project_id UUID NOT NULL REFERENCES marketplace_projects(id) ON DELETE CASCADE,
+    student_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    status VARCHAR(50) DEFAULT 'pending' NOT NULL,
+    applied_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS project_teams (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    project_id UUID NOT NULL REFERENCES marketplace_projects(id) ON DELETE CASCADE,
+    name VARCHAR(255) NOT NULL,
+    members_json JSONB NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS mentor_assignments (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    project_id UUID NOT NULL REFERENCES marketplace_projects(id) ON DELETE CASCADE,
+    mentor_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    assigned_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS portfolio_entries (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    title VARCHAR(255) NOT NULL,
+    project_url TEXT,
+    description TEXT NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS certificates (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    title VARCHAR(255) NOT NULL,
+    issued_by VARCHAR(255) DEFAULT 'Algora Academy' NOT NULL,
+    issued_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+-- 16. VOICE & AI INTERVIEW SESSIONS
+CREATE TABLE IF NOT EXISTS voice_interview_sessions (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    interview_type VARCHAR(50) NOT NULL,
+    company_id VARCHAR(100) DEFAULT 'general',
+    transcript_json JSONB DEFAULT '[]'::jsonb,
+    overall_score INTEGER DEFAULT 0,
+    technical_score INTEGER DEFAULT 0,
+    communication_score INTEGER DEFAULT 0,
+    confidence_score INTEGER DEFAULT 0,
+    strengths_json JSONB DEFAULT '[]'::jsonb,
+    improvements_json JSONB DEFAULT '[]'::jsonb,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+-- 17. COMPANY READINESS & CONTEST RATINGS
+CREATE TABLE IF NOT EXISTS company_readiness (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    company_id VARCHAR(100) NOT NULL,
+    readiness_score INTEGER DEFAULT 0,
+    solved_problems_count INTEGER DEFAULT 0,
+    checked_resume_items JSONB DEFAULT '[]'::jsonb,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS contest_ratings (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    rating INTEGER DEFAULT 1200 NOT NULL,
+    peak_rating INTEGER DEFAULT 1200 NOT NULL,
+    rating_tier VARCHAR(50) DEFAULT 'Beginner',
+    rating_history_json JSONB DEFAULT '[]'::jsonb,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+

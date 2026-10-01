@@ -18,8 +18,8 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 async function startServer() {
-  // Initialize Database Seeding
-  await seedDatabase().catch((e) => console.log('Database seeding skipped or already seeded:', e.message));
+  // Initialize Database Seeder asynchronously without blocking server listening
+  seedDatabase().catch((e) => console.log('Database seeding skipped or already seeded:', e.message));
 
   const app = express();
   const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
