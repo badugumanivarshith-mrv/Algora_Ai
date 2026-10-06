@@ -235,3 +235,23 @@ export async function getMentorAssignments(req: AuthenticatedRequest, res: Respo
   }
 }
 
+export async function assignMentor(req: AuthenticatedRequest, res: Response): Promise<void> {
+  try {
+    const { projectId, mentorId } = req.body;
+    if (!projectId || !mentorId) {
+      res.status(400).json({ success: false, error: "Missing project ID or mentor ID" });
+      return;
+    }
+
+    const [assignment] = await drizzleDb.insert(mentorAssignments).values({
+      projectId,
+      mentorId
+    }).returning();
+
+    res.status(201).json({ success: true, data: assignment });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+}
+
+

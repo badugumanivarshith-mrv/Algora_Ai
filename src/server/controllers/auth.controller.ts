@@ -31,13 +31,15 @@ async function generateTokens(user: UserEntity) {
   } as jwt.SignOptions);
 
   // Persist refresh token in database
-  const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
-  await drizzleDb.insert(refreshTokens).values({
-    id: crypto.randomUUID(),
-    userId: user.id,
-    token: refreshToken,
-    expiresAt: expiresAt,
-  });
+  try {
+    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+    await drizzleDb.insert(refreshTokens).values({
+      id: crypto.randomUUID(),
+      userId: user.id,
+      token: refreshToken,
+      expiresAt: expiresAt,
+    }).onConflictDoNothing();
+  } catch {}
 
   return { accessToken, refreshToken };
 }

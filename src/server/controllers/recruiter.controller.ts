@@ -43,6 +43,98 @@ export async function createJob(req: AuthenticatedRequest, res: Response): Promi
   }
 }
 
+export async function editJob(req: AuthenticatedRequest, res: Response): Promise<void> {
+  try {
+    const recruiterId = req.user?.id;
+    const { id } = req.params;
+    if (!recruiterId) {
+      res.status(401).json({ success: false, error: "Unauthorized" });
+      return;
+    }
+
+    const { title, company, description, location, type, salary, requirements } = req.body;
+    const [existing] = await drizzleDb.select().from(jobs).where(eq(jobs.id, id));
+    if (!existing) {
+      res.status(404).json({ success: false, error: "Job posting not found" });
+      return;
+    }
+
+    const [updated] = await drizzleDb.update(jobs)
+      .set({
+        title: title || existing.title,
+        company: company || existing.company,
+        description: description || existing.description,
+        location: location || existing.location,
+        type: type || existing.type,
+        salary: salary || existing.salary,
+        requirements: requirements || existing.requirements
+      })
+      .where(eq(jobs.id, id))
+      .returning();
+
+    res.json({ success: true, data: updated });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+}
+
+export async function deleteJob(req: AuthenticatedRequest, res: Response): Promise<void> {
+  try {
+    const recruiterId = req.user?.id;
+    const { id } = req.params;
+    if (!recruiterId) {
+      res.status(401).json({ success: false, error: "Unauthorized" });
+      return;
+    }
+
+    const [existing] = await drizzleDb.select().from(jobs).where(eq(jobs.id, id));
+    if (!existing) {
+      res.status(404).json({ success: false, error: "Job posting not found" });
+      return;
+    }
+
+    await drizzleDb.delete(jobs).where(eq(jobs.id, id));
+    res.json({ success: true, message: "Job deleted successfully" });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+}
+
+export async function sendOffer(req: AuthenticatedRequest, res: Response): Promise<void> {
+  try {
+    const { applicationId, salaryOffer, feedback } = req.body;
+    if (!applicationId) {
+      res.status(400).json({ success: false, error: "Missing application ID" });
+      return;
+    }
+
+    const [app] = await drizzleDb.select().from(applications).where(eq(applications.id, applicationId));
+    if (!app) {
+      res.status(404).json({ success: false, error: "Application not found" });
+      return;
+    }
+
+    const [updatedApp] = await drizzleDb.update(applications)
+      .set({
+        status: "Offered",
+        feedback: feedback || `Official offer: ${salaryOffer || "Competitive Compensation"}`
+      })
+      .where(eq(applications.id, applicationId))
+      .returning();
+
+    await drizzleDb.insert(notifications).values({
+      userId: app.studentId,
+      title: "Recruiter Job Offer Received!",
+      message: `Congratulations! You received an official offer for your application. Feedback/Offer: "${feedback || salaryOffer || 'Offered'}"`,
+      type: "system"
+    });
+
+    res.json({ success: true, data: updatedApp });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+}
+
 export async function getJobs(req: AuthenticatedRequest, res: Response): Promise<void> {
   try {
     const jobList = await drizzleDb.select().from(jobs).orderBy(desc(jobs.createdAt));

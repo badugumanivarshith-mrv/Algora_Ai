@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS users (
     name VARCHAR(255) NOT NULL,
     email VARCHAR(255) UNIQUE NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
-    role VARCHAR(50) DEFAULT 'student' CHECK (role IN ('student', 'admin', 'faculty')),
+    role VARCHAR(50) DEFAULT 'student' CHECK (role IN ('student', 'admin', 'faculty', 'recruiter')),
     college VARCHAR(255) DEFAULT 'IIT Bombay',
     avatar_url TEXT,
     xp INTEGER DEFAULT 0 CHECK (xp >= 0),
@@ -610,7 +610,7 @@ CREATE TABLE IF NOT EXISTS marketplace_projects (
     title VARCHAR(255) NOT NULL,
     company VARCHAR(255) NOT NULL,
     description TEXT NOT NULL,
-    techStack VARCHAR(255) NOT NULL,
+    tech_stack VARCHAR(255) NOT NULL,
     status VARCHAR(50) DEFAULT 'open' NOT NULL,
     created_by UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL

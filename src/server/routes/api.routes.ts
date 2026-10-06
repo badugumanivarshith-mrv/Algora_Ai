@@ -145,11 +145,14 @@ apiRouter.post('/faculty/intervention', requireAuth, facultyController.createInt
 
 // 14. Recruiter & Placement Portal Routes
 apiRouter.post('/recruiter/jobs', requireAuth, recruiterController.createJob);
+apiRouter.put('/recruiter/jobs/:id', requireAuth, recruiterController.editJob);
+apiRouter.delete('/recruiter/jobs/:id', requireAuth, recruiterController.deleteJob);
 apiRouter.get('/recruiter/jobs', optionalAuth, recruiterController.getJobs);
 apiRouter.get('/recruiter/candidates', requireAuth, recruiterController.getCandidateProfiles);
 apiRouter.post('/recruiter/applications', requireAuth, recruiterController.applyToJob);
 apiRouter.get('/recruiter/applications', requireAuth, recruiterController.getJobApplications);
 apiRouter.patch('/recruiter/applications', requireAuth, recruiterController.updateApplicationStatus);
+apiRouter.post('/recruiter/offers', requireAuth, recruiterController.sendOffer);
 
 // 15. Enterprise Placements & Drives
 apiRouter.post('/placements/drives', requireAuth, placementsController.createPlacementDrive);
@@ -183,5 +186,6 @@ apiRouter.post('/marketplace/certificates', requireAuth, marketplaceController.i
 apiRouter.get('/marketplace/teams', requireAuth, marketplaceController.getProjectTeams);
 apiRouter.post('/marketplace/teams', requireAuth, marketplaceController.createProjectTeam);
 apiRouter.get('/marketplace/mentors', requireAuth, marketplaceController.getMentorAssignments);
+apiRouter.post('/marketplace/mentors', requireAuth, marketplaceController.assignMentor);
 
 

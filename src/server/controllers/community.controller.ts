@@ -183,7 +183,7 @@ export async function createForumPost(req: Request, res: Response) {
 
     realtimeBroadcaster.broadcastCommunityPost(post);
 
-    res.status(201).json(post);
+    res.status(201).json({ success: true, data: post });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }

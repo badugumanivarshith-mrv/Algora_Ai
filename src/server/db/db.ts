@@ -589,6 +589,22 @@ export function getPostgresConnectionStatus() {
           await seedDatabase();
           console.log("[DB] Database seeded successfully!");
         }
+      } else {
+        // Run idempotent schema patch migrations
+        await pool.query(`
+          DO $$
+          BEGIN
+              ALTER TABLE users DROP CONSTRAINT IF EXISTS users_role_check;
+              ALTER TABLE users ADD CONSTRAINT users_role_check CHECK (role IN ('student', 'admin', 'faculty', 'recruiter'));
+              
+              IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='marketplace_projects' AND column_name='techStack') THEN
+                  ALTER TABLE marketplace_projects RENAME COLUMN "techStack" TO tech_stack;
+              ELSIF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='marketplace_projects' AND column_name='tech_stack') THEN
+                  ALTER TABLE marketplace_projects ADD COLUMN tech_stack VARCHAR(255) DEFAULT 'TypeScript, Node.js';
+              END IF;
+              ALTER TABLE marketplace_projects DROP COLUMN IF EXISTS "techstack";
+          END $$;
+        `);
       }
     } catch (migErr: any) {
       console.error("[DB] Migration error during startup:", migErr.message);

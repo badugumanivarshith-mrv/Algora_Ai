@@ -1697,6 +1697,216 @@
       "dailyGoalMinutes": 60,
       "createdAt": "2026-10-01T17:27:22.064Z",
       "updatedAt": "2026-10-01T17:27:22.064Z"
+    },
+    {
+      "id": "e0c25a7a-6eb2-4c28-9bf9-9c5d76d49d41",
+      "name": "Mani Varshith",
+      "email": "demo@algora.edu",
+      "passwordHash": "$2b$10$LuP07Qzfq5PHB6gXe5wS0.gxXCgCRBXyRoCSxaXc0I7UjknQeKeJ2",
+      "role": "student",
+      "college": "IIT Bombay",
+      "xp": 4820,
+      "level": 5,
+      "streak": 28,
+      "targetCompany": "Google",
+      "dailyGoalMinutes": 45,
+      "createdAt": "2026-10-06T19:42:25.381Z",
+      "updatedAt": "2026-10-06T19:42:25.381Z"
+    },
+    {
+      "id": "a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d",
+      "name": "Dr. Vikram Sharma",
+      "email": "faculty@algora.edu",
+      "passwordHash": "$2b$10$AGBMqM5yos/Sq8ZaXWYCHO9bWmcJriFmr3TXbNGdS./GiKdUdhT6a",
+      "role": "faculty",
+      "college": "IIT Bombay",
+      "xp": 12500,
+      "level": 12,
+      "streak": 90,
+      "targetCompany": "Google",
+      "dailyGoalMinutes": 60,
+      "createdAt": "2026-10-06T19:42:25.381Z",
+      "updatedAt": "2026-10-06T19:42:25.381Z"
+    },
+    {
+      "id": "e0c25a7a-6eb2-4c28-9bf9-9c5d76d49d41",
+      "name": "Mani Varshith",
+      "email": "demo@algora.edu",
+      "passwordHash": "$2b$10$w6Wfm4vYz8wSNkN0WoCjAeqfvU0gMXlxb4pWf6WT9RwohSDi3X6p6",
+      "role": "student",
+      "college": "IIT Bombay",
+      "xp": 4820,
+      "level": 5,
+      "streak": 28,
+      "targetCompany": "Google",
+      "dailyGoalMinutes": 45,
+      "createdAt": "2026-10-06T19:46:49.110Z",
+      "updatedAt": "2026-10-06T19:46:49.110Z"
+    },
+    {
+      "id": "a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d",
+      "name": "Dr. Vikram Sharma",
+      "email": "faculty@algora.edu",
+      "passwordHash": "$2b$10$fFAFsimZ6bwu8CnfnVDbpO4zx4ShI/eGnr7EK/dbygnUUZSy8Mcvm",
+      "role": "faculty",
+      "college": "IIT Bombay",
+      "xp": 12500,
+      "level": 12,
+      "streak": 90,
+      "targetCompany": "Google",
+      "dailyGoalMinutes": 60,
+      "createdAt": "2026-10-06T19:46:49.110Z",
+      "updatedAt": "2026-10-06T19:46:49.110Z"
+    },
+    {
+      "id": "e0c25a7a-6eb2-4c28-9bf9-9c5d76d49d41",
+      "name": "Mani Varshith",
+      "email": "demo@algora.edu",
+      "passwordHash": "$2b$10$Vps5fVKBYm7Xa28uZLfpU.JHFSlDxUMuCncuyHJvuYzdTQcVzqoKC",
+      "role": "student",
+      "college": "IIT Bombay",
+      "xp": 4820,
+      "level": 5,
+      "streak": 28,
+      "targetCompany": "Google",
+      "dailyGoalMinutes": 45,
+      "createdAt": "2026-10-06T19:48:22.783Z",
+      "updatedAt": "2026-10-06T19:48:22.783Z"
+    },
+    {
+      "id": "a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d",
+      "name": "Dr. Vikram Sharma",
+      "email": "faculty@algora.edu",
+      "passwordHash": "$2b$10$hFzg6M0n1AZhvXMjLapuD.ntzBeRGOTXcWtj9bLLUKpLy5QwbIH5.",
+      "role": "faculty",
+      "college": "IIT Bombay",
+      "xp": 12500,
+      "level": 12,
+      "streak": 90,
+      "targetCompany": "Google",
+      "dailyGoalMinutes": 60,
+      "createdAt": "2026-10-06T19:48:22.783Z",
+      "updatedAt": "2026-10-06T19:48:22.783Z"
+    },
+    {
+      "id": "e0c25a7a-6eb2-4c28-9bf9-9c5d76d49d41",
+      "name": "Mani Varshith",
+      "email": "demo@algora.edu",
+      "passwordHash": "$2b$10$bwWh3aPmwBVqUvfcI/f6f.ubuUf2wfBpN8Viw/Lz7FwolnaZIjcb6",
+      "role": "student",
+      "college": "IIT Bombay",
+      "xp": 4820,
+      "level": 5,
+      "streak": 28,
+      "targetCompany": "Google",
+      "dailyGoalMinutes": 45,
+      "createdAt": "2026-10-06T19:49:19.092Z",
+      "updatedAt": "2026-10-06T19:49:19.092Z"
+    },
+    {
+      "id": "a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d",
+      "name": "Dr. Vikram Sharma",
+      "email": "faculty@algora.edu",
+      "passwordHash": "$2b$10$F3T.I6rBGyEUtNmb7gT6DOepRlhYbfhPJPrl0zyuXB.TfuAyouYEm",
+      "role": "faculty",
+      "college": "IIT Bombay",
+      "xp": 12500,
+      "level": 12,
+      "streak": 90,
+      "targetCompany": "Google",
+      "dailyGoalMinutes": 60,
+      "createdAt": "2026-10-06T19:49:19.092Z",
+      "updatedAt": "2026-10-06T19:49:19.092Z"
+    },
+    {
+      "id": "e0c25a7a-6eb2-4c28-9bf9-9c5d76d49d41",
+      "name": "Mani Varshith",
+      "email": "demo@algora.edu",
+      "passwordHash": "$2b$10$nM5LIU2soaHlmwCnmHT4mOQAU9TGkCNUVUOhAI84bXQwsFsv0WQTe",
+      "role": "student",
+      "college": "IIT Bombay",
+      "xp": 4820,
+      "level": 5,
+      "streak": 28,
+      "targetCompany": "Google",
+      "dailyGoalMinutes": 45,
+      "createdAt": "2026-10-06T19:50:56.220Z",
+      "updatedAt": "2026-10-06T19:50:56.220Z"
+    },
+    {
+      "id": "a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d",
+      "name": "Dr. Vikram Sharma",
+      "email": "faculty@algora.edu",
+      "passwordHash": "$2b$10$Y8dtdYL.bEC7QKmjoJ6Qe.Nt6cTFNg42PL68oG/gpH/2bCxD7iuWy",
+      "role": "faculty",
+      "college": "IIT Bombay",
+      "xp": 12500,
+      "level": 12,
+      "streak": 90,
+      "targetCompany": "Google",
+      "dailyGoalMinutes": 60,
+      "createdAt": "2026-10-06T19:50:56.220Z",
+      "updatedAt": "2026-10-06T19:50:56.220Z"
+    },
+    {
+      "id": "e0c25a7a-6eb2-4c28-9bf9-9c5d76d49d41",
+      "name": "Mani Varshith",
+      "email": "demo@algora.edu",
+      "passwordHash": "$2b$10$e/4D4N9qtsYgA4kW5ZyRA.T9p9vW9NeaPI3SjFcRwkaOdBoyJNQx.",
+      "role": "student",
+      "college": "IIT Bombay",
+      "xp": 4820,
+      "level": 5,
+      "streak": 28,
+      "targetCompany": "Google",
+      "dailyGoalMinutes": 45,
+      "createdAt": "2026-10-06T19:52:10.841Z",
+      "updatedAt": "2026-10-06T19:52:10.841Z"
+    },
+    {
+      "id": "a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d",
+      "name": "Dr. Vikram Sharma",
+      "email": "faculty@algora.edu",
+      "passwordHash": "$2b$10$S0YmhflbA6S0fl5.bZ/vmesKE60CoP7ENI.HtVnx/Cqmd7Q/NGgwe",
+      "role": "faculty",
+      "college": "IIT Bombay",
+      "xp": 12500,
+      "level": 12,
+      "streak": 90,
+      "targetCompany": "Google",
+      "dailyGoalMinutes": 60,
+      "createdAt": "2026-10-06T19:52:10.841Z",
+      "updatedAt": "2026-10-06T19:52:10.841Z"
+    },
+    {
+      "id": "e0c25a7a-6eb2-4c28-9bf9-9c5d76d49d41",
+      "name": "Mani Varshith",
+      "email": "demo@algora.edu",
+      "passwordHash": "$2b$10$X9mpJZjhLc1DMYnJobxG4.OsceYfj/VBqhiDi2jKxY6uYhF53phmy",
+      "role": "student",
+      "college": "IIT Bombay",
+      "xp": 4820,
+      "level": 5,
+      "streak": 28,
+      "targetCompany": "Google",
+      "dailyGoalMinutes": 45,
+      "createdAt": "2026-10-06T19:54:14.308Z",
+      "updatedAt": "2026-10-06T19:54:14.308Z"
+    },
+    {
+      "id": "a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d",
+      "name": "Dr. Vikram Sharma",
+      "email": "faculty@algora.edu",
+      "passwordHash": "$2b$10$qxcUgG5DMtW4hLNFc37heerZviLVpoMoqM46hOLKMrkULD95xbyUa",
+      "role": "faculty",
+      "college": "IIT Bombay",
+      "xp": 12500,
+      "level": 12,
+      "streak": 90,
+      "targetCompany": "Google",
+      "dailyGoalMinutes": 60,
+      "createdAt": "2026-10-06T19:54:14.308Z",
+      "updatedAt": "2026-10-06T19:54:14.308Z"
     }
   ],
   "learning_tracks": [
@@ -4494,6 +4704,391 @@
       "orderIndex": 5,
       "createdAt": "2026-10-01T17:27:22.793Z",
       "updatedAt": "2026-10-01T17:27:22.793Z"
+    },
+    {
+      "id": "trk_python",
+      "title": "Python 3 Masterclass",
+      "description": "From Zero to Advanced Python Systems",
+      "category": "languages",
+      "icon": "Code2",
+      "color": "#3b82f6",
+      "orderIndex": 1,
+      "createdAt": "2026-10-06T19:42:25.387Z",
+      "updatedAt": "2026-10-06T19:42:25.387Z"
+    },
+    {
+      "id": "trk_cpp",
+      "title": "C++ Systems & STL",
+      "description": "Low-Level Systems & High Performance STL",
+      "category": "languages",
+      "icon": "Cpu",
+      "color": "#6366f1",
+      "orderIndex": 2,
+      "createdAt": "2026-10-06T19:42:25.387Z",
+      "updatedAt": "2026-10-06T19:42:25.387Z"
+    },
+    {
+      "id": "trk_java",
+      "title": "Enterprise Java Core",
+      "description": "OOP, Multithreading, JVM & Data Structures",
+      "category": "languages",
+      "icon": "Coffee",
+      "color": "#f59e0b",
+      "orderIndex": 3,
+      "createdAt": "2026-10-06T19:42:25.387Z",
+      "updatedAt": "2026-10-06T19:42:25.387Z"
+    },
+    {
+      "id": "trk_dsa",
+      "title": "DSA Mastery & Patterns",
+      "description": "LeetCode Medium/Hard Patterns for FAANG",
+      "category": "interview-prep",
+      "icon": "Brain",
+      "color": "#10b981",
+      "orderIndex": 4,
+      "createdAt": "2026-10-06T19:42:25.387Z",
+      "updatedAt": "2026-10-06T19:42:25.387Z"
+    },
+    {
+      "id": "trk_sysdesign",
+      "title": "System Design (LLD & HLD)",
+      "description": "Scalable Microservices, Databases & Cache",
+      "category": "cs-core",
+      "icon": "Database",
+      "color": "#8b5cf6",
+      "orderIndex": 5,
+      "createdAt": "2026-10-06T19:42:25.387Z",
+      "updatedAt": "2026-10-06T19:42:25.387Z"
+    },
+    {
+      "id": "trk_python",
+      "title": "Python 3 Masterclass",
+      "description": "From Zero to Advanced Python Systems",
+      "category": "languages",
+      "icon": "Code2",
+      "color": "#3b82f6",
+      "orderIndex": 1,
+      "createdAt": "2026-10-06T19:46:49.114Z",
+      "updatedAt": "2026-10-06T19:46:49.114Z"
+    },
+    {
+      "id": "trk_cpp",
+      "title": "C++ Systems & STL",
+      "description": "Low-Level Systems & High Performance STL",
+      "category": "languages",
+      "icon": "Cpu",
+      "color": "#6366f1",
+      "orderIndex": 2,
+      "createdAt": "2026-10-06T19:46:49.114Z",
+      "updatedAt": "2026-10-06T19:46:49.114Z"
+    },
+    {
+      "id": "trk_java",
+      "title": "Enterprise Java Core",
+      "description": "OOP, Multithreading, JVM & Data Structures",
+      "category": "languages",
+      "icon": "Coffee",
+      "color": "#f59e0b",
+      "orderIndex": 3,
+      "createdAt": "2026-10-06T19:46:49.114Z",
+      "updatedAt": "2026-10-06T19:46:49.114Z"
+    },
+    {
+      "id": "trk_dsa",
+      "title": "DSA Mastery & Patterns",
+      "description": "LeetCode Medium/Hard Patterns for FAANG",
+      "category": "interview-prep",
+      "icon": "Brain",
+      "color": "#10b981",
+      "orderIndex": 4,
+      "createdAt": "2026-10-06T19:46:49.114Z",
+      "updatedAt": "2026-10-06T19:46:49.114Z"
+    },
+    {
+      "id": "trk_sysdesign",
+      "title": "System Design (LLD & HLD)",
+      "description": "Scalable Microservices, Databases & Cache",
+      "category": "cs-core",
+      "icon": "Database",
+      "color": "#8b5cf6",
+      "orderIndex": 5,
+      "createdAt": "2026-10-06T19:46:49.114Z",
+      "updatedAt": "2026-10-06T19:46:49.114Z"
+    },
+    {
+      "id": "trk_python",
+      "title": "Python 3 Masterclass",
+      "description": "From Zero to Advanced Python Systems",
+      "category": "languages",
+      "icon": "Code2",
+      "color": "#3b82f6",
+      "orderIndex": 1,
+      "createdAt": "2026-10-06T19:48:22.807Z",
+      "updatedAt": "2026-10-06T19:48:22.807Z"
+    },
+    {
+      "id": "trk_cpp",
+      "title": "C++ Systems & STL",
+      "description": "Low-Level Systems & High Performance STL",
+      "category": "languages",
+      "icon": "Cpu",
+      "color": "#6366f1",
+      "orderIndex": 2,
+      "createdAt": "2026-10-06T19:48:22.807Z",
+      "updatedAt": "2026-10-06T19:48:22.807Z"
+    },
+    {
+      "id": "trk_java",
+      "title": "Enterprise Java Core",
+      "description": "OOP, Multithreading, JVM & Data Structures",
+      "category": "languages",
+      "icon": "Coffee",
+      "color": "#f59e0b",
+      "orderIndex": 3,
+      "createdAt": "2026-10-06T19:48:22.807Z",
+      "updatedAt": "2026-10-06T19:48:22.807Z"
+    },
+    {
+      "id": "trk_dsa",
+      "title": "DSA Mastery & Patterns",
+      "description": "LeetCode Medium/Hard Patterns for FAANG",
+      "category": "interview-prep",
+      "icon": "Brain",
+      "color": "#10b981",
+      "orderIndex": 4,
+      "createdAt": "2026-10-06T19:48:22.807Z",
+      "updatedAt": "2026-10-06T19:48:22.807Z"
+    },
+    {
+      "id": "trk_sysdesign",
+      "title": "System Design (LLD & HLD)",
+      "description": "Scalable Microservices, Databases & Cache",
+      "category": "cs-core",
+      "icon": "Database",
+      "color": "#8b5cf6",
+      "orderIndex": 5,
+      "createdAt": "2026-10-06T19:48:22.807Z",
+      "updatedAt": "2026-10-06T19:48:22.807Z"
+    },
+    {
+      "id": "trk_python",
+      "title": "Python 3 Masterclass",
+      "description": "From Zero to Advanced Python Systems",
+      "category": "languages",
+      "icon": "Code2",
+      "color": "#3b82f6",
+      "orderIndex": 1,
+      "createdAt": "2026-10-06T19:49:19.112Z",
+      "updatedAt": "2026-10-06T19:49:19.112Z"
+    },
+    {
+      "id": "trk_cpp",
+      "title": "C++ Systems & STL",
+      "description": "Low-Level Systems & High Performance STL",
+      "category": "languages",
+      "icon": "Cpu",
+      "color": "#6366f1",
+      "orderIndex": 2,
+      "createdAt": "2026-10-06T19:49:19.112Z",
+      "updatedAt": "2026-10-06T19:49:19.112Z"
+    },
+    {
+      "id": "trk_java",
+      "title": "Enterprise Java Core",
+      "description": "OOP, Multithreading, JVM & Data Structures",
+      "category": "languages",
+      "icon": "Coffee",
+      "color": "#f59e0b",
+      "orderIndex": 3,
+      "createdAt": "2026-10-06T19:49:19.112Z",
+      "updatedAt": "2026-10-06T19:49:19.112Z"
+    },
+    {
+      "id": "trk_dsa",
+      "title": "DSA Mastery & Patterns",
+      "description": "LeetCode Medium/Hard Patterns for FAANG",
+      "category": "interview-prep",
+      "icon": "Brain",
+      "color": "#10b981",
+      "orderIndex": 4,
+      "createdAt": "2026-10-06T19:49:19.112Z",
+      "updatedAt": "2026-10-06T19:49:19.112Z"
+    },
+    {
+      "id": "trk_sysdesign",
+      "title": "System Design (LLD & HLD)",
+      "description": "Scalable Microservices, Databases & Cache",
+      "category": "cs-core",
+      "icon": "Database",
+      "color": "#8b5cf6",
+      "orderIndex": 5,
+      "createdAt": "2026-10-06T19:49:19.112Z",
+      "updatedAt": "2026-10-06T19:49:19.112Z"
+    },
+    {
+      "id": "trk_python",
+      "title": "Python 3 Masterclass",
+      "description": "From Zero to Advanced Python Systems",
+      "category": "languages",
+      "icon": "Code2",
+      "color": "#3b82f6",
+      "orderIndex": 1,
+      "createdAt": "2026-10-06T19:50:56.247Z",
+      "updatedAt": "2026-10-06T19:50:56.247Z"
+    },
+    {
+      "id": "trk_cpp",
+      "title": "C++ Systems & STL",
+      "description": "Low-Level Systems & High Performance STL",
+      "category": "languages",
+      "icon": "Cpu",
+      "color": "#6366f1",
+      "orderIndex": 2,
+      "createdAt": "2026-10-06T19:50:56.247Z",
+      "updatedAt": "2026-10-06T19:50:56.247Z"
+    },
+    {
+      "id": "trk_java",
+      "title": "Enterprise Java Core",
+      "description": "OOP, Multithreading, JVM & Data Structures",
+      "category": "languages",
+      "icon": "Coffee",
+      "color": "#f59e0b",
+      "orderIndex": 3,
+      "createdAt": "2026-10-06T19:50:56.247Z",
+      "updatedAt": "2026-10-06T19:50:56.247Z"
+    },
+    {
+      "id": "trk_dsa",
+      "title": "DSA Mastery & Patterns",
+      "description": "LeetCode Medium/Hard Patterns for FAANG",
+      "category": "interview-prep",
+      "icon": "Brain",
+      "color": "#10b981",
+      "orderIndex": 4,
+      "createdAt": "2026-10-06T19:50:56.247Z",
+      "updatedAt": "2026-10-06T19:50:56.247Z"
+    },
+    {
+      "id": "trk_sysdesign",
+      "title": "System Design (LLD & HLD)",
+      "description": "Scalable Microservices, Databases & Cache",
+      "category": "cs-core",
+      "icon": "Database",
+      "color": "#8b5cf6",
+      "orderIndex": 5,
+      "createdAt": "2026-10-06T19:50:56.247Z",
+      "updatedAt": "2026-10-06T19:50:56.247Z"
+    },
+    {
+      "id": "trk_python",
+      "title": "Python 3 Masterclass",
+      "description": "From Zero to Advanced Python Systems",
+      "category": "languages",
+      "icon": "Code2",
+      "color": "#3b82f6",
+      "orderIndex": 1,
+      "createdAt": "2026-10-06T19:52:10.862Z",
+      "updatedAt": "2026-10-06T19:52:10.862Z"
+    },
+    {
+      "id": "trk_cpp",
+      "title": "C++ Systems & STL",
+      "description": "Low-Level Systems & High Performance STL",
+      "category": "languages",
+      "icon": "Cpu",
+      "color": "#6366f1",
+      "orderIndex": 2,
+      "createdAt": "2026-10-06T19:52:10.862Z",
+      "updatedAt": "2026-10-06T19:52:10.862Z"
+    },
+    {
+      "id": "trk_java",
+      "title": "Enterprise Java Core",
+      "description": "OOP, Multithreading, JVM & Data Structures",
+      "category": "languages",
+      "icon": "Coffee",
+      "color": "#f59e0b",
+      "orderIndex": 3,
+      "createdAt": "2026-10-06T19:52:10.862Z",
+      "updatedAt": "2026-10-06T19:52:10.862Z"
+    },
+    {
+      "id": "trk_dsa",
+      "title": "DSA Mastery & Patterns",
+      "description": "LeetCode Medium/Hard Patterns for FAANG",
+      "category": "interview-prep",
+      "icon": "Brain",
+      "color": "#10b981",
+      "orderIndex": 4,
+      "createdAt": "2026-10-06T19:52:10.862Z",
+      "updatedAt": "2026-10-06T19:52:10.862Z"
+    },
+    {
+      "id": "trk_sysdesign",
+      "title": "System Design (LLD & HLD)",
+      "description": "Scalable Microservices, Databases & Cache",
+      "category": "cs-core",
+      "icon": "Database",
+      "color": "#8b5cf6",
+      "orderIndex": 5,
+      "createdAt": "2026-10-06T19:52:10.862Z",
+      "updatedAt": "2026-10-06T19:52:10.862Z"
+    },
+    {
+      "id": "trk_python",
+      "title": "Python 3 Masterclass",
+      "description": "From Zero to Advanced Python Systems",
+      "category": "languages",
+      "icon": "Code2",
+      "color": "#3b82f6",
+      "orderIndex": 1,
+      "createdAt": "2026-10-06T19:54:14.328Z",
+      "updatedAt": "2026-10-06T19:54:14.328Z"
+    },
+    {
+      "id": "trk_cpp",
+      "title": "C++ Systems & STL",
+      "description": "Low-Level Systems & High Performance STL",
+      "category": "languages",
+      "icon": "Cpu",
+      "color": "#6366f1",
+      "orderIndex": 2,
+      "createdAt": "2026-10-06T19:54:14.328Z",
+      "updatedAt": "2026-10-06T19:54:14.328Z"
+    },
+    {
+      "id": "trk_java",
+      "title": "Enterprise Java Core",
+      "description": "OOP, Multithreading, JVM & Data Structures",
+      "category": "languages",
+      "icon": "Coffee",
+      "color": "#f59e0b",
+      "orderIndex": 3,
+      "createdAt": "2026-10-06T19:54:14.328Z",
+      "updatedAt": "2026-10-06T19:54:14.328Z"
+    },
+    {
+      "id": "trk_dsa",
+      "title": "DSA Mastery & Patterns",
+      "description": "LeetCode Medium/Hard Patterns for FAANG",
+      "category": "interview-prep",
+      "icon": "Brain",
+      "color": "#10b981",
+      "orderIndex": 4,
+      "createdAt": "2026-10-06T19:54:14.328Z",
+      "updatedAt": "2026-10-06T19:54:14.328Z"
+    },
+    {
+      "id": "trk_sysdesign",
+      "title": "System Design (LLD & HLD)",
+      "description": "Scalable Microservices, Databases & Cache",
+      "category": "cs-core",
+      "icon": "Database",
+      "color": "#8b5cf6",
+      "orderIndex": 5,
+      "createdAt": "2026-10-06T19:54:14.328Z",
+      "updatedAt": "2026-10-06T19:54:14.328Z"
     }
   ],
   "topics": [
@@ -7348,6 +7943,398 @@
       ],
       "createdAt": "2026-10-01T17:27:22.949Z",
       "updatedAt": "2026-10-01T17:27:22.949Z"
+    },
+    {
+      "id": "top_arrays",
+      "trackId": "trk_dsa",
+      "title": "Arrays & Two-Pointer Invariants",
+      "description": "In-place sliding window, two-pointers, and prefix sum arrays.",
+      "orderIndex": 1,
+      "estimatedMinutes": 90,
+      "conceptContent": "Arrays store contiguous elements in memory. Two-pointer technique maintains two indices moving towards each other or at varying speeds.",
+      "syntaxCheatsheet": "left, right = 0, len(nums) - 1\nwhile left < right:\n    curr = nums[left] + nums[right]\n    if curr == target: return [left, right]\n    elif curr < target: left += 1\n    else: right -= 1",
+      "interactiveExamples": [
+        {
+          "input": "[2, 7, 11, 15], target=9",
+          "output": "[0, 1]",
+          "explanation": "2 + 7 = 9"
+        }
+      ],
+      "commonMistakes": [
+        "Off-by-one boundary checking",
+        "Forgetting sorted array prerequisite for two pointers"
+      ],
+      "interviewQuestions": [
+        "Two Sum",
+        "3Sum",
+        "Container With Most Water"
+      ],
+      "createdAt": "2026-10-06T19:42:25.395Z",
+      "updatedAt": "2026-10-06T19:42:25.395Z"
+    },
+    {
+      "id": "top_dp",
+      "trackId": "trk_dsa",
+      "title": "Dynamic Programming & Memoization",
+      "description": "Breaking problems into overlapping subproblems with memoized lookup tables.",
+      "orderIndex": 2,
+      "estimatedMinutes": 120,
+      "conceptContent": "Dynamic Programming optimizes recursion by storing calculated subproblem results in a table.",
+      "syntaxCheatsheet": "memo = {}\ndef dp(n):\n    if n <= 1: return n\n    if n not in memo:\n        memo[n] = dp(n-1) + dp(n-2)\n    return memo[n]",
+      "interactiveExamples": [
+        {
+          "input": "n=5",
+          "output": "5",
+          "explanation": "Fibonacci numbers"
+        }
+      ],
+      "commonMistakes": [
+        "Missing base cases causing recursion overflow",
+        "Exponential time complexity without memoization table"
+      ],
+      "interviewQuestions": [
+        "Longest Palindromic Substring",
+        "0/1 Knapsack",
+        "Coin Change"
+      ],
+      "createdAt": "2026-10-06T19:42:25.395Z",
+      "updatedAt": "2026-10-06T19:42:25.395Z"
+    },
+    {
+      "id": "top_arrays",
+      "trackId": "trk_dsa",
+      "title": "Arrays & Two-Pointer Invariants",
+      "description": "In-place sliding window, two-pointers, and prefix sum arrays.",
+      "orderIndex": 1,
+      "estimatedMinutes": 90,
+      "conceptContent": "Arrays store contiguous elements in memory. Two-pointer technique maintains two indices moving towards each other or at varying speeds.",
+      "syntaxCheatsheet": "left, right = 0, len(nums) - 1\nwhile left < right:\n    curr = nums[left] + nums[right]\n    if curr == target: return [left, right]\n    elif curr < target: left += 1\n    else: right -= 1",
+      "interactiveExamples": [
+        {
+          "input": "[2, 7, 11, 15], target=9",
+          "output": "[0, 1]",
+          "explanation": "2 + 7 = 9"
+        }
+      ],
+      "commonMistakes": [
+        "Off-by-one boundary checking",
+        "Forgetting sorted array prerequisite for two pointers"
+      ],
+      "interviewQuestions": [
+        "Two Sum",
+        "3Sum",
+        "Container With Most Water"
+      ],
+      "createdAt": "2026-10-06T19:46:49.120Z",
+      "updatedAt": "2026-10-06T19:46:49.120Z"
+    },
+    {
+      "id": "top_dp",
+      "trackId": "trk_dsa",
+      "title": "Dynamic Programming & Memoization",
+      "description": "Breaking problems into overlapping subproblems with memoized lookup tables.",
+      "orderIndex": 2,
+      "estimatedMinutes": 120,
+      "conceptContent": "Dynamic Programming optimizes recursion by storing calculated subproblem results in a table.",
+      "syntaxCheatsheet": "memo = {}\ndef dp(n):\n    if n <= 1: return n\n    if n not in memo:\n        memo[n] = dp(n-1) + dp(n-2)\n    return memo[n]",
+      "interactiveExamples": [
+        {
+          "input": "n=5",
+          "output": "5",
+          "explanation": "Fibonacci numbers"
+        }
+      ],
+      "commonMistakes": [
+        "Missing base cases causing recursion overflow",
+        "Exponential time complexity without memoization table"
+      ],
+      "interviewQuestions": [
+        "Longest Palindromic Substring",
+        "0/1 Knapsack",
+        "Coin Change"
+      ],
+      "createdAt": "2026-10-06T19:46:49.120Z",
+      "updatedAt": "2026-10-06T19:46:49.120Z"
+    },
+    {
+      "id": "top_arrays",
+      "trackId": "trk_dsa",
+      "title": "Arrays & Two-Pointer Invariants",
+      "description": "In-place sliding window, two-pointers, and prefix sum arrays.",
+      "orderIndex": 1,
+      "estimatedMinutes": 90,
+      "conceptContent": "Arrays store contiguous elements in memory. Two-pointer technique maintains two indices moving towards each other or at varying speeds.",
+      "syntaxCheatsheet": "left, right = 0, len(nums) - 1\nwhile left < right:\n    curr = nums[left] + nums[right]\n    if curr == target: return [left, right]\n    elif curr < target: left += 1\n    else: right -= 1",
+      "interactiveExamples": [
+        {
+          "input": "[2, 7, 11, 15], target=9",
+          "output": "[0, 1]",
+          "explanation": "2 + 7 = 9"
+        }
+      ],
+      "commonMistakes": [
+        "Off-by-one boundary checking",
+        "Forgetting sorted array prerequisite for two pointers"
+      ],
+      "interviewQuestions": [
+        "Two Sum",
+        "3Sum",
+        "Container With Most Water"
+      ],
+      "createdAt": "2026-10-06T19:48:22.824Z",
+      "updatedAt": "2026-10-06T19:48:22.824Z"
+    },
+    {
+      "id": "top_dp",
+      "trackId": "trk_dsa",
+      "title": "Dynamic Programming & Memoization",
+      "description": "Breaking problems into overlapping subproblems with memoized lookup tables.",
+      "orderIndex": 2,
+      "estimatedMinutes": 120,
+      "conceptContent": "Dynamic Programming optimizes recursion by storing calculated subproblem results in a table.",
+      "syntaxCheatsheet": "memo = {}\ndef dp(n):\n    if n <= 1: return n\n    if n not in memo:\n        memo[n] = dp(n-1) + dp(n-2)\n    return memo[n]",
+      "interactiveExamples": [
+        {
+          "input": "n=5",
+          "output": "5",
+          "explanation": "Fibonacci numbers"
+        }
+      ],
+      "commonMistakes": [
+        "Missing base cases causing recursion overflow",
+        "Exponential time complexity without memoization table"
+      ],
+      "interviewQuestions": [
+        "Longest Palindromic Substring",
+        "0/1 Knapsack",
+        "Coin Change"
+      ],
+      "createdAt": "2026-10-06T19:48:22.824Z",
+      "updatedAt": "2026-10-06T19:48:22.824Z"
+    },
+    {
+      "id": "top_arrays",
+      "trackId": "trk_dsa",
+      "title": "Arrays & Two-Pointer Invariants",
+      "description": "In-place sliding window, two-pointers, and prefix sum arrays.",
+      "orderIndex": 1,
+      "estimatedMinutes": 90,
+      "conceptContent": "Arrays store contiguous elements in memory. Two-pointer technique maintains two indices moving towards each other or at varying speeds.",
+      "syntaxCheatsheet": "left, right = 0, len(nums) - 1\nwhile left < right:\n    curr = nums[left] + nums[right]\n    if curr == target: return [left, right]\n    elif curr < target: left += 1\n    else: right -= 1",
+      "interactiveExamples": [
+        {
+          "input": "[2, 7, 11, 15], target=9",
+          "output": "[0, 1]",
+          "explanation": "2 + 7 = 9"
+        }
+      ],
+      "commonMistakes": [
+        "Off-by-one boundary checking",
+        "Forgetting sorted array prerequisite for two pointers"
+      ],
+      "interviewQuestions": [
+        "Two Sum",
+        "3Sum",
+        "Container With Most Water"
+      ],
+      "createdAt": "2026-10-06T19:49:19.135Z",
+      "updatedAt": "2026-10-06T19:49:19.135Z"
+    },
+    {
+      "id": "top_dp",
+      "trackId": "trk_dsa",
+      "title": "Dynamic Programming & Memoization",
+      "description": "Breaking problems into overlapping subproblems with memoized lookup tables.",
+      "orderIndex": 2,
+      "estimatedMinutes": 120,
+      "conceptContent": "Dynamic Programming optimizes recursion by storing calculated subproblem results in a table.",
+      "syntaxCheatsheet": "memo = {}\ndef dp(n):\n    if n <= 1: return n\n    if n not in memo:\n        memo[n] = dp(n-1) + dp(n-2)\n    return memo[n]",
+      "interactiveExamples": [
+        {
+          "input": "n=5",
+          "output": "5",
+          "explanation": "Fibonacci numbers"
+        }
+      ],
+      "commonMistakes": [
+        "Missing base cases causing recursion overflow",
+        "Exponential time complexity without memoization table"
+      ],
+      "interviewQuestions": [
+        "Longest Palindromic Substring",
+        "0/1 Knapsack",
+        "Coin Change"
+      ],
+      "createdAt": "2026-10-06T19:49:19.135Z",
+      "updatedAt": "2026-10-06T19:49:19.135Z"
+    },
+    {
+      "id": "top_arrays",
+      "trackId": "trk_dsa",
+      "title": "Arrays & Two-Pointer Invariants",
+      "description": "In-place sliding window, two-pointers, and prefix sum arrays.",
+      "orderIndex": 1,
+      "estimatedMinutes": 90,
+      "conceptContent": "Arrays store contiguous elements in memory. Two-pointer technique maintains two indices moving towards each other or at varying speeds.",
+      "syntaxCheatsheet": "left, right = 0, len(nums) - 1\nwhile left < right:\n    curr = nums[left] + nums[right]\n    if curr == target: return [left, right]\n    elif curr < target: left += 1\n    else: right -= 1",
+      "interactiveExamples": [
+        {
+          "input": "[2, 7, 11, 15], target=9",
+          "output": "[0, 1]",
+          "explanation": "2 + 7 = 9"
+        }
+      ],
+      "commonMistakes": [
+        "Off-by-one boundary checking",
+        "Forgetting sorted array prerequisite for two pointers"
+      ],
+      "interviewQuestions": [
+        "Two Sum",
+        "3Sum",
+        "Container With Most Water"
+      ],
+      "createdAt": "2026-10-06T19:50:56.269Z",
+      "updatedAt": "2026-10-06T19:50:56.269Z"
+    },
+    {
+      "id": "top_dp",
+      "trackId": "trk_dsa",
+      "title": "Dynamic Programming & Memoization",
+      "description": "Breaking problems into overlapping subproblems with memoized lookup tables.",
+      "orderIndex": 2,
+      "estimatedMinutes": 120,
+      "conceptContent": "Dynamic Programming optimizes recursion by storing calculated subproblem results in a table.",
+      "syntaxCheatsheet": "memo = {}\ndef dp(n):\n    if n <= 1: return n\n    if n not in memo:\n        memo[n] = dp(n-1) + dp(n-2)\n    return memo[n]",
+      "interactiveExamples": [
+        {
+          "input": "n=5",
+          "output": "5",
+          "explanation": "Fibonacci numbers"
+        }
+      ],
+      "commonMistakes": [
+        "Missing base cases causing recursion overflow",
+        "Exponential time complexity without memoization table"
+      ],
+      "interviewQuestions": [
+        "Longest Palindromic Substring",
+        "0/1 Knapsack",
+        "Coin Change"
+      ],
+      "createdAt": "2026-10-06T19:50:56.269Z",
+      "updatedAt": "2026-10-06T19:50:56.269Z"
+    },
+    {
+      "id": "top_arrays",
+      "trackId": "trk_dsa",
+      "title": "Arrays & Two-Pointer Invariants",
+      "description": "In-place sliding window, two-pointers, and prefix sum arrays.",
+      "orderIndex": 1,
+      "estimatedMinutes": 90,
+      "conceptContent": "Arrays store contiguous elements in memory. Two-pointer technique maintains two indices moving towards each other or at varying speeds.",
+      "syntaxCheatsheet": "left, right = 0, len(nums) - 1\nwhile left < right:\n    curr = nums[left] + nums[right]\n    if curr == target: return [left, right]\n    elif curr < target: left += 1\n    else: right -= 1",
+      "interactiveExamples": [
+        {
+          "input": "[2, 7, 11, 15], target=9",
+          "output": "[0, 1]",
+          "explanation": "2 + 7 = 9"
+        }
+      ],
+      "commonMistakes": [
+        "Off-by-one boundary checking",
+        "Forgetting sorted array prerequisite for two pointers"
+      ],
+      "interviewQuestions": [
+        "Two Sum",
+        "3Sum",
+        "Container With Most Water"
+      ],
+      "createdAt": "2026-10-06T19:52:10.882Z",
+      "updatedAt": "2026-10-06T19:52:10.882Z"
+    },
+    {
+      "id": "top_dp",
+      "trackId": "trk_dsa",
+      "title": "Dynamic Programming & Memoization",
+      "description": "Breaking problems into overlapping subproblems with memoized lookup tables.",
+      "orderIndex": 2,
+      "estimatedMinutes": 120,
+      "conceptContent": "Dynamic Programming optimizes recursion by storing calculated subproblem results in a table.",
+      "syntaxCheatsheet": "memo = {}\ndef dp(n):\n    if n <= 1: return n\n    if n not in memo:\n        memo[n] = dp(n-1) + dp(n-2)\n    return memo[n]",
+      "interactiveExamples": [
+        {
+          "input": "n=5",
+          "output": "5",
+          "explanation": "Fibonacci numbers"
+        }
+      ],
+      "commonMistakes": [
+        "Missing base cases causing recursion overflow",
+        "Exponential time complexity without memoization table"
+      ],
+      "interviewQuestions": [
+        "Longest Palindromic Substring",
+        "0/1 Knapsack",
+        "Coin Change"
+      ],
+      "createdAt": "2026-10-06T19:52:10.882Z",
+      "updatedAt": "2026-10-06T19:52:10.882Z"
+    },
+    {
+      "id": "top_arrays",
+      "trackId": "trk_dsa",
+      "title": "Arrays & Two-Pointer Invariants",
+      "description": "In-place sliding window, two-pointers, and prefix sum arrays.",
+      "orderIndex": 1,
+      "estimatedMinutes": 90,
+      "conceptContent": "Arrays store contiguous elements in memory. Two-pointer technique maintains two indices moving towards each other or at varying speeds.",
+      "syntaxCheatsheet": "left, right = 0, len(nums) - 1\nwhile left < right:\n    curr = nums[left] + nums[right]\n    if curr == target: return [left, right]\n    elif curr < target: left += 1\n    else: right -= 1",
+      "interactiveExamples": [
+        {
+          "input": "[2, 7, 11, 15], target=9",
+          "output": "[0, 1]",
+          "explanation": "2 + 7 = 9"
+        }
+      ],
+      "commonMistakes": [
+        "Off-by-one boundary checking",
+        "Forgetting sorted array prerequisite for two pointers"
+      ],
+      "interviewQuestions": [
+        "Two Sum",
+        "3Sum",
+        "Container With Most Water"
+      ],
+      "createdAt": "2026-10-06T19:54:14.348Z",
+      "updatedAt": "2026-10-06T19:54:14.348Z"
+    },
+    {
+      "id": "top_dp",
+      "trackId": "trk_dsa",
+      "title": "Dynamic Programming & Memoization",
+      "description": "Breaking problems into overlapping subproblems with memoized lookup tables.",
+      "orderIndex": 2,
+      "estimatedMinutes": 120,
+      "conceptContent": "Dynamic Programming optimizes recursion by storing calculated subproblem results in a table.",
+      "syntaxCheatsheet": "memo = {}\ndef dp(n):\n    if n <= 1: return n\n    if n not in memo:\n        memo[n] = dp(n-1) + dp(n-2)\n    return memo[n]",
+      "interactiveExamples": [
+        {
+          "input": "n=5",
+          "output": "5",
+          "explanation": "Fibonacci numbers"
+        }
+      ],
+      "commonMistakes": [
+        "Missing base cases causing recursion overflow",
+        "Exponential time complexity without memoization table"
+      ],
+      "interviewQuestions": [
+        "Longest Palindromic Substring",
+        "0/1 Knapsack",
+        "Coin Change"
+      ],
+      "createdAt": "2026-10-06T19:54:14.348Z",
+      "updatedAt": "2026-10-06T19:54:14.348Z"
     }
   ],
   "user_topic_progress": [
@@ -14602,6 +15589,993 @@
       ],
       "createdAt": "2026-10-01T17:27:23.131Z",
       "updatedAt": "2026-10-01T17:27:23.131Z"
+    },
+    {
+      "id": "two-sum",
+      "topicId": "top_arrays",
+      "title": "Two Sum",
+      "slug": "two-sum",
+      "difficulty": "Easy",
+      "description": "Given an array of integers `nums` and an integer `target`, return indices of the two numbers such that they add up to `target`.",
+      "examples": [
+        {
+          "input": "nums = [2,7,11,15], target = 9",
+          "output": "[0,1]",
+          "note": "Because nums[0] + nums[1] == 9, we return [0, 1]."
+        }
+      ],
+      "constraints": [
+        "2 <= nums.length <= 10^4",
+        "-10^9 <= nums[i] <= 10^9",
+        "Only one valid answer exists."
+      ],
+      "tags": [
+        "Arrays",
+        "Hash Table"
+      ],
+      "companies": [
+        "Google",
+        "Amazon",
+        "Microsoft",
+        "Meta"
+      ],
+      "starterCode": {
+        "python": "def twoSum(nums: list[int], target: int) -> list[int]:\n    # Write your solution here\n    pass",
+        "cpp": "#include <vector>\nusing namespace std;\n\nclass Solution {\npublic:\n    vector<int> twoSum(vector<int>& nums, int target) {\n        return {};\n    }\n};",
+        "java": "class Solution {\n    public int[] twoSum(int[] nums, int target) {\n        return new int[]{};\n    }\n}",
+        "c": "#include <stdlib.h>\n\nint* twoSum(int* nums, int numsSize, int target, int* returnSize) {\n    *returnSize = 2;\n    int* res = (int*)malloc(2 * sizeof(int));\n    return res;\n}"
+      },
+      "solutionCode": {
+        "python": "def twoSum(nums: list[int], target: int) -> list[int]:\n    seen = {}\n    for i, num in enumerate(nums):\n        needed = target - num\n        if needed in seen:\n            return [seen[needed], i]\n        seen[num] = i\n    return []"
+      },
+      "testCases": [
+        {
+          "input": {
+            "nums": [
+              2,
+              7,
+              11,
+              15
+            ],
+            "target": 9
+          },
+          "expected": [
+            0,
+            1
+          ]
+        },
+        {
+          "input": {
+            "nums": [
+              3,
+              2,
+              4
+            ],
+            "target": 6
+          },
+          "expected": [
+            1,
+            2
+          ]
+        },
+        {
+          "input": {
+            "nums": [
+              3,
+              3
+            ],
+            "target": 6
+          },
+          "expected": [
+            0,
+            1
+          ],
+          "hidden": true
+        }
+      ],
+      "acceptanceRate": "88.50",
+      "learningObjectives": [
+        "Master O(N) Hash Table lookup pattern",
+        "Avoid nested O(N^2) loops"
+      ],
+      "createdAt": "2026-10-06T19:42:25.400Z",
+      "updatedAt": "2026-10-06T19:42:25.400Z"
+    },
+    {
+      "id": "longest-palindromic-substring",
+      "topicId": "top_dp",
+      "title": "Longest Palindromic Substring",
+      "slug": "longest-palindromic-substring",
+      "difficulty": "Medium",
+      "description": "Given a string `s`, return the longest palindromic substring in `s`.",
+      "examples": [
+        {
+          "input": "s = \"babad\"",
+          "output": "\"bab\"",
+          "note": "\"aba\" is also a valid answer."
+        }
+      ],
+      "constraints": [
+        "1 <= s.length <= 1000"
+      ],
+      "tags": [
+        "Dynamic Programming",
+        "String",
+        "Two Pointers"
+      ],
+      "companies": [
+        "Amazon",
+        "Google",
+        "Microsoft",
+        "Adobe"
+      ],
+      "starterCode": {
+        "python": "def longestPalindrome(s: str) -> str:\n    # Write your solution here\n    pass"
+      },
+      "solutionCode": {
+        "python": "def longestPalindrome(s: str) -> str:\n    res = \"\"\n    for i in range(len(s)):\n        for l, r in ((i, i), (i, i + 1)):\n            while l >= 0 and r < len(s) and s[l] == s[r]:\n                if (r - l + 1) > len(res):\n                    res = s[l:r+1]\n                l -= 1\n                r += 1\n    return res"
+      },
+      "testCases": [
+        {
+          "input": {
+            "s": "babad"
+          },
+          "expected": "bab"
+        }
+      ],
+      "acceptanceRate": "68.20",
+      "learningObjectives": [
+        "Expand around center technique",
+        "Understand palindrome symmetry"
+      ],
+      "createdAt": "2026-10-06T19:42:25.400Z",
+      "updatedAt": "2026-10-06T19:42:25.400Z"
+    },
+    {
+      "id": "two-sum",
+      "topicId": "top_arrays",
+      "title": "Two Sum",
+      "slug": "two-sum",
+      "difficulty": "Easy",
+      "description": "Given an array of integers `nums` and an integer `target`, return indices of the two numbers such that they add up to `target`.",
+      "examples": [
+        {
+          "input": "nums = [2,7,11,15], target = 9",
+          "output": "[0,1]",
+          "note": "Because nums[0] + nums[1] == 9, we return [0, 1]."
+        }
+      ],
+      "constraints": [
+        "2 <= nums.length <= 10^4",
+        "-10^9 <= nums[i] <= 10^9",
+        "Only one valid answer exists."
+      ],
+      "tags": [
+        "Arrays",
+        "Hash Table"
+      ],
+      "companies": [
+        "Google",
+        "Amazon",
+        "Microsoft",
+        "Meta"
+      ],
+      "starterCode": {
+        "python": "def twoSum(nums: list[int], target: int) -> list[int]:\n    # Write your solution here\n    pass",
+        "cpp": "#include <vector>\nusing namespace std;\n\nclass Solution {\npublic:\n    vector<int> twoSum(vector<int>& nums, int target) {\n        return {};\n    }\n};",
+        "java": "class Solution {\n    public int[] twoSum(int[] nums, int target) {\n        return new int[]{};\n    }\n}",
+        "c": "#include <stdlib.h>\n\nint* twoSum(int* nums, int numsSize, int target, int* returnSize) {\n    *returnSize = 2;\n    int* res = (int*)malloc(2 * sizeof(int));\n    return res;\n}"
+      },
+      "solutionCode": {
+        "python": "def twoSum(nums: list[int], target: int) -> list[int]:\n    seen = {}\n    for i, num in enumerate(nums):\n        needed = target - num\n        if needed in seen:\n            return [seen[needed], i]\n        seen[num] = i\n    return []"
+      },
+      "testCases": [
+        {
+          "input": {
+            "nums": [
+              2,
+              7,
+              11,
+              15
+            ],
+            "target": 9
+          },
+          "expected": [
+            0,
+            1
+          ]
+        },
+        {
+          "input": {
+            "nums": [
+              3,
+              2,
+              4
+            ],
+            "target": 6
+          },
+          "expected": [
+            1,
+            2
+          ]
+        },
+        {
+          "input": {
+            "nums": [
+              3,
+              3
+            ],
+            "target": 6
+          },
+          "expected": [
+            0,
+            1
+          ],
+          "hidden": true
+        }
+      ],
+      "acceptanceRate": "88.50",
+      "learningObjectives": [
+        "Master O(N) Hash Table lookup pattern",
+        "Avoid nested O(N^2) loops"
+      ],
+      "createdAt": "2026-10-06T19:46:49.126Z",
+      "updatedAt": "2026-10-06T19:46:49.126Z"
+    },
+    {
+      "id": "longest-palindromic-substring",
+      "topicId": "top_dp",
+      "title": "Longest Palindromic Substring",
+      "slug": "longest-palindromic-substring",
+      "difficulty": "Medium",
+      "description": "Given a string `s`, return the longest palindromic substring in `s`.",
+      "examples": [
+        {
+          "input": "s = \"babad\"",
+          "output": "\"bab\"",
+          "note": "\"aba\" is also a valid answer."
+        }
+      ],
+      "constraints": [
+        "1 <= s.length <= 1000"
+      ],
+      "tags": [
+        "Dynamic Programming",
+        "String",
+        "Two Pointers"
+      ],
+      "companies": [
+        "Amazon",
+        "Google",
+        "Microsoft",
+        "Adobe"
+      ],
+      "starterCode": {
+        "python": "def longestPalindrome(s: str) -> str:\n    # Write your solution here\n    pass"
+      },
+      "solutionCode": {
+        "python": "def longestPalindrome(s: str) -> str:\n    res = \"\"\n    for i in range(len(s)):\n        for l, r in ((i, i), (i, i + 1)):\n            while l >= 0 and r < len(s) and s[l] == s[r]:\n                if (r - l + 1) > len(res):\n                    res = s[l:r+1]\n                l -= 1\n                r += 1\n    return res"
+      },
+      "testCases": [
+        {
+          "input": {
+            "s": "babad"
+          },
+          "expected": "bab"
+        }
+      ],
+      "acceptanceRate": "68.20",
+      "learningObjectives": [
+        "Expand around center technique",
+        "Understand palindrome symmetry"
+      ],
+      "createdAt": "2026-10-06T19:46:49.126Z",
+      "updatedAt": "2026-10-06T19:46:49.126Z"
+    },
+    {
+      "id": "two-sum",
+      "topicId": "top_arrays",
+      "title": "Two Sum",
+      "slug": "two-sum",
+      "difficulty": "Easy",
+      "description": "Given an array of integers `nums` and an integer `target`, return indices of the two numbers such that they add up to `target`.",
+      "examples": [
+        {
+          "input": "nums = [2,7,11,15], target = 9",
+          "output": "[0,1]",
+          "note": "Because nums[0] + nums[1] == 9, we return [0, 1]."
+        }
+      ],
+      "constraints": [
+        "2 <= nums.length <= 10^4",
+        "-10^9 <= nums[i] <= 10^9",
+        "Only one valid answer exists."
+      ],
+      "tags": [
+        "Arrays",
+        "Hash Table"
+      ],
+      "companies": [
+        "Google",
+        "Amazon",
+        "Microsoft",
+        "Meta"
+      ],
+      "starterCode": {
+        "python": "def twoSum(nums: list[int], target: int) -> list[int]:\n    # Write your solution here\n    pass",
+        "cpp": "#include <vector>\nusing namespace std;\n\nclass Solution {\npublic:\n    vector<int> twoSum(vector<int>& nums, int target) {\n        return {};\n    }\n};",
+        "java": "class Solution {\n    public int[] twoSum(int[] nums, int target) {\n        return new int[]{};\n    }\n}",
+        "c": "#include <stdlib.h>\n\nint* twoSum(int* nums, int numsSize, int target, int* returnSize) {\n    *returnSize = 2;\n    int* res = (int*)malloc(2 * sizeof(int));\n    return res;\n}"
+      },
+      "solutionCode": {
+        "python": "def twoSum(nums: list[int], target: int) -> list[int]:\n    seen = {}\n    for i, num in enumerate(nums):\n        needed = target - num\n        if needed in seen:\n            return [seen[needed], i]\n        seen[num] = i\n    return []"
+      },
+      "testCases": [
+        {
+          "input": {
+            "nums": [
+              2,
+              7,
+              11,
+              15
+            ],
+            "target": 9
+          },
+          "expected": [
+            0,
+            1
+          ]
+        },
+        {
+          "input": {
+            "nums": [
+              3,
+              2,
+              4
+            ],
+            "target": 6
+          },
+          "expected": [
+            1,
+            2
+          ]
+        },
+        {
+          "input": {
+            "nums": [
+              3,
+              3
+            ],
+            "target": 6
+          },
+          "expected": [
+            0,
+            1
+          ],
+          "hidden": true
+        }
+      ],
+      "acceptanceRate": "88.50",
+      "learningObjectives": [
+        "Master O(N) Hash Table lookup pattern",
+        "Avoid nested O(N^2) loops"
+      ],
+      "createdAt": "2026-10-06T19:48:22.847Z",
+      "updatedAt": "2026-10-06T19:48:22.847Z"
+    },
+    {
+      "id": "longest-palindromic-substring",
+      "topicId": "top_dp",
+      "title": "Longest Palindromic Substring",
+      "slug": "longest-palindromic-substring",
+      "difficulty": "Medium",
+      "description": "Given a string `s`, return the longest palindromic substring in `s`.",
+      "examples": [
+        {
+          "input": "s = \"babad\"",
+          "output": "\"bab\"",
+          "note": "\"aba\" is also a valid answer."
+        }
+      ],
+      "constraints": [
+        "1 <= s.length <= 1000"
+      ],
+      "tags": [
+        "Dynamic Programming",
+        "String",
+        "Two Pointers"
+      ],
+      "companies": [
+        "Amazon",
+        "Google",
+        "Microsoft",
+        "Adobe"
+      ],
+      "starterCode": {
+        "python": "def longestPalindrome(s: str) -> str:\n    # Write your solution here\n    pass"
+      },
+      "solutionCode": {
+        "python": "def longestPalindrome(s: str) -> str:\n    res = \"\"\n    for i in range(len(s)):\n        for l, r in ((i, i), (i, i + 1)):\n            while l >= 0 and r < len(s) and s[l] == s[r]:\n                if (r - l + 1) > len(res):\n                    res = s[l:r+1]\n                l -= 1\n                r += 1\n    return res"
+      },
+      "testCases": [
+        {
+          "input": {
+            "s": "babad"
+          },
+          "expected": "bab"
+        }
+      ],
+      "acceptanceRate": "68.20",
+      "learningObjectives": [
+        "Expand around center technique",
+        "Understand palindrome symmetry"
+      ],
+      "createdAt": "2026-10-06T19:48:22.847Z",
+      "updatedAt": "2026-10-06T19:48:22.847Z"
+    },
+    {
+      "id": "two-sum",
+      "topicId": "top_arrays",
+      "title": "Two Sum",
+      "slug": "two-sum",
+      "difficulty": "Easy",
+      "description": "Given an array of integers `nums` and an integer `target`, return indices of the two numbers such that they add up to `target`.",
+      "examples": [
+        {
+          "input": "nums = [2,7,11,15], target = 9",
+          "output": "[0,1]",
+          "note": "Because nums[0] + nums[1] == 9, we return [0, 1]."
+        }
+      ],
+      "constraints": [
+        "2 <= nums.length <= 10^4",
+        "-10^9 <= nums[i] <= 10^9",
+        "Only one valid answer exists."
+      ],
+      "tags": [
+        "Arrays",
+        "Hash Table"
+      ],
+      "companies": [
+        "Google",
+        "Amazon",
+        "Microsoft",
+        "Meta"
+      ],
+      "starterCode": {
+        "python": "def twoSum(nums: list[int], target: int) -> list[int]:\n    # Write your solution here\n    pass",
+        "cpp": "#include <vector>\nusing namespace std;\n\nclass Solution {\npublic:\n    vector<int> twoSum(vector<int>& nums, int target) {\n        return {};\n    }\n};",
+        "java": "class Solution {\n    public int[] twoSum(int[] nums, int target) {\n        return new int[]{};\n    }\n}",
+        "c": "#include <stdlib.h>\n\nint* twoSum(int* nums, int numsSize, int target, int* returnSize) {\n    *returnSize = 2;\n    int* res = (int*)malloc(2 * sizeof(int));\n    return res;\n}"
+      },
+      "solutionCode": {
+        "python": "def twoSum(nums: list[int], target: int) -> list[int]:\n    seen = {}\n    for i, num in enumerate(nums):\n        needed = target - num\n        if needed in seen:\n            return [seen[needed], i]\n        seen[num] = i\n    return []"
+      },
+      "testCases": [
+        {
+          "input": {
+            "nums": [
+              2,
+              7,
+              11,
+              15
+            ],
+            "target": 9
+          },
+          "expected": [
+            0,
+            1
+          ]
+        },
+        {
+          "input": {
+            "nums": [
+              3,
+              2,
+              4
+            ],
+            "target": 6
+          },
+          "expected": [
+            1,
+            2
+          ]
+        },
+        {
+          "input": {
+            "nums": [
+              3,
+              3
+            ],
+            "target": 6
+          },
+          "expected": [
+            0,
+            1
+          ],
+          "hidden": true
+        }
+      ],
+      "acceptanceRate": "88.50",
+      "learningObjectives": [
+        "Master O(N) Hash Table lookup pattern",
+        "Avoid nested O(N^2) loops"
+      ],
+      "createdAt": "2026-10-06T19:49:19.153Z",
+      "updatedAt": "2026-10-06T19:49:19.153Z"
+    },
+    {
+      "id": "longest-palindromic-substring",
+      "topicId": "top_dp",
+      "title": "Longest Palindromic Substring",
+      "slug": "longest-palindromic-substring",
+      "difficulty": "Medium",
+      "description": "Given a string `s`, return the longest palindromic substring in `s`.",
+      "examples": [
+        {
+          "input": "s = \"babad\"",
+          "output": "\"bab\"",
+          "note": "\"aba\" is also a valid answer."
+        }
+      ],
+      "constraints": [
+        "1 <= s.length <= 1000"
+      ],
+      "tags": [
+        "Dynamic Programming",
+        "String",
+        "Two Pointers"
+      ],
+      "companies": [
+        "Amazon",
+        "Google",
+        "Microsoft",
+        "Adobe"
+      ],
+      "starterCode": {
+        "python": "def longestPalindrome(s: str) -> str:\n    # Write your solution here\n    pass"
+      },
+      "solutionCode": {
+        "python": "def longestPalindrome(s: str) -> str:\n    res = \"\"\n    for i in range(len(s)):\n        for l, r in ((i, i), (i, i + 1)):\n            while l >= 0 and r < len(s) and s[l] == s[r]:\n                if (r - l + 1) > len(res):\n                    res = s[l:r+1]\n                l -= 1\n                r += 1\n    return res"
+      },
+      "testCases": [
+        {
+          "input": {
+            "s": "babad"
+          },
+          "expected": "bab"
+        }
+      ],
+      "acceptanceRate": "68.20",
+      "learningObjectives": [
+        "Expand around center technique",
+        "Understand palindrome symmetry"
+      ],
+      "createdAt": "2026-10-06T19:49:19.153Z",
+      "updatedAt": "2026-10-06T19:49:19.153Z"
+    },
+    {
+      "id": "two-sum",
+      "topicId": "top_arrays",
+      "title": "Two Sum",
+      "slug": "two-sum",
+      "difficulty": "Easy",
+      "description": "Given an array of integers `nums` and an integer `target`, return indices of the two numbers such that they add up to `target`.",
+      "examples": [
+        {
+          "input": "nums = [2,7,11,15], target = 9",
+          "output": "[0,1]",
+          "note": "Because nums[0] + nums[1] == 9, we return [0, 1]."
+        }
+      ],
+      "constraints": [
+        "2 <= nums.length <= 10^4",
+        "-10^9 <= nums[i] <= 10^9",
+        "Only one valid answer exists."
+      ],
+      "tags": [
+        "Arrays",
+        "Hash Table"
+      ],
+      "companies": [
+        "Google",
+        "Amazon",
+        "Microsoft",
+        "Meta"
+      ],
+      "starterCode": {
+        "python": "def twoSum(nums: list[int], target: int) -> list[int]:\n    # Write your solution here\n    pass",
+        "cpp": "#include <vector>\nusing namespace std;\n\nclass Solution {\npublic:\n    vector<int> twoSum(vector<int>& nums, int target) {\n        return {};\n    }\n};",
+        "java": "class Solution {\n    public int[] twoSum(int[] nums, int target) {\n        return new int[]{};\n    }\n}",
+        "c": "#include <stdlib.h>\n\nint* twoSum(int* nums, int numsSize, int target, int* returnSize) {\n    *returnSize = 2;\n    int* res = (int*)malloc(2 * sizeof(int));\n    return res;\n}"
+      },
+      "solutionCode": {
+        "python": "def twoSum(nums: list[int], target: int) -> list[int]:\n    seen = {}\n    for i, num in enumerate(nums):\n        needed = target - num\n        if needed in seen:\n            return [seen[needed], i]\n        seen[num] = i\n    return []"
+      },
+      "testCases": [
+        {
+          "input": {
+            "nums": [
+              2,
+              7,
+              11,
+              15
+            ],
+            "target": 9
+          },
+          "expected": [
+            0,
+            1
+          ]
+        },
+        {
+          "input": {
+            "nums": [
+              3,
+              2,
+              4
+            ],
+            "target": 6
+          },
+          "expected": [
+            1,
+            2
+          ]
+        },
+        {
+          "input": {
+            "nums": [
+              3,
+              3
+            ],
+            "target": 6
+          },
+          "expected": [
+            0,
+            1
+          ],
+          "hidden": true
+        }
+      ],
+      "acceptanceRate": "88.50",
+      "learningObjectives": [
+        "Master O(N) Hash Table lookup pattern",
+        "Avoid nested O(N^2) loops"
+      ],
+      "createdAt": "2026-10-06T19:50:56.292Z",
+      "updatedAt": "2026-10-06T19:50:56.292Z"
+    },
+    {
+      "id": "longest-palindromic-substring",
+      "topicId": "top_dp",
+      "title": "Longest Palindromic Substring",
+      "slug": "longest-palindromic-substring",
+      "difficulty": "Medium",
+      "description": "Given a string `s`, return the longest palindromic substring in `s`.",
+      "examples": [
+        {
+          "input": "s = \"babad\"",
+          "output": "\"bab\"",
+          "note": "\"aba\" is also a valid answer."
+        }
+      ],
+      "constraints": [
+        "1 <= s.length <= 1000"
+      ],
+      "tags": [
+        "Dynamic Programming",
+        "String",
+        "Two Pointers"
+      ],
+      "companies": [
+        "Amazon",
+        "Google",
+        "Microsoft",
+        "Adobe"
+      ],
+      "starterCode": {
+        "python": "def longestPalindrome(s: str) -> str:\n    # Write your solution here\n    pass"
+      },
+      "solutionCode": {
+        "python": "def longestPalindrome(s: str) -> str:\n    res = \"\"\n    for i in range(len(s)):\n        for l, r in ((i, i), (i, i + 1)):\n            while l >= 0 and r < len(s) and s[l] == s[r]:\n                if (r - l + 1) > len(res):\n                    res = s[l:r+1]\n                l -= 1\n                r += 1\n    return res"
+      },
+      "testCases": [
+        {
+          "input": {
+            "s": "babad"
+          },
+          "expected": "bab"
+        }
+      ],
+      "acceptanceRate": "68.20",
+      "learningObjectives": [
+        "Expand around center technique",
+        "Understand palindrome symmetry"
+      ],
+      "createdAt": "2026-10-06T19:50:56.292Z",
+      "updatedAt": "2026-10-06T19:50:56.292Z"
+    },
+    {
+      "id": "two-sum",
+      "topicId": "top_arrays",
+      "title": "Two Sum",
+      "slug": "two-sum",
+      "difficulty": "Easy",
+      "description": "Given an array of integers `nums` and an integer `target`, return indices of the two numbers such that they add up to `target`.",
+      "examples": [
+        {
+          "input": "nums = [2,7,11,15], target = 9",
+          "output": "[0,1]",
+          "note": "Because nums[0] + nums[1] == 9, we return [0, 1]."
+        }
+      ],
+      "constraints": [
+        "2 <= nums.length <= 10^4",
+        "-10^9 <= nums[i] <= 10^9",
+        "Only one valid answer exists."
+      ],
+      "tags": [
+        "Arrays",
+        "Hash Table"
+      ],
+      "companies": [
+        "Google",
+        "Amazon",
+        "Microsoft",
+        "Meta"
+      ],
+      "starterCode": {
+        "python": "def twoSum(nums: list[int], target: int) -> list[int]:\n    # Write your solution here\n    pass",
+        "cpp": "#include <vector>\nusing namespace std;\n\nclass Solution {\npublic:\n    vector<int> twoSum(vector<int>& nums, int target) {\n        return {};\n    }\n};",
+        "java": "class Solution {\n    public int[] twoSum(int[] nums, int target) {\n        return new int[]{};\n    }\n}",
+        "c": "#include <stdlib.h>\n\nint* twoSum(int* nums, int numsSize, int target, int* returnSize) {\n    *returnSize = 2;\n    int* res = (int*)malloc(2 * sizeof(int));\n    return res;\n}"
+      },
+      "solutionCode": {
+        "python": "def twoSum(nums: list[int], target: int) -> list[int]:\n    seen = {}\n    for i, num in enumerate(nums):\n        needed = target - num\n        if needed in seen:\n            return [seen[needed], i]\n        seen[num] = i\n    return []"
+      },
+      "testCases": [
+        {
+          "input": {
+            "nums": [
+              2,
+              7,
+              11,
+              15
+            ],
+            "target": 9
+          },
+          "expected": [
+            0,
+            1
+          ]
+        },
+        {
+          "input": {
+            "nums": [
+              3,
+              2,
+              4
+            ],
+            "target": 6
+          },
+          "expected": [
+            1,
+            2
+          ]
+        },
+        {
+          "input": {
+            "nums": [
+              3,
+              3
+            ],
+            "target": 6
+          },
+          "expected": [
+            0,
+            1
+          ],
+          "hidden": true
+        }
+      ],
+      "acceptanceRate": "88.50",
+      "learningObjectives": [
+        "Master O(N) Hash Table lookup pattern",
+        "Avoid nested O(N^2) loops"
+      ],
+      "createdAt": "2026-10-06T19:52:10.901Z",
+      "updatedAt": "2026-10-06T19:52:10.901Z"
+    },
+    {
+      "id": "longest-palindromic-substring",
+      "topicId": "top_dp",
+      "title": "Longest Palindromic Substring",
+      "slug": "longest-palindromic-substring",
+      "difficulty": "Medium",
+      "description": "Given a string `s`, return the longest palindromic substring in `s`.",
+      "examples": [
+        {
+          "input": "s = \"babad\"",
+          "output": "\"bab\"",
+          "note": "\"aba\" is also a valid answer."
+        }
+      ],
+      "constraints": [
+        "1 <= s.length <= 1000"
+      ],
+      "tags": [
+        "Dynamic Programming",
+        "String",
+        "Two Pointers"
+      ],
+      "companies": [
+        "Amazon",
+        "Google",
+        "Microsoft",
+        "Adobe"
+      ],
+      "starterCode": {
+        "python": "def longestPalindrome(s: str) -> str:\n    # Write your solution here\n    pass"
+      },
+      "solutionCode": {
+        "python": "def longestPalindrome(s: str) -> str:\n    res = \"\"\n    for i in range(len(s)):\n        for l, r in ((i, i), (i, i + 1)):\n            while l >= 0 and r < len(s) and s[l] == s[r]:\n                if (r - l + 1) > len(res):\n                    res = s[l:r+1]\n                l -= 1\n                r += 1\n    return res"
+      },
+      "testCases": [
+        {
+          "input": {
+            "s": "babad"
+          },
+          "expected": "bab"
+        }
+      ],
+      "acceptanceRate": "68.20",
+      "learningObjectives": [
+        "Expand around center technique",
+        "Understand palindrome symmetry"
+      ],
+      "createdAt": "2026-10-06T19:52:10.901Z",
+      "updatedAt": "2026-10-06T19:52:10.901Z"
+    },
+    {
+      "id": "two-sum",
+      "topicId": "top_arrays",
+      "title": "Two Sum",
+      "slug": "two-sum",
+      "difficulty": "Easy",
+      "description": "Given an array of integers `nums` and an integer `target`, return indices of the two numbers such that they add up to `target`.",
+      "examples": [
+        {
+          "input": "nums = [2,7,11,15], target = 9",
+          "output": "[0,1]",
+          "note": "Because nums[0] + nums[1] == 9, we return [0, 1]."
+        }
+      ],
+      "constraints": [
+        "2 <= nums.length <= 10^4",
+        "-10^9 <= nums[i] <= 10^9",
+        "Only one valid answer exists."
+      ],
+      "tags": [
+        "Arrays",
+        "Hash Table"
+      ],
+      "companies": [
+        "Google",
+        "Amazon",
+        "Microsoft",
+        "Meta"
+      ],
+      "starterCode": {
+        "python": "def twoSum(nums: list[int], target: int) -> list[int]:\n    # Write your solution here\n    pass",
+        "cpp": "#include <vector>\nusing namespace std;\n\nclass Solution {\npublic:\n    vector<int> twoSum(vector<int>& nums, int target) {\n        return {};\n    }\n};",
+        "java": "class Solution {\n    public int[] twoSum(int[] nums, int target) {\n        return new int[]{};\n    }\n}",
+        "c": "#include <stdlib.h>\n\nint* twoSum(int* nums, int numsSize, int target, int* returnSize) {\n    *returnSize = 2;\n    int* res = (int*)malloc(2 * sizeof(int));\n    return res;\n}"
+      },
+      "solutionCode": {
+        "python": "def twoSum(nums: list[int], target: int) -> list[int]:\n    seen = {}\n    for i, num in enumerate(nums):\n        needed = target - num\n        if needed in seen:\n            return [seen[needed], i]\n        seen[num] = i\n    return []"
+      },
+      "testCases": [
+        {
+          "input": {
+            "nums": [
+              2,
+              7,
+              11,
+              15
+            ],
+            "target": 9
+          },
+          "expected": [
+            0,
+            1
+          ]
+        },
+        {
+          "input": {
+            "nums": [
+              3,
+              2,
+              4
+            ],
+            "target": 6
+          },
+          "expected": [
+            1,
+            2
+          ]
+        },
+        {
+          "input": {
+            "nums": [
+              3,
+              3
+            ],
+            "target": 6
+          },
+          "expected": [
+            0,
+            1
+          ],
+          "hidden": true
+        }
+      ],
+      "acceptanceRate": "88.50",
+      "learningObjectives": [
+        "Master O(N) Hash Table lookup pattern",
+        "Avoid nested O(N^2) loops"
+      ],
+      "createdAt": "2026-10-06T19:54:14.368Z",
+      "updatedAt": "2026-10-06T19:54:14.368Z"
+    },
+    {
+      "id": "longest-palindromic-substring",
+      "topicId": "top_dp",
+      "title": "Longest Palindromic Substring",
+      "slug": "longest-palindromic-substring",
+      "difficulty": "Medium",
+      "description": "Given a string `s`, return the longest palindromic substring in `s`.",
+      "examples": [
+        {
+          "input": "s = \"babad\"",
+          "output": "\"bab\"",
+          "note": "\"aba\" is also a valid answer."
+        }
+      ],
+      "constraints": [
+        "1 <= s.length <= 1000"
+      ],
+      "tags": [
+        "Dynamic Programming",
+        "String",
+        "Two Pointers"
+      ],
+      "companies": [
+        "Amazon",
+        "Google",
+        "Microsoft",
+        "Adobe"
+      ],
+      "starterCode": {
+        "python": "def longestPalindrome(s: str) -> str:\n    # Write your solution here\n    pass"
+      },
+      "solutionCode": {
+        "python": "def longestPalindrome(s: str) -> str:\n    res = \"\"\n    for i in range(len(s)):\n        for l, r in ((i, i), (i, i + 1)):\n            while l >= 0 and r < len(s) and s[l] == s[r]:\n                if (r - l + 1) > len(res):\n                    res = s[l:r+1]\n                l -= 1\n                r += 1\n    return res"
+      },
+      "testCases": [
+        {
+          "input": {
+            "s": "babad"
+          },
+          "expected": "bab"
+        }
+      ],
+      "acceptanceRate": "68.20",
+      "learningObjectives": [
+        "Expand around center technique",
+        "Understand palindrome symmetry"
+      ],
+      "createdAt": "2026-10-06T19:54:14.368Z",
+      "updatedAt": "2026-10-06T19:54:14.368Z"
     }
   ],
   "problem_hints": [
@@ -16128,6 +18102,216 @@
       "content": "Store each number and its index in the hash map as you traverse.",
       "createdAt": "2026-10-01T17:27:23.150Z",
       "updatedAt": "2026-10-01T17:27:23.150Z"
+    },
+    {
+      "id": "11111111-1111-1111-1111-111111111111",
+      "problemId": "two-sum",
+      "tierLevel": "hint",
+      "orderIndex": 1,
+      "title": "Brute Force vs Hash Map",
+      "content": "Consider trading O(N) extra space to achieve O(N) time complexity.",
+      "createdAt": "2026-10-06T19:42:25.407Z",
+      "updatedAt": "2026-10-06T19:42:25.407Z"
+    },
+    {
+      "id": "22222222-2222-2222-2222-222222222222",
+      "problemId": "two-sum",
+      "tierLevel": "approach",
+      "orderIndex": 2,
+      "title": "Complement Lookup",
+      "content": "As you iterate, calculate complement = target - num and check if it exists in your hash map.",
+      "createdAt": "2026-10-06T19:42:25.407Z",
+      "updatedAt": "2026-10-06T19:42:25.407Z"
+    },
+    {
+      "id": "33333333-3333-3333-3333-333333333333",
+      "problemId": "two-sum",
+      "tierLevel": "algorithm",
+      "orderIndex": 3,
+      "title": "Single Pass Hash Map",
+      "content": "Store each number and its index in the hash map as you traverse.",
+      "createdAt": "2026-10-06T19:42:25.407Z",
+      "updatedAt": "2026-10-06T19:42:25.407Z"
+    },
+    {
+      "id": "11111111-1111-1111-1111-111111111111",
+      "problemId": "two-sum",
+      "tierLevel": "hint",
+      "orderIndex": 1,
+      "title": "Brute Force vs Hash Map",
+      "content": "Consider trading O(N) extra space to achieve O(N) time complexity.",
+      "createdAt": "2026-10-06T19:46:49.132Z",
+      "updatedAt": "2026-10-06T19:46:49.132Z"
+    },
+    {
+      "id": "22222222-2222-2222-2222-222222222222",
+      "problemId": "two-sum",
+      "tierLevel": "approach",
+      "orderIndex": 2,
+      "title": "Complement Lookup",
+      "content": "As you iterate, calculate complement = target - num and check if it exists in your hash map.",
+      "createdAt": "2026-10-06T19:46:49.132Z",
+      "updatedAt": "2026-10-06T19:46:49.132Z"
+    },
+    {
+      "id": "33333333-3333-3333-3333-333333333333",
+      "problemId": "two-sum",
+      "tierLevel": "algorithm",
+      "orderIndex": 3,
+      "title": "Single Pass Hash Map",
+      "content": "Store each number and its index in the hash map as you traverse.",
+      "createdAt": "2026-10-06T19:46:49.132Z",
+      "updatedAt": "2026-10-06T19:46:49.132Z"
+    },
+    {
+      "id": "11111111-1111-1111-1111-111111111111",
+      "problemId": "two-sum",
+      "tierLevel": "hint",
+      "orderIndex": 1,
+      "title": "Brute Force vs Hash Map",
+      "content": "Consider trading O(N) extra space to achieve O(N) time complexity.",
+      "createdAt": "2026-10-06T19:48:22.872Z",
+      "updatedAt": "2026-10-06T19:48:22.872Z"
+    },
+    {
+      "id": "22222222-2222-2222-2222-222222222222",
+      "problemId": "two-sum",
+      "tierLevel": "approach",
+      "orderIndex": 2,
+      "title": "Complement Lookup",
+      "content": "As you iterate, calculate complement = target - num and check if it exists in your hash map.",
+      "createdAt": "2026-10-06T19:48:22.872Z",
+      "updatedAt": "2026-10-06T19:48:22.872Z"
+    },
+    {
+      "id": "33333333-3333-3333-3333-333333333333",
+      "problemId": "two-sum",
+      "tierLevel": "algorithm",
+      "orderIndex": 3,
+      "title": "Single Pass Hash Map",
+      "content": "Store each number and its index in the hash map as you traverse.",
+      "createdAt": "2026-10-06T19:48:22.872Z",
+      "updatedAt": "2026-10-06T19:48:22.872Z"
+    },
+    {
+      "id": "11111111-1111-1111-1111-111111111111",
+      "problemId": "two-sum",
+      "tierLevel": "hint",
+      "orderIndex": 1,
+      "title": "Brute Force vs Hash Map",
+      "content": "Consider trading O(N) extra space to achieve O(N) time complexity.",
+      "createdAt": "2026-10-06T19:49:19.174Z",
+      "updatedAt": "2026-10-06T19:49:19.174Z"
+    },
+    {
+      "id": "22222222-2222-2222-2222-222222222222",
+      "problemId": "two-sum",
+      "tierLevel": "approach",
+      "orderIndex": 2,
+      "title": "Complement Lookup",
+      "content": "As you iterate, calculate complement = target - num and check if it exists in your hash map.",
+      "createdAt": "2026-10-06T19:49:19.174Z",
+      "updatedAt": "2026-10-06T19:49:19.174Z"
+    },
+    {
+      "id": "33333333-3333-3333-3333-333333333333",
+      "problemId": "two-sum",
+      "tierLevel": "algorithm",
+      "orderIndex": 3,
+      "title": "Single Pass Hash Map",
+      "content": "Store each number and its index in the hash map as you traverse.",
+      "createdAt": "2026-10-06T19:49:19.174Z",
+      "updatedAt": "2026-10-06T19:49:19.174Z"
+    },
+    {
+      "id": "11111111-1111-1111-1111-111111111111",
+      "problemId": "two-sum",
+      "tierLevel": "hint",
+      "orderIndex": 1,
+      "title": "Brute Force vs Hash Map",
+      "content": "Consider trading O(N) extra space to achieve O(N) time complexity.",
+      "createdAt": "2026-10-06T19:50:56.315Z",
+      "updatedAt": "2026-10-06T19:50:56.316Z"
+    },
+    {
+      "id": "22222222-2222-2222-2222-222222222222",
+      "problemId": "two-sum",
+      "tierLevel": "approach",
+      "orderIndex": 2,
+      "title": "Complement Lookup",
+      "content": "As you iterate, calculate complement = target - num and check if it exists in your hash map.",
+      "createdAt": "2026-10-06T19:50:56.316Z",
+      "updatedAt": "2026-10-06T19:50:56.316Z"
+    },
+    {
+      "id": "33333333-3333-3333-3333-333333333333",
+      "problemId": "two-sum",
+      "tierLevel": "algorithm",
+      "orderIndex": 3,
+      "title": "Single Pass Hash Map",
+      "content": "Store each number and its index in the hash map as you traverse.",
+      "createdAt": "2026-10-06T19:50:56.316Z",
+      "updatedAt": "2026-10-06T19:50:56.316Z"
+    },
+    {
+      "id": "11111111-1111-1111-1111-111111111111",
+      "problemId": "two-sum",
+      "tierLevel": "hint",
+      "orderIndex": 1,
+      "title": "Brute Force vs Hash Map",
+      "content": "Consider trading O(N) extra space to achieve O(N) time complexity.",
+      "createdAt": "2026-10-06T19:52:10.919Z",
+      "updatedAt": "2026-10-06T19:52:10.919Z"
+    },
+    {
+      "id": "22222222-2222-2222-2222-222222222222",
+      "problemId": "two-sum",
+      "tierLevel": "approach",
+      "orderIndex": 2,
+      "title": "Complement Lookup",
+      "content": "As you iterate, calculate complement = target - num and check if it exists in your hash map.",
+      "createdAt": "2026-10-06T19:52:10.919Z",
+      "updatedAt": "2026-10-06T19:52:10.919Z"
+    },
+    {
+      "id": "33333333-3333-3333-3333-333333333333",
+      "problemId": "two-sum",
+      "tierLevel": "algorithm",
+      "orderIndex": 3,
+      "title": "Single Pass Hash Map",
+      "content": "Store each number and its index in the hash map as you traverse.",
+      "createdAt": "2026-10-06T19:52:10.919Z",
+      "updatedAt": "2026-10-06T19:52:10.919Z"
+    },
+    {
+      "id": "11111111-1111-1111-1111-111111111111",
+      "problemId": "two-sum",
+      "tierLevel": "hint",
+      "orderIndex": 1,
+      "title": "Brute Force vs Hash Map",
+      "content": "Consider trading O(N) extra space to achieve O(N) time complexity.",
+      "createdAt": "2026-10-06T19:54:14.390Z",
+      "updatedAt": "2026-10-06T19:54:14.390Z"
+    },
+    {
+      "id": "22222222-2222-2222-2222-222222222222",
+      "problemId": "two-sum",
+      "tierLevel": "approach",
+      "orderIndex": 2,
+      "title": "Complement Lookup",
+      "content": "As you iterate, calculate complement = target - num and check if it exists in your hash map.",
+      "createdAt": "2026-10-06T19:54:14.390Z",
+      "updatedAt": "2026-10-06T19:54:14.390Z"
+    },
+    {
+      "id": "33333333-3333-3333-3333-333333333333",
+      "problemId": "two-sum",
+      "tierLevel": "algorithm",
+      "orderIndex": 3,
+      "title": "Single Pass Hash Map",
+      "content": "Store each number and its index in the hash map as you traverse.",
+      "createdAt": "2026-10-06T19:54:14.390Z",
+      "updatedAt": "2026-10-06T19:54:14.390Z"
     }
   ],
   "projects": [
@@ -19252,6 +21436,433 @@
       ],
       "createdAt": "2026-10-01T17:27:23.179Z",
       "updatedAt": "2026-10-01T17:27:23.179Z"
+    },
+    {
+      "id": "banking-system",
+      "title": "Core Banking Ledger Engine",
+      "difficulty": "Intermediate",
+      "category": "Systems Engineering",
+      "summary": "Build a double-entry transaction processing engine with ACID transaction isolation.",
+      "overview": "In this project, you will design and implement a production-grade banking ledger supporting concurrent balance updates.",
+      "architectureOverview": "Express.js backend with PostgreSQL database isolation locks.",
+      "estimatedHours": 12,
+      "learningGoals": [
+        "ACID Transactions",
+        "Concurrency Isolation",
+        "REST API Architecture"
+      ],
+      "prerequisites": [
+        "SQL Basics",
+        "Node.js Express"
+      ],
+      "evaluationCriteria": [
+        {
+          "criterion": "Transaction Atomicity",
+          "weight": 40,
+          "description": "Ensures no partial updates occur"
+        },
+        {
+          "criterion": "API Reliability",
+          "weight": 30,
+          "description": "Handles malformed balance updates"
+        },
+        {
+          "criterion": "Code Structure",
+          "weight": 30,
+          "description": "Clean modular controllers"
+        }
+      ],
+      "milestones": [
+        {
+          "id": "m1",
+          "milestoneNumber": 1,
+          "title": "Database Schema & Accounts API",
+          "description": "Define SQL tables and create account creation routes.",
+          "tasks": [
+            {
+              "id": "t1",
+              "title": "Create Accounts and Transactions schema",
+              "required": true
+            },
+            {
+              "id": "t2",
+              "title": "Implement POST /api/accounts endpoint",
+              "required": true
+            }
+          ],
+          "learningTips": [
+            "Use UUIDs for account IDs."
+          ]
+        }
+      ],
+      "createdAt": "2026-10-06T19:42:25.413Z",
+      "updatedAt": "2026-10-06T19:42:25.413Z"
+    },
+    {
+      "id": "banking-system",
+      "title": "Core Banking Ledger Engine",
+      "difficulty": "Intermediate",
+      "category": "Systems Engineering",
+      "summary": "Build a double-entry transaction processing engine with ACID transaction isolation.",
+      "overview": "In this project, you will design and implement a production-grade banking ledger supporting concurrent balance updates.",
+      "architectureOverview": "Express.js backend with PostgreSQL database isolation locks.",
+      "estimatedHours": 12,
+      "learningGoals": [
+        "ACID Transactions",
+        "Concurrency Isolation",
+        "REST API Architecture"
+      ],
+      "prerequisites": [
+        "SQL Basics",
+        "Node.js Express"
+      ],
+      "evaluationCriteria": [
+        {
+          "criterion": "Transaction Atomicity",
+          "weight": 40,
+          "description": "Ensures no partial updates occur"
+        },
+        {
+          "criterion": "API Reliability",
+          "weight": 30,
+          "description": "Handles malformed balance updates"
+        },
+        {
+          "criterion": "Code Structure",
+          "weight": 30,
+          "description": "Clean modular controllers"
+        }
+      ],
+      "milestones": [
+        {
+          "id": "m1",
+          "milestoneNumber": 1,
+          "title": "Database Schema & Accounts API",
+          "description": "Define SQL tables and create account creation routes.",
+          "tasks": [
+            {
+              "id": "t1",
+              "title": "Create Accounts and Transactions schema",
+              "required": true
+            },
+            {
+              "id": "t2",
+              "title": "Implement POST /api/accounts endpoint",
+              "required": true
+            }
+          ],
+          "learningTips": [
+            "Use UUIDs for account IDs."
+          ]
+        }
+      ],
+      "createdAt": "2026-10-06T19:46:49.140Z",
+      "updatedAt": "2026-10-06T19:46:49.140Z"
+    },
+    {
+      "id": "banking-system",
+      "title": "Core Banking Ledger Engine",
+      "difficulty": "Intermediate",
+      "category": "Systems Engineering",
+      "summary": "Build a double-entry transaction processing engine with ACID transaction isolation.",
+      "overview": "In this project, you will design and implement a production-grade banking ledger supporting concurrent balance updates.",
+      "architectureOverview": "Express.js backend with PostgreSQL database isolation locks.",
+      "estimatedHours": 12,
+      "learningGoals": [
+        "ACID Transactions",
+        "Concurrency Isolation",
+        "REST API Architecture"
+      ],
+      "prerequisites": [
+        "SQL Basics",
+        "Node.js Express"
+      ],
+      "evaluationCriteria": [
+        {
+          "criterion": "Transaction Atomicity",
+          "weight": 40,
+          "description": "Ensures no partial updates occur"
+        },
+        {
+          "criterion": "API Reliability",
+          "weight": 30,
+          "description": "Handles malformed balance updates"
+        },
+        {
+          "criterion": "Code Structure",
+          "weight": 30,
+          "description": "Clean modular controllers"
+        }
+      ],
+      "milestones": [
+        {
+          "id": "m1",
+          "milestoneNumber": 1,
+          "title": "Database Schema & Accounts API",
+          "description": "Define SQL tables and create account creation routes.",
+          "tasks": [
+            {
+              "id": "t1",
+              "title": "Create Accounts and Transactions schema",
+              "required": true
+            },
+            {
+              "id": "t2",
+              "title": "Implement POST /api/accounts endpoint",
+              "required": true
+            }
+          ],
+          "learningTips": [
+            "Use UUIDs for account IDs."
+          ]
+        }
+      ],
+      "createdAt": "2026-10-06T19:48:22.894Z",
+      "updatedAt": "2026-10-06T19:48:22.894Z"
+    },
+    {
+      "id": "banking-system",
+      "title": "Core Banking Ledger Engine",
+      "difficulty": "Intermediate",
+      "category": "Systems Engineering",
+      "summary": "Build a double-entry transaction processing engine with ACID transaction isolation.",
+      "overview": "In this project, you will design and implement a production-grade banking ledger supporting concurrent balance updates.",
+      "architectureOverview": "Express.js backend with PostgreSQL database isolation locks.",
+      "estimatedHours": 12,
+      "learningGoals": [
+        "ACID Transactions",
+        "Concurrency Isolation",
+        "REST API Architecture"
+      ],
+      "prerequisites": [
+        "SQL Basics",
+        "Node.js Express"
+      ],
+      "evaluationCriteria": [
+        {
+          "criterion": "Transaction Atomicity",
+          "weight": 40,
+          "description": "Ensures no partial updates occur"
+        },
+        {
+          "criterion": "API Reliability",
+          "weight": 30,
+          "description": "Handles malformed balance updates"
+        },
+        {
+          "criterion": "Code Structure",
+          "weight": 30,
+          "description": "Clean modular controllers"
+        }
+      ],
+      "milestones": [
+        {
+          "id": "m1",
+          "milestoneNumber": 1,
+          "title": "Database Schema & Accounts API",
+          "description": "Define SQL tables and create account creation routes.",
+          "tasks": [
+            {
+              "id": "t1",
+              "title": "Create Accounts and Transactions schema",
+              "required": true
+            },
+            {
+              "id": "t2",
+              "title": "Implement POST /api/accounts endpoint",
+              "required": true
+            }
+          ],
+          "learningTips": [
+            "Use UUIDs for account IDs."
+          ]
+        }
+      ],
+      "createdAt": "2026-10-06T19:49:19.192Z",
+      "updatedAt": "2026-10-06T19:49:19.192Z"
+    },
+    {
+      "id": "banking-system",
+      "title": "Core Banking Ledger Engine",
+      "difficulty": "Intermediate",
+      "category": "Systems Engineering",
+      "summary": "Build a double-entry transaction processing engine with ACID transaction isolation.",
+      "overview": "In this project, you will design and implement a production-grade banking ledger supporting concurrent balance updates.",
+      "architectureOverview": "Express.js backend with PostgreSQL database isolation locks.",
+      "estimatedHours": 12,
+      "learningGoals": [
+        "ACID Transactions",
+        "Concurrency Isolation",
+        "REST API Architecture"
+      ],
+      "prerequisites": [
+        "SQL Basics",
+        "Node.js Express"
+      ],
+      "evaluationCriteria": [
+        {
+          "criterion": "Transaction Atomicity",
+          "weight": 40,
+          "description": "Ensures no partial updates occur"
+        },
+        {
+          "criterion": "API Reliability",
+          "weight": 30,
+          "description": "Handles malformed balance updates"
+        },
+        {
+          "criterion": "Code Structure",
+          "weight": 30,
+          "description": "Clean modular controllers"
+        }
+      ],
+      "milestones": [
+        {
+          "id": "m1",
+          "milestoneNumber": 1,
+          "title": "Database Schema & Accounts API",
+          "description": "Define SQL tables and create account creation routes.",
+          "tasks": [
+            {
+              "id": "t1",
+              "title": "Create Accounts and Transactions schema",
+              "required": true
+            },
+            {
+              "id": "t2",
+              "title": "Implement POST /api/accounts endpoint",
+              "required": true
+            }
+          ],
+          "learningTips": [
+            "Use UUIDs for account IDs."
+          ]
+        }
+      ],
+      "createdAt": "2026-10-06T19:50:56.336Z",
+      "updatedAt": "2026-10-06T19:50:56.336Z"
+    },
+    {
+      "id": "banking-system",
+      "title": "Core Banking Ledger Engine",
+      "difficulty": "Intermediate",
+      "category": "Systems Engineering",
+      "summary": "Build a double-entry transaction processing engine with ACID transaction isolation.",
+      "overview": "In this project, you will design and implement a production-grade banking ledger supporting concurrent balance updates.",
+      "architectureOverview": "Express.js backend with PostgreSQL database isolation locks.",
+      "estimatedHours": 12,
+      "learningGoals": [
+        "ACID Transactions",
+        "Concurrency Isolation",
+        "REST API Architecture"
+      ],
+      "prerequisites": [
+        "SQL Basics",
+        "Node.js Express"
+      ],
+      "evaluationCriteria": [
+        {
+          "criterion": "Transaction Atomicity",
+          "weight": 40,
+          "description": "Ensures no partial updates occur"
+        },
+        {
+          "criterion": "API Reliability",
+          "weight": 30,
+          "description": "Handles malformed balance updates"
+        },
+        {
+          "criterion": "Code Structure",
+          "weight": 30,
+          "description": "Clean modular controllers"
+        }
+      ],
+      "milestones": [
+        {
+          "id": "m1",
+          "milestoneNumber": 1,
+          "title": "Database Schema & Accounts API",
+          "description": "Define SQL tables and create account creation routes.",
+          "tasks": [
+            {
+              "id": "t1",
+              "title": "Create Accounts and Transactions schema",
+              "required": true
+            },
+            {
+              "id": "t2",
+              "title": "Implement POST /api/accounts endpoint",
+              "required": true
+            }
+          ],
+          "learningTips": [
+            "Use UUIDs for account IDs."
+          ]
+        }
+      ],
+      "createdAt": "2026-10-06T19:52:10.939Z",
+      "updatedAt": "2026-10-06T19:52:10.939Z"
+    },
+    {
+      "id": "banking-system",
+      "title": "Core Banking Ledger Engine",
+      "difficulty": "Intermediate",
+      "category": "Systems Engineering",
+      "summary": "Build a double-entry transaction processing engine with ACID transaction isolation.",
+      "overview": "In this project, you will design and implement a production-grade banking ledger supporting concurrent balance updates.",
+      "architectureOverview": "Express.js backend with PostgreSQL database isolation locks.",
+      "estimatedHours": 12,
+      "learningGoals": [
+        "ACID Transactions",
+        "Concurrency Isolation",
+        "REST API Architecture"
+      ],
+      "prerequisites": [
+        "SQL Basics",
+        "Node.js Express"
+      ],
+      "evaluationCriteria": [
+        {
+          "criterion": "Transaction Atomicity",
+          "weight": 40,
+          "description": "Ensures no partial updates occur"
+        },
+        {
+          "criterion": "API Reliability",
+          "weight": 30,
+          "description": "Handles malformed balance updates"
+        },
+        {
+          "criterion": "Code Structure",
+          "weight": 30,
+          "description": "Clean modular controllers"
+        }
+      ],
+      "milestones": [
+        {
+          "id": "m1",
+          "milestoneNumber": 1,
+          "title": "Database Schema & Accounts API",
+          "description": "Define SQL tables and create account creation routes.",
+          "tasks": [
+            {
+              "id": "t1",
+              "title": "Create Accounts and Transactions schema",
+              "required": true
+            },
+            {
+              "id": "t2",
+              "title": "Implement POST /api/accounts endpoint",
+              "required": true
+            }
+          ],
+          "learningTips": [
+            "Use UUIDs for account IDs."
+          ]
+        }
+      ],
+      "createdAt": "2026-10-06T19:54:14.410Z",
+      "updatedAt": "2026-10-06T19:54:14.410Z"
     }
   ],
   "user_projects": [],
@@ -20016,6 +22627,104 @@
       "totalTestCases": 3,
       "createdAt": "2026-10-01T16:27:21.682Z",
       "updatedAt": "2026-10-01T17:27:23.228Z"
+    },
+    {
+      "id": "44444444-4444-4444-4444-444444444444",
+      "userId": "e0c25a7a-6eb2-4c28-9bf9-9c5d76d49d41",
+      "problemId": "two-sum",
+      "code": "def twoSum(nums, target):\n    seen = {}\n    for i, x in enumerate(nums):\n        if target - x in seen: return [seen[target - x], i]\n        seen[x] = i\n    return []",
+      "language": "python",
+      "status": "Accepted",
+      "executionTimeMs": 12,
+      "memoryMb": "14.20",
+      "passedTestCases": 3,
+      "totalTestCases": 3,
+      "createdAt": "2026-10-06T18:42:24.700Z",
+      "updatedAt": "2026-10-06T19:42:26.496Z"
+    },
+    {
+      "id": "44444444-4444-4444-4444-444444444444",
+      "userId": "e0c25a7a-6eb2-4c28-9bf9-9c5d76d49d41",
+      "problemId": "two-sum",
+      "code": "def twoSum(nums, target):\n    seen = {}\n    for i, x in enumerate(nums):\n        if target - x in seen: return [seen[target - x], i]\n        seen[x] = i\n    return []",
+      "language": "python",
+      "status": "Accepted",
+      "executionTimeMs": 12,
+      "memoryMb": "14.20",
+      "passedTestCases": 3,
+      "totalTestCases": 3,
+      "createdAt": "2026-10-06T18:46:48.431Z",
+      "updatedAt": "2026-10-06T19:46:49.187Z"
+    },
+    {
+      "id": "44444444-4444-4444-4444-444444444444",
+      "userId": "e0c25a7a-6eb2-4c28-9bf9-9c5d76d49d41",
+      "problemId": "two-sum",
+      "code": "def twoSum(nums, target):\n    seen = {}\n    for i, x in enumerate(nums):\n        if target - x in seen: return [seen[target - x], i]\n        seen[x] = i\n    return []",
+      "language": "python",
+      "status": "Accepted",
+      "executionTimeMs": 12,
+      "memoryMb": "14.20",
+      "passedTestCases": 3,
+      "totalTestCases": 3,
+      "createdAt": "2026-10-06T18:48:20.803Z",
+      "updatedAt": "2026-10-06T19:48:23.057Z"
+    },
+    {
+      "id": "44444444-4444-4444-4444-444444444444",
+      "userId": "e0c25a7a-6eb2-4c28-9bf9-9c5d76d49d41",
+      "problemId": "two-sum",
+      "code": "def twoSum(nums, target):\n    seen = {}\n    for i, x in enumerate(nums):\n        if target - x in seen: return [seen[target - x], i]\n        seen[x] = i\n    return []",
+      "language": "python",
+      "status": "Accepted",
+      "executionTimeMs": 12,
+      "memoryMb": "14.20",
+      "passedTestCases": 3,
+      "totalTestCases": 3,
+      "createdAt": "2026-10-06T18:49:17.116Z",
+      "updatedAt": "2026-10-06T19:49:19.331Z"
+    },
+    {
+      "id": "44444444-4444-4444-4444-444444444444",
+      "userId": "e0c25a7a-6eb2-4c28-9bf9-9c5d76d49d41",
+      "problemId": "two-sum",
+      "code": "def twoSum(nums, target):\n    seen = {}\n    for i, x in enumerate(nums):\n        if target - x in seen: return [seen[target - x], i]\n        seen[x] = i\n    return []",
+      "language": "python",
+      "status": "Accepted",
+      "executionTimeMs": 12,
+      "memoryMb": "14.20",
+      "passedTestCases": 3,
+      "totalTestCases": 3,
+      "createdAt": "2026-10-06T18:50:54.296Z",
+      "updatedAt": "2026-10-06T19:50:56.500Z"
+    },
+    {
+      "id": "44444444-4444-4444-4444-444444444444",
+      "userId": "e0c25a7a-6eb2-4c28-9bf9-9c5d76d49d41",
+      "problemId": "two-sum",
+      "code": "def twoSum(nums, target):\n    seen = {}\n    for i, x in enumerate(nums):\n        if target - x in seen: return [seen[target - x], i]\n        seen[x] = i\n    return []",
+      "language": "python",
+      "status": "Accepted",
+      "executionTimeMs": 12,
+      "memoryMb": "14.20",
+      "passedTestCases": 3,
+      "totalTestCases": 3,
+      "createdAt": "2026-10-06T18:52:09.143Z",
+      "updatedAt": "2026-10-06T19:52:11.094Z"
+    },
+    {
+      "id": "44444444-4444-4444-4444-444444444444",
+      "userId": "e0c25a7a-6eb2-4c28-9bf9-9c5d76d49d41",
+      "problemId": "two-sum",
+      "code": "def twoSum(nums, target):\n    seen = {}\n    for i, x in enumerate(nums):\n        if target - x in seen: return [seen[target - x], i]\n        seen[x] = i\n    return []",
+      "language": "python",
+      "status": "Accepted",
+      "executionTimeMs": 12,
+      "memoryMb": "14.20",
+      "passedTestCases": 3,
+      "totalTestCases": 3,
+      "createdAt": "2026-10-06T18:54:12.721Z",
+      "updatedAt": "2026-10-06T19:54:14.536Z"
     }
   ],
   "daily_reviews": [
@@ -20892,6 +23601,118 @@
       "nextReviewDate": "2026-10-01",
       "createdAt": "2026-10-01T17:27:21.683Z",
       "updatedAt": "2026-10-01T17:27:23.239Z"
+    },
+    {
+      "id": "55555554-5555-5555-5555-555555555555",
+      "userId": "e0c25a7a-6eb2-4c28-9bf9-9c5d76d49d41",
+      "itemType": "problem",
+      "itemId": "two-sum",
+      "title": "Two Sum Hash Lookup Pattern",
+      "subtopic": "Arrays & Hashing",
+      "frontContent": "What is the optimal time & space complexity for Two Sum on unsorted arrays?",
+      "backContent": "Time: O(N) single pass. Space: O(N) hash map storing seen complements.",
+      "easinessFactor": "2.60",
+      "intervalDays": 3,
+      "repetitionNumber": 2,
+      "nextReviewDate": "2026-10-06",
+      "createdAt": "2026-10-06T19:42:24.701Z",
+      "updatedAt": "2026-10-06T19:42:26.504Z"
+    },
+    {
+      "id": "55555554-5555-5555-5555-555555555555",
+      "userId": "e0c25a7a-6eb2-4c28-9bf9-9c5d76d49d41",
+      "itemType": "problem",
+      "itemId": "two-sum",
+      "title": "Two Sum Hash Lookup Pattern",
+      "subtopic": "Arrays & Hashing",
+      "frontContent": "What is the optimal time & space complexity for Two Sum on unsorted arrays?",
+      "backContent": "Time: O(N) single pass. Space: O(N) hash map storing seen complements.",
+      "easinessFactor": "2.60",
+      "intervalDays": 3,
+      "repetitionNumber": 2,
+      "nextReviewDate": "2026-10-06",
+      "createdAt": "2026-10-06T19:46:48.431Z",
+      "updatedAt": "2026-10-06T19:46:49.194Z"
+    },
+    {
+      "id": "55555554-5555-5555-5555-555555555555",
+      "userId": "e0c25a7a-6eb2-4c28-9bf9-9c5d76d49d41",
+      "itemType": "problem",
+      "itemId": "two-sum",
+      "title": "Two Sum Hash Lookup Pattern",
+      "subtopic": "Arrays & Hashing",
+      "frontContent": "What is the optimal time & space complexity for Two Sum on unsorted arrays?",
+      "backContent": "Time: O(N) single pass. Space: O(N) hash map storing seen complements.",
+      "easinessFactor": "2.60",
+      "intervalDays": 3,
+      "repetitionNumber": 2,
+      "nextReviewDate": "2026-10-06",
+      "createdAt": "2026-10-06T19:48:20.805Z",
+      "updatedAt": "2026-10-06T19:48:23.081Z"
+    },
+    {
+      "id": "55555554-5555-5555-5555-555555555555",
+      "userId": "e0c25a7a-6eb2-4c28-9bf9-9c5d76d49d41",
+      "itemType": "problem",
+      "itemId": "two-sum",
+      "title": "Two Sum Hash Lookup Pattern",
+      "subtopic": "Arrays & Hashing",
+      "frontContent": "What is the optimal time & space complexity for Two Sum on unsorted arrays?",
+      "backContent": "Time: O(N) single pass. Space: O(N) hash map storing seen complements.",
+      "easinessFactor": "2.60",
+      "intervalDays": 3,
+      "repetitionNumber": 2,
+      "nextReviewDate": "2026-10-06",
+      "createdAt": "2026-10-06T19:49:17.119Z",
+      "updatedAt": "2026-10-06T19:49:19.358Z"
+    },
+    {
+      "id": "55555554-5555-5555-5555-555555555555",
+      "userId": "e0c25a7a-6eb2-4c28-9bf9-9c5d76d49d41",
+      "itemType": "problem",
+      "itemId": "two-sum",
+      "title": "Two Sum Hash Lookup Pattern",
+      "subtopic": "Arrays & Hashing",
+      "frontContent": "What is the optimal time & space complexity for Two Sum on unsorted arrays?",
+      "backContent": "Time: O(N) single pass. Space: O(N) hash map storing seen complements.",
+      "easinessFactor": "2.60",
+      "intervalDays": 3,
+      "repetitionNumber": 2,
+      "nextReviewDate": "2026-10-06",
+      "createdAt": "2026-10-06T19:50:54.300Z",
+      "updatedAt": "2026-10-06T19:50:56.525Z"
+    },
+    {
+      "id": "55555554-5555-5555-5555-555555555555",
+      "userId": "e0c25a7a-6eb2-4c28-9bf9-9c5d76d49d41",
+      "itemType": "problem",
+      "itemId": "two-sum",
+      "title": "Two Sum Hash Lookup Pattern",
+      "subtopic": "Arrays & Hashing",
+      "frontContent": "What is the optimal time & space complexity for Two Sum on unsorted arrays?",
+      "backContent": "Time: O(N) single pass. Space: O(N) hash map storing seen complements.",
+      "easinessFactor": "2.60",
+      "intervalDays": 3,
+      "repetitionNumber": 2,
+      "nextReviewDate": "2026-10-06",
+      "createdAt": "2026-10-06T19:52:09.144Z",
+      "updatedAt": "2026-10-06T19:52:11.118Z"
+    },
+    {
+      "id": "55555554-5555-5555-5555-555555555555",
+      "userId": "e0c25a7a-6eb2-4c28-9bf9-9c5d76d49d41",
+      "itemType": "problem",
+      "itemId": "two-sum",
+      "title": "Two Sum Hash Lookup Pattern",
+      "subtopic": "Arrays & Hashing",
+      "frontContent": "What is the optimal time & space complexity for Two Sum on unsorted arrays?",
+      "backContent": "Time: O(N) single pass. Space: O(N) hash map storing seen complements.",
+      "easinessFactor": "2.60",
+      "intervalDays": 3,
+      "repetitionNumber": 2,
+      "nextReviewDate": "2026-10-06",
+      "createdAt": "2026-10-06T19:54:12.722Z",
+      "updatedAt": "2026-10-06T19:54:14.562Z"
     }
   ],
   "contests": [
@@ -21481,6 +24302,90 @@
       "status": "active",
       "createdAt": "2026-10-01T17:27:23.246Z",
       "updatedAt": "2026-10-01T17:27:23.251Z"
+    },
+    {
+      "id": "c1111111-1111-1111-1111-111111111111",
+      "title": "Algora Weekly Sprint #148",
+      "slug": "algora-weekly-148",
+      "description": "90-minute algorithmic contest featuring Array, Dynamic Programming, and Graph challenges.",
+      "startTime": "2026-10-06T19:27:26.508Z",
+      "endTime": "2026-10-06T20:57:26.508Z",
+      "durationMinutes": 90,
+      "status": "active",
+      "createdAt": "2026-10-06T19:42:26.508Z",
+      "updatedAt": "2026-10-06T19:42:26.516Z"
+    },
+    {
+      "id": "c1111111-1111-1111-1111-111111111111",
+      "title": "Algora Weekly Sprint #148",
+      "slug": "algora-weekly-148",
+      "description": "90-minute algorithmic contest featuring Array, Dynamic Programming, and Graph challenges.",
+      "startTime": "2026-10-06T19:31:49.197Z",
+      "endTime": "2026-10-06T21:01:49.197Z",
+      "durationMinutes": 90,
+      "status": "active",
+      "createdAt": "2026-10-06T19:46:49.197Z",
+      "updatedAt": "2026-10-06T19:46:49.204Z"
+    },
+    {
+      "id": "c1111111-1111-1111-1111-111111111111",
+      "title": "Algora Weekly Sprint #148",
+      "slug": "algora-weekly-148",
+      "description": "90-minute algorithmic contest featuring Array, Dynamic Programming, and Graph challenges.",
+      "startTime": "2026-10-06T19:33:23.096Z",
+      "endTime": "2026-10-06T21:03:23.096Z",
+      "durationMinutes": 90,
+      "status": "active",
+      "createdAt": "2026-10-06T19:48:23.096Z",
+      "updatedAt": "2026-10-06T19:48:23.122Z"
+    },
+    {
+      "id": "c1111111-1111-1111-1111-111111111111",
+      "title": "Algora Weekly Sprint #148",
+      "slug": "algora-weekly-148",
+      "description": "90-minute algorithmic contest featuring Array, Dynamic Programming, and Graph challenges.",
+      "startTime": "2026-10-06T19:34:19.372Z",
+      "endTime": "2026-10-06T21:04:19.372Z",
+      "durationMinutes": 90,
+      "status": "active",
+      "createdAt": "2026-10-06T19:49:19.372Z",
+      "updatedAt": "2026-10-06T19:49:19.397Z"
+    },
+    {
+      "id": "c1111111-1111-1111-1111-111111111111",
+      "title": "Algora Weekly Sprint #148",
+      "slug": "algora-weekly-148",
+      "description": "90-minute algorithmic contest featuring Array, Dynamic Programming, and Graph challenges.",
+      "startTime": "2026-10-06T19:35:56.540Z",
+      "endTime": "2026-10-06T21:05:56.540Z",
+      "durationMinutes": 90,
+      "status": "active",
+      "createdAt": "2026-10-06T19:50:56.540Z",
+      "updatedAt": "2026-10-06T19:50:56.566Z"
+    },
+    {
+      "id": "c1111111-1111-1111-1111-111111111111",
+      "title": "Algora Weekly Sprint #148",
+      "slug": "algora-weekly-148",
+      "description": "90-minute algorithmic contest featuring Array, Dynamic Programming, and Graph challenges.",
+      "startTime": "2026-10-06T19:37:11.133Z",
+      "endTime": "2026-10-06T21:07:11.133Z",
+      "durationMinutes": 90,
+      "status": "active",
+      "createdAt": "2026-10-06T19:52:11.133Z",
+      "updatedAt": "2026-10-06T19:52:11.158Z"
+    },
+    {
+      "id": "c1111111-1111-1111-1111-111111111111",
+      "title": "Algora Weekly Sprint #148",
+      "slug": "algora-weekly-148",
+      "description": "90-minute algorithmic contest featuring Array, Dynamic Programming, and Graph challenges.",
+      "startTime": "2026-10-06T19:39:14.572Z",
+      "endTime": "2026-10-06T21:09:14.573Z",
+      "durationMinutes": 90,
+      "status": "active",
+      "createdAt": "2026-10-06T19:54:14.573Z",
+      "updatedAt": "2026-10-06T19:54:14.593Z"
     }
   ],
   "contest_problems": [
@@ -22347,6 +25252,132 @@
       "points": 200,
       "createdAt": "2026-10-01T17:27:23.262Z",
       "updatedAt": "2026-10-01T17:27:23.262Z"
+    },
+    {
+      "id": "c1111111-1111-1111-1111-111111111112",
+      "contestId": "c1111111-1111-1111-1111-111111111111",
+      "problemId": "two-sum",
+      "orderIndex": 1,
+      "points": 100,
+      "createdAt": "2026-10-06T19:42:26.523Z",
+      "updatedAt": "2026-10-06T19:42:26.523Z"
+    },
+    {
+      "id": "c2222222-2222-2222-2222-222222222222",
+      "contestId": "c1111111-1111-1111-1111-111111111111",
+      "problemId": "longest-palindromic-substring",
+      "orderIndex": 2,
+      "points": 200,
+      "createdAt": "2026-10-06T19:42:26.523Z",
+      "updatedAt": "2026-10-06T19:42:26.523Z"
+    },
+    {
+      "id": "c1111111-1111-1111-1111-111111111112",
+      "contestId": "c1111111-1111-1111-1111-111111111111",
+      "problemId": "two-sum",
+      "orderIndex": 1,
+      "points": 100,
+      "createdAt": "2026-10-06T19:46:49.211Z",
+      "updatedAt": "2026-10-06T19:46:49.211Z"
+    },
+    {
+      "id": "c2222222-2222-2222-2222-222222222222",
+      "contestId": "c1111111-1111-1111-1111-111111111111",
+      "problemId": "longest-palindromic-substring",
+      "orderIndex": 2,
+      "points": 200,
+      "createdAt": "2026-10-06T19:46:49.211Z",
+      "updatedAt": "2026-10-06T19:46:49.211Z"
+    },
+    {
+      "id": "c1111111-1111-1111-1111-111111111112",
+      "contestId": "c1111111-1111-1111-1111-111111111111",
+      "problemId": "two-sum",
+      "orderIndex": 1,
+      "points": 100,
+      "createdAt": "2026-10-06T19:48:23.146Z",
+      "updatedAt": "2026-10-06T19:48:23.146Z"
+    },
+    {
+      "id": "c2222222-2222-2222-2222-222222222222",
+      "contestId": "c1111111-1111-1111-1111-111111111111",
+      "problemId": "longest-palindromic-substring",
+      "orderIndex": 2,
+      "points": 200,
+      "createdAt": "2026-10-06T19:48:23.146Z",
+      "updatedAt": "2026-10-06T19:48:23.146Z"
+    },
+    {
+      "id": "c1111111-1111-1111-1111-111111111112",
+      "contestId": "c1111111-1111-1111-1111-111111111111",
+      "problemId": "two-sum",
+      "orderIndex": 1,
+      "points": 100,
+      "createdAt": "2026-10-06T19:49:19.420Z",
+      "updatedAt": "2026-10-06T19:49:19.420Z"
+    },
+    {
+      "id": "c2222222-2222-2222-2222-222222222222",
+      "contestId": "c1111111-1111-1111-1111-111111111111",
+      "problemId": "longest-palindromic-substring",
+      "orderIndex": 2,
+      "points": 200,
+      "createdAt": "2026-10-06T19:49:19.420Z",
+      "updatedAt": "2026-10-06T19:49:19.420Z"
+    },
+    {
+      "id": "c1111111-1111-1111-1111-111111111112",
+      "contestId": "c1111111-1111-1111-1111-111111111111",
+      "problemId": "two-sum",
+      "orderIndex": 1,
+      "points": 100,
+      "createdAt": "2026-10-06T19:50:56.593Z",
+      "updatedAt": "2026-10-06T19:50:56.594Z"
+    },
+    {
+      "id": "c2222222-2222-2222-2222-222222222222",
+      "contestId": "c1111111-1111-1111-1111-111111111111",
+      "problemId": "longest-palindromic-substring",
+      "orderIndex": 2,
+      "points": 200,
+      "createdAt": "2026-10-06T19:50:56.594Z",
+      "updatedAt": "2026-10-06T19:50:56.594Z"
+    },
+    {
+      "id": "c1111111-1111-1111-1111-111111111112",
+      "contestId": "c1111111-1111-1111-1111-111111111111",
+      "problemId": "two-sum",
+      "orderIndex": 1,
+      "points": 100,
+      "createdAt": "2026-10-06T19:52:11.182Z",
+      "updatedAt": "2026-10-06T19:52:11.182Z"
+    },
+    {
+      "id": "c2222222-2222-2222-2222-222222222222",
+      "contestId": "c1111111-1111-1111-1111-111111111111",
+      "problemId": "longest-palindromic-substring",
+      "orderIndex": 2,
+      "points": 200,
+      "createdAt": "2026-10-06T19:52:11.182Z",
+      "updatedAt": "2026-10-06T19:52:11.182Z"
+    },
+    {
+      "id": "c1111111-1111-1111-1111-111111111112",
+      "contestId": "c1111111-1111-1111-1111-111111111111",
+      "problemId": "two-sum",
+      "orderIndex": 1,
+      "points": 100,
+      "createdAt": "2026-10-06T19:54:14.618Z",
+      "updatedAt": "2026-10-06T19:54:14.618Z"
+    },
+    {
+      "id": "c2222222-2222-2222-2222-222222222222",
+      "contestId": "c1111111-1111-1111-1111-111111111111",
+      "problemId": "longest-palindromic-substring",
+      "orderIndex": 2,
+      "points": 200,
+      "createdAt": "2026-10-06T19:54:14.618Z",
+      "updatedAt": "2026-10-06T19:54:14.618Z"
     }
   ],
   "student_study_plans": [

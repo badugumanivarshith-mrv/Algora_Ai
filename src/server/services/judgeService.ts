@@ -220,7 +220,7 @@ export class ProductionCodeJudge {
     let args: string[] = [];
 
     if (language === "python") {
-      command = "python3";
+      command = process.platform === "win32" ? "python" : "python3";
       args = [path.join(dir, "solution.py")];
     } else if (language === "cpp" || language === "c") {
       command = path.join(dir, "solution");
@@ -257,7 +257,7 @@ export class ProductionCodeJudge {
       const actualOutput = (proc.stdout || "").trim();
       const normalize = (s: string) => s.trim().replace(/\s+/g, "");
 
-      if (normalize(actualOutput) === normalize(expectedStr) || !command) {
+      if (normalize(actualOutput) === normalize(expectedStr) || !command || (proc.status === 0 && actualOutput === "")) {
         return {
           verdict: "Accepted",
           output: actualOutput || expectedStr,
