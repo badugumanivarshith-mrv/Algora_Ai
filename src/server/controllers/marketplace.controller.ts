@@ -11,7 +11,7 @@ import {
   portfolioEntries, certificates, notifications,
   projectTeams, mentorAssignments, users
 } from "../db/schema";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, and } from "drizzle-orm";
 import { AuthenticatedRequest } from "../middlewares/auth.middleware";
 
 export async function getMarketplaceProjects(req: AuthenticatedRequest, res: Response): Promise<void> {
@@ -63,6 +63,12 @@ export async function applyToProject(req: AuthenticatedRequest, res: Response): 
     const { projectId } = req.body;
     if (!projectId) {
       res.status(400).json({ success: false, error: "Missing project ID" });
+      return;
+    }
+
+    const [proj] = await drizzleDb.select().from(marketplaceProjects).where(eq(marketplaceProjects.id, projectId));
+    if (!proj) {
+      res.status(404).json({ success: false, error: "Marketplace project not found" });
       return;
     }
 
@@ -155,6 +161,12 @@ export async function issueCertificate(req: AuthenticatedRequest, res: Response)
       return;
     }
 
+    const existingCert = await drizzleDb.select().from(certificates).where(and(eq(certificates.userId, userId), eq(certificates.title, title)));
+    if (existingCert.length > 0) {
+      res.status(400).json({ success: false, error: "Certificate already issued" });
+      return;
+    }
+
     const [cert] = await drizzleDb.insert(certificates).values({
       userId,
       title,
@@ -204,10 +216,20 @@ export async function createProjectTeam(req: AuthenticatedRequest, res: Response
       return;
     }
 
+    const [proj] = await drizzleDb.select().from(marketplaceProjects).where(eq(marketplaceProjects.id, projectId));
+    if (!proj) {
+      res.status(404).json({ success: false, error: "Marketplace project not found" });
+      return;
+    }
+
+    // Deduplicate & cap team size to 10
+    const rawMembers = Array.isArray(members) ? members : ["Active Student"];
+    const uniqueMembers = Array.from(new Set(rawMembers)).slice(0, 10);
+
     const [team] = await drizzleDb.insert(projectTeams).values({
       projectId,
       name,
-      membersJson: members || ["Active Student"]
+      membersJson: uniqueMembers
     }).returning();
 
     res.status(201).json({ success: true, data: team });
@@ -240,6 +262,24 @@ export async function assignMentor(req: AuthenticatedRequest, res: Response): Pr
     const { projectId, mentorId } = req.body;
     if (!projectId || !mentorId) {
       res.status(400).json({ success: false, error: "Missing project ID or mentor ID" });
+      return;
+    }
+
+    const [proj] = await drizzleDb.select().from(marketplaceProjects).where(eq(marketplaceProjects.id, projectId));
+    if (!proj) {
+      res.status(404).json({ success: false, error: "Marketplace project not found" });
+      return;
+    }
+
+    const [mentorUser] = await drizzleDb.select().from(users).where(and(eq(users.id, mentorId), eq(users.role, "faculty")));
+    if (!mentorUser) {
+      res.status(404).json({ success: false, error: "Faculty mentor user not found" });
+      return;
+    }
+
+    const existingMentor = await drizzleDb.select().from(mentorAssignments).where(and(eq(mentorAssignments.projectId, projectId), eq(mentorAssignments.mentorId, mentorId)));
+    if (existingMentor.length > 0) {
+      res.status(400).json({ success: false, error: "Mentor already assigned to this project" });
       return;
     }
 

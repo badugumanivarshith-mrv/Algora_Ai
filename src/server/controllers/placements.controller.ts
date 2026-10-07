@@ -167,6 +167,12 @@ export async function awardOffer(req: AuthenticatedRequest, res: Response): Prom
       return;
     }
 
+    const existingOffers = await drizzleDb.select().from(offers).where(eq(offers.registrationId, registrationId));
+    if (existingOffers.length > 0) {
+      res.status(400).json({ success: false, error: "Offer already awarded for this drive registration" });
+      return;
+    }
+
     const [offer] = await drizzleDb.insert(offers).values({
       registrationId,
       packageAmount,

@@ -119,6 +119,12 @@ export async function createIntervention(req: AuthenticatedRequest, res: Respons
       return;
     }
 
+    const [studentUser] = await drizzleDb.select().from(users).where(eq(users.id, studentId));
+    if (!studentUser) {
+      res.status(404).json({ success: false, error: "Student user not found" });
+      return;
+    }
+
     const [intervention] = await drizzleDb.insert(facultyInterventions).values({
       studentId,
       facultyId,

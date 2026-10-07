@@ -319,14 +319,16 @@ function matchCondition(row: any, cond: any): boolean {
   }
 
   // Fallback to legacy column parsing
-  const colName = cond.left?.name || cond.left?.config?.name;
+  const colName = cond.left?.name || cond.left?.config?.name || cond.left?.column?.name;
   let colValue = cond.right;
 
-  if (colValue && typeof colValue === 'object') {
+  while (colValue && typeof colValue === 'object') {
     if (colValue.value !== undefined) {
       colValue = colValue.value;
     } else if (colValue.param !== undefined) {
       colValue = colValue.param;
+    } else {
+      break;
     }
   }
 

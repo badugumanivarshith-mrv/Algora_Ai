@@ -139,31 +139,23 @@ export async function updateTopicStageProgress(req: AuthenticatedRequest, res: R
       current = inserted[0];
     }
 
-    const stageMap: Record<string, string> = {
-      'Concept': 'conceptCompleted',
-      'Syntax': 'syntaxCompleted',
-      'Examples': 'examplesCompleted',
-      'Common Mistakes': 'mistakesCompleted',
-      'Assignment': 'assignmentCompleted',
-      'Project': 'projectCompleted',
-      'Interview Questions': 'interviewCompleted',
-    };
+    const isCompleted = completed !== undefined ? Boolean(completed) : true;
 
-    const fieldToUpdate: any = {};
-    if (completed && stageMap[stage]) {
-      fieldToUpdate[stageMap[stage]] = true;
-    } else if (completed && stage === 'Practice Problems') {
-      fieldToUpdate.problemsCompletedCount = 5;
+    const validStages = ['concept', 'syntax', 'examples', 'common mistakes', 'practice problems', 'practice', 'assignment', 'project', 'interview questions'];
+    const stageKey = String(stage || '').toLowerCase();
+    if (!validStages.includes(stageKey)) {
+      res.status(400).json({ success: false, error: `Invalid stage. Allowed: ${validStages.join(', ')}` });
+      return;
     }
 
-    const updatedConcept = stage === 'Concept' ? completed : current.conceptCompleted;
-    const updatedSyntax = stage === 'Syntax' ? completed : current.syntaxCompleted;
-    const updatedExamples = stage === 'Examples' ? completed : current.examplesCompleted;
-    const updatedMistakes = stage === 'Common Mistakes' ? completed : current.mistakesCompleted;
-    const updatedAssignment = stage === 'Assignment' ? completed : current.assignmentCompleted;
-    const updatedProject = stage === 'Project' ? completed : current.projectCompleted;
-    const updatedInterview = stage === 'Interview Questions' ? completed : current.interviewCompleted;
-    const updatedProblems = stage === 'Practice Problems' ? 5 : current.problemsCompletedCount;
+    const updatedConcept = stageKey === 'concept' ? isCompleted : Boolean(current.conceptCompleted || current.concept_completed);
+    const updatedSyntax = stageKey === 'syntax' ? isCompleted : Boolean(current.syntaxCompleted || current.syntax_completed);
+    const updatedExamples = stageKey === 'examples' ? isCompleted : Boolean(current.examplesCompleted || current.examples_completed);
+    const updatedMistakes = stageKey === 'common mistakes' ? isCompleted : Boolean(current.mistakesCompleted || current.mistakes_completed);
+    const updatedAssignment = stageKey === 'assignment' ? isCompleted : Boolean(current.assignmentCompleted || current.assignment_completed);
+    const updatedProject = stageKey === 'project' ? isCompleted : Boolean(current.projectCompleted || current.project_completed);
+    const updatedInterview = stageKey === 'interview questions' ? isCompleted : Boolean(current.interviewCompleted || current.interview_completed);
+    const updatedProblems = (stageKey === 'practice problems' || stageKey === 'practice') ? 5 : Number(current.problemsCompletedCount || current.problems_completed_count || 0);
 
     let count = 0;
     if (updatedConcept) count++;
@@ -176,10 +168,21 @@ export async function updateTopicStageProgress(req: AuthenticatedRequest, res: R
     if (updatedProblems > 0) count++;
 
     const masteryScore = Math.min(100, Math.round((count / 8) * 100));
-    fieldToUpdate.masteryScore = masteryScore;
-    fieldToUpdate.lastStudiedAt = new Date();
 
-    if (completed) {
+    const fieldToUpdate: any = {
+      conceptCompleted: updatedConcept,
+      syntaxCompleted: updatedSyntax,
+      examplesCompleted: updatedExamples,
+      mistakesCompleted: updatedMistakes,
+      assignmentCompleted: updatedAssignment,
+      projectCompleted: updatedProject,
+      interviewCompleted: updatedInterview,
+      problemsCompletedCount: updatedProblems,
+      masteryScore,
+      lastStudiedAt: new Date(),
+    };
+
+    if (isCompleted) {
       const usersList = await drizzleDb.select().from(users).where(eq(users.id, userId));
       if (usersList.length > 0) {
         const user = usersList[0];

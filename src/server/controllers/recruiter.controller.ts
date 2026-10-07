@@ -252,8 +252,15 @@ export async function updateApplicationStatus(req: AuthenticatedRequest, res: Re
       return;
     }
 
+    const validStatuses = ['Applied', 'Screening', 'Interviewing', 'Offered', 'Rejected'];
+    const normalizedStatus = validStatuses.find(s => s.toLowerCase() === String(status).toLowerCase());
+    if (!normalizedStatus) {
+      res.status(400).json({ success: false, error: `Invalid application status. Allowed: ${validStatuses.join(', ')}` });
+      return;
+    }
+
     const [updatedApp] = await drizzleDb.update(applications)
-      .set({ status, feedback })
+      .set({ status: normalizedStatus, feedback })
       .where(eq(applications.id, targetAppId))
       .returning();
 

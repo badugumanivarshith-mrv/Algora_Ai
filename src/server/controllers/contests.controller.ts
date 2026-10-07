@@ -196,12 +196,33 @@ export async function submitContestSolution(req: AuthenticatedRequest, res: Resp
       return;
     }
 
+    const cList = await drizzleDb.select().from(contests).where(eq(contests.id, id));
+    const contest = cList[0];
+    if (!contest) {
+      res.status(404).json({ success: false, error: "Contest not found" });
+      return;
+    }
+
+    // Deadline & timing check
+    const now = new Date();
+    if (now > new Date(contest.endTime) || contest.status === "completed" || contest.status === "expired") {
+      res.status(400).json({ success: false, error: "Contest has ended" });
+      return;
+    }
+
     const pList = await drizzleDb.select().from(problems).where(eq(problems.id, problemId));
     const problem = pList[0];
     if (!problem) {
       res.status(404).json({ success: false, error: "Problem not found" });
       return;
     }
+
+    // Check if user already solved this problem in this contest
+    const previousSubmissions = await drizzleDb
+      .select()
+      .from(contestSubmissions)
+      .where(and(eq(contestSubmissions.contestId, id), eq(contestSubmissions.userId, userId), eq(contestSubmissions.problemId, problemId)));
+    const alreadySolved = previousSubmissions.some((s) => s.status === "Accepted");
 
     const submissionId = crypto.randomUUID();
     const testCases = (problem.testCases as any[]) || [{ input: "sample", expected: "sample" }];
@@ -218,7 +239,8 @@ export async function submitContestSolution(req: AuthenticatedRequest, res: Resp
     });
 
     const isAccepted = judgeResult.verdict === "Accepted";
-    const pointsAwarded = isAccepted ? 100 : 0;
+    // Only award points if it wasn't already solved previously
+    const pointsAwarded = (isAccepted && !alreadySolved) ? 100 : 0;
     const penaltyMinutes = isAccepted ? 0 : 5;
 
     // Persist contest submission record

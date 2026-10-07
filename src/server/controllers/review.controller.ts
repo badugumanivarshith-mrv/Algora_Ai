@@ -47,6 +47,17 @@ export async function submitReviewRating(req: AuthenticatedRequest, res: Respons
       return;
     }
 
+    if (quality === undefined || quality === null || isNaN(Number(quality)) || Number(quality) < 0 || Number(quality) > 5) {
+      res.status(400).json({ success: false, error: 'Rating must be an integer between 0 and 5' });
+      return;
+    }
+
+    const isUuid = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(reviewId);
+    if (!isUuid) {
+      res.status(404).json({ success: false, error: 'Review card not found' });
+      return;
+    }
+
     const records = await drizzleDb.select().from(dailyReviews).where(eq(dailyReviews.id, reviewId));
     const card = records[0] || null;
     if (!card) {
@@ -54,7 +65,7 @@ export async function submitReviewRating(req: AuthenticatedRequest, res: Respons
       return;
     }
 
-    const q = Math.max(0, Math.min(5, Number(quality) || 3));
+    const q = Number(quality);
 
     let easiness_factor = Number(card.easinessFactor || 2.5);
     let interval_days = Number(card.intervalDays || 1);

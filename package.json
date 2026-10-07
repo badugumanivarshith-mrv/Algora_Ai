@@ -6,9 +6,9 @@
   "scripts": {
     "dev": "tsx server.ts",
     "build": "vite build",
-    "start": "NODE_ENV=production tsx server.ts",
+    "start": "node -e \"process.env.NODE_ENV='production'; require('child_process').execSync('npx tsx server.ts', {stdio: 'inherit'})\"",
     "preview": "vite preview",
-    "clean": "rm -rf dist server.js",
+    "clean": "node -e \"const fs = require('fs'); ['dist', 'server.js'].forEach(p => fs.rmSync(p, {recursive: true, force: true}))\"",
     "lint": "tsc --noEmit",
     "test": "tsx src/server/tests/runAllTests.ts"
   },
@@ -29,6 +29,7 @@
     "pg": "^8.23.1",
     "react": "^19.0.1",
     "react-dom": "^19.0.1",
+    "react-is": "^19.3.0",
     "react-router": "^8.4.0",
     "recharts": "^3.10.1",
     "vite": "^8.3.0"

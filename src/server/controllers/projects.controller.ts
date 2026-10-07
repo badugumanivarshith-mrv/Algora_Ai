@@ -94,7 +94,6 @@ export async function enrollProject(req: AuthenticatedRequest, res: Response): P
         userId,
         projectId,
         status: 'in_progress',
-        completedTaskIds: [],
         reflectionNotes: '',
         score: 0,
       }).returning();
@@ -133,7 +132,6 @@ export async function toggleProjectTask(req: AuthenticatedRequest, res: Response
         userId,
         projectId,
         status: 'in_progress',
-        completedTaskIds: [],
         reflectionNotes: '',
         score: 0,
       }).returning();

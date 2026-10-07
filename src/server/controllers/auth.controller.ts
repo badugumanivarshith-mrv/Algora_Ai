@@ -202,6 +202,13 @@ export async function refresh(req: Request, res: Response): Promise<void> {
 
     const payload = jwt.verify(refreshToken, config.jwt.refreshSecret as jwt.Secret) as any;
     
+    // Check if refresh token is revoked in database
+    const storedToken = await drizzleDb.select().from(refreshTokens).where(eq(refreshTokens.token, refreshToken));
+    if (storedToken.length === 0) {
+      res.status(401).json({ success: false, error: 'Invalid or revoked refresh token.' });
+      return;
+    }
+
     const rows = await drizzleDb.select().from(users).where(eq(users.id, payload.id));
     const row = rows[0] || null;
 
@@ -287,7 +294,7 @@ export async function me(req: AuthenticatedRequest, res: Response): Promise<void
         streak: user.streak,
         targetCompany: user.targetCompany,
         dailyGoalMinutes: user.dailyGoalMinutes,
-        createdAt: user.createdAt.toISOString(),
+        createdAt: user.createdAt instanceof Date ? user.createdAt.toISOString() : (user.createdAt ? String(user.createdAt) : new Date().toISOString()),
       },
     });
   } catch (err: any) {

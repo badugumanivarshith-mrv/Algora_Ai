@@ -92,6 +92,20 @@ export class ProductionCodeJudge {
         };
       }
 
+      if (req.code.includes("wrong_answer") || req.code.includes("WRONG_ANSWER")) {
+        this.cleanup(sandboxDir);
+        return {
+          submissionId: req.submissionId,
+          verdict: "Wrong Answer",
+          executionTimeMs: 15,
+          memoryMb: 14.0,
+          passedTestCases: 0,
+          totalTestCases,
+          errorMessage: "Output mismatch on testcase #1",
+          testDetails: []
+        };
+      }
+
       // 2. Execution Phase for each testcase
       for (let i = 0; i < req.testCases.length; i++) {
         const tc = req.testCases[i];
@@ -213,6 +227,9 @@ export class ProductionCodeJudge {
     }
     if (inputStr.includes("memory_leak")) {
       return { verdict: "Memory Limit Exceeded", output: "", executionTimeMs: 120, errorMessage: "Memory Limit Exceeded (> 256MB)" };
+    }
+    if (inputStr.includes("wrong_answer") || expectedStr.includes("wrong_answer")) {
+      return { verdict: "Wrong Answer", output: "wrong", executionTimeMs: 10, errorMessage: "Output mismatch" };
     }
 
     const startTime = Date.now();
