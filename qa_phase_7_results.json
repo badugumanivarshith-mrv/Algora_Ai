@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-10-23T14:14:47.991Z",
+  "timestamp": "2026-10-23T15:35:38.351Z",
   "browser": "Google Chrome (Headless CDP Automation)",
   "totalJourneys": 10,
   "passed": 10,
@@ -17,10 +17,10 @@
         "User logged out and redirected to public Landing Page."
       ],
       "dbEvidence": [
-        "PostgreSQL Verified: users.id=6b7ba177-52ab-46d9-95c4-f90c63c6e595, role=student, college=IIT Bombay, xp=100"
+        "PostgreSQL Verified: users.id=898459be-05ac-4a7c-94a5-401ca30b8375, role=student, college=IIT Bombay, xp=100"
       ],
       "networkEvidence": [
-        "POST /api/auth/register: HTTP 201, user.id=6b7ba177-52ab-46d9-95c4-f90c63c6e595",
+        "POST /api/auth/register: HTTP 201, user.id=898459be-05ac-4a7c-94a5-401ca30b8375",
         "POST /api/auth/login: HTTP 200, login success"
       ],
       "authEvidence": [
@@ -30,7 +30,7 @@
         "Sign-in completed successfully, token re-established in localStorage."
       ],
       "errors": [],
-      "durationMs": 8909
+      "durationMs": 9350
     },
     {
       "journeyId": 2,
@@ -48,7 +48,7 @@
       ],
       "authEvidence": [],
       "errors": [],
-      "durationMs": 3105
+      "durationMs": 3128
     },
     {
       "journeyId": 3,
@@ -58,7 +58,7 @@
         "Workspace DOM loaded with Code Editor and Action Controls."
       ],
       "dbEvidence": [
-        "PostgreSQL Verified: submissions.id=4328e08a-3f69-4d74-bdf2-edfb90fe4ad6, status=Accepted, passed=3/3, time=350ms"
+        "PostgreSQL Verified: submissions.id=d6cff2a6-edb0-42f5-b5c8-e7e637b92d3d, status=Accepted, passed=3/3, time=408ms"
       ],
       "networkEvidence": [
         "POST /api/problems/run: status=200, success=true",
@@ -66,7 +66,7 @@
       ],
       "authEvidence": [],
       "errors": [],
-      "durationMs": 3837
+      "durationMs": 3732
     },
     {
       "journeyId": 4,
@@ -83,7 +83,7 @@
       ],
       "authEvidence": [],
       "errors": [],
-      "durationMs": 1564
+      "durationMs": 1582
     },
     {
       "journeyId": 5,
@@ -102,7 +102,7 @@
       ],
       "authEvidence": [],
       "errors": [],
-      "durationMs": 1605
+      "durationMs": 1658
     },
     {
       "journeyId": 6,
@@ -112,15 +112,15 @@
         "Daily Review DOM rendered with active review queue."
       ],
       "dbEvidence": [
-        "PostgreSQL Seeded Review Card: id=e084c295-969b-4bc0-ba5b-2c1bb993d78e, title=\"Hash Map Lookup Complexity\"",
+        "PostgreSQL Seeded Review Card: id=c3c80246-fe1f-419b-a6a9-26186a5c8852, title=\"Hash Map Lookup Complexity\"",
         "PostgreSQL Verified SM-2 Update: repetition=1, interval=1 days, EF=2.60, nextReview=Sat Oct 24 2026 00:00:00 GMT+0530 (India Standard Time)"
       ],
       "networkEvidence": [
-        "POST /api/reviews/e084c295-969b-4bc0-ba5b-2c1bb993d78e/rate (rating 5): status=200, success=true"
+        "POST /api/reviews/c3c80246-fe1f-419b-a6a9-26186a5c8852/rate (rating 5): status=200, success=true"
       ],
       "authEvidence": [],
       "errors": [],
-      "durationMs": 1587
+      "durationMs": 1638
     },
     {
       "journeyId": 7,
@@ -130,12 +130,12 @@
         "Recruiter Portal DOM rendered with job management view."
       ],
       "dbEvidence": [
-        "PostgreSQL Verified Job: id=bb45a5c7-59c9-4b4d-9ec4-14f005c5d38c, title=\"Principal Systems Engineer\"",
-        "PostgreSQL Verified: applications (id=6479c770-f814-412f-ad4f-0cafa122c9be, status=Applied)",
+        "PostgreSQL Verified Job: id=ca30271e-390e-4f88-9726-df3fb6813772, title=\"Principal Systems Engineer\"",
+        "PostgreSQL Verified: applications (id=dbb8b75c-d81c-4ec2-b21a-f26c61e11785, status=Applied)",
         "PostgreSQL Verified Status Update: status=\"Interviewing\", feedback=\"Strong algorithmic foundations, advancing to technical round.\""
       ],
       "networkEvidence": [
-        "POST /api/recruiter/jobs: status=201, jobId=bb45a5c7-59c9-4b4d-9ec4-14f005c5d38c",
+        "POST /api/recruiter/jobs: status=201, jobId=ca30271e-390e-4f88-9726-df3fb6813772",
         "POST /api/recruiter/applications (student): status=201, success=true",
         "PATCH /api/recruiter/applications: status=200"
       ],
@@ -143,7 +143,7 @@
         "Recruiter JWT token generated: eyJhbGciOiJIUzI1NiIsInR5c..."
       ],
       "errors": [],
-      "durationMs": 48320
+      "durationMs": 48324
     },
     {
       "journeyId": 8,
@@ -153,7 +153,7 @@
         "Faculty Dashboard mounted in DOM with risk analytics."
       ],
       "dbEvidence": [
-        "PostgreSQL Verified: faculty_interventions (student_id=6b7ba177-52ab-46d9-95c4-f90c63c6e595, recommendation=\"Assign targeted flashcards on sliding window ...\")"
+        "PostgreSQL Verified: faculty_interventions (student_id=898459be-05ac-4a7c-94a5-401ca30b8375, recommendation=\"Assign targeted flashcards on sliding window ...\")"
       ],
       "networkEvidence": [
         "GET /api/faculty/overview: status=200",
@@ -164,7 +164,7 @@
         "Faculty JWT token generated: eyJhbGciOiJIUzI1NiIsInR5c..."
       ],
       "errors": [],
-      "durationMs": 4730
+      "durationMs": 4715
     },
     {
       "journeyId": 9,
@@ -175,8 +175,8 @@
       ],
       "dbEvidence": [
         "Study Group identified in PostgreSQL: id=5dfa4680-4f14-4ef4-b197-d3a9cd36a348",
-        "PostgreSQL Verified Membership: user 6b7ba177-52ab-46d9-95c4-f90c63c6e595 in group 5dfa4680-4f14-4ef4-b197-d3a9cd36a348",
-        "PostgreSQL Verified Chat: id=390214f8-775f-4cc7-a933-95b2700f3112, message=\"E2E Community Message: Ready for contest #1792764759112!\""
+        "PostgreSQL Verified Membership: user 898459be-05ac-4a7c-94a5-401ca30b8375 in group 5dfa4680-4f14-4ef4-b197-d3a9cd36a348",
+        "PostgreSQL Verified Chat: id=ef2c0e46-9c83-464d-aff1-77da54391225, message=\"E2E Community Message: Ready for contest #1792769609025!\""
       ],
       "networkEvidence": [
         "POST /api/community/groups/5dfa4680-4f14-4ef4-b197-d3a9cd36a348/join: status=200, success=true",
@@ -186,7 +186,7 @@
         "Unauthorized boundary test: HTTP 401 (Rejected without token as expected)"
       ],
       "errors": [],
-      "durationMs": 3859
+      "durationMs": 3818
     },
     {
       "journeyId": 10,
@@ -198,15 +198,15 @@
       ],
       "dbEvidence": [
         "PostgreSQL Contest identified: id=c1111111-1111-1111-1111-111111111111",
-        "PostgreSQL Verified: contest_registrations (contest_id=c1111111-1111-1111-1111-111111111111, user_id=6b7ba177-52ab-46d9-95c4-f90c63c6e595)"
+        "PostgreSQL Verified: contest_registrations (contest_id=c1111111-1111-1111-1111-111111111111, user_id=898459be-05ac-4a7c-94a5-401ca30b8375)"
       ],
       "networkEvidence": [
         "POST /api/contests/c1111111-1111-1111-1111-111111111111/register: status=200, success=true",
-        "GET /api/leaderboard: status=200, entriesCount=86"
+        "GET /api/leaderboard: status=200, entriesCount=89"
       ],
       "authEvidence": [],
       "errors": [],
-      "durationMs": 51344
+      "durationMs": 51358
     }
   ]
 }
