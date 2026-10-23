@@ -23,10 +23,15 @@ if (config.geminiApiKey) {
 
 export async function mentorChat(req: AuthenticatedRequest, res: Response): Promise<void> {
   try {
-    const { message, mode, contextTopic, problemId, requestedTier } = req.body;
+    const { message, prompt, mode, contextTopic, problemId, requestedTier, problemContext } = req.body;
+    const incomingMsg = message || prompt || (problemContext?.title ? `Help with ${problemContext.title}` : '');
 
-    if (!message) {
-      res.status(400).json({ success: false, error: 'Message is required' });
+    if (!incomingMsg || typeof incomingMsg !== 'string' || incomingMsg.trim().length === 0) {
+      res.status(400).json({ success: false, error: 'Message is required and must be a non-empty string' });
+      return;
+    }
+    if (incomingMsg.length > 4000) {
+      res.status(400).json({ success: false, error: 'Message exceeds maximum length of 4000 characters' });
       return;
     }
 
@@ -39,7 +44,7 @@ export async function mentorChat(req: AuthenticatedRequest, res: Response): Prom
     if (tier === 'hint') {
       responseText = `💡 **Guiding Question**: What invariant or property remains true about your data structure as you iterate? Try writing down the smallest example (n=1, n=2) by hand first.`;
     } else if (tier === 'approach') {
-      responseText = `📐 **Approach Framing**: Consider whether a greedy choice holds, or if you need to remember past states. For ${contextTopic || 'this problem'}, can you trade O(N) extra memory in exchange for reducing the time complexity from O(N²) to O(N)?`;
+      responseText = `📐 **Approach Framing**: Consider whether a greedy choice holds, or if you need to remember past states. For ${contextTopic || problemContext?.title || 'this problem'}, can you trade O(N) extra memory in exchange for reducing the time complexity from O(N²) to O(N)?`;
     } else if (tier === 'algorithm') {
       responseText = `⚙️ **Algorithmic Outline**:\n1. Initialize your lookup table / frequency map.\n2. Iterate through each element with index.\n3. Compute the target complement.\n4. Check if the complement exists in the table.\n5. Return or update accordingly.`;
     } else if (tier === 'pseudocode') {
@@ -63,7 +68,7 @@ IMPORTANT RULES:
 
         const aiResponse = await aiClient.models.generateContent({
           model: 'gemini-2.5-flash',
-          contents: `Student query: "${message}". Context: topic=${contextTopic || 'DSA'}, problemId=${problemId || 'general'}, requestedTier=${tier}. Respond following Socratic pedagogy.`,
+          contents: `Student query: "${incomingMsg}". Context: topic=${contextTopic || 'DSA'}, problemId=${problemId || problemContext?.title || 'general'}, requestedTier=${tier}. Respond following Socratic pedagogy.`,
           config: {
             systemInstruction,
             temperature: 0.4,
@@ -80,6 +85,7 @@ IMPORTANT RULES:
 
     res.status(200).json({
       success: true,
+      reply: responseText,
       data: {
         reply: responseText,
         type: responseType,
@@ -195,7 +201,12 @@ export async function createAIStudyPlan(req: AuthenticatedRequest, res: Response
 
     const { targetCompany, timelineWeeks } = req.body;
     const company = targetCompany || "Google";
-    const weeks = timelineWeeks || 4;
+    const weeks = timelineWeeks !== undefined ? Number(timelineWeeks) : 4;
+
+    if (isNaN(weeks) || !Number.isInteger(weeks) || weeks < 1 || weeks > 52) {
+      res.status(400).json({ success: false, error: "timelineWeeks must be an integer between 1 and 52" });
+      return;
+    }
 
     const generatedPlan = {
       title: `${company} Prep Roadmap (${weeks} Weeks)`,

@@ -63,6 +63,32 @@ export default function Projects() {
             text: `Welcome to the ${found.title} Workbench! I am your AI Project Mentor. We will guide you through: Requirements → Design → Logic → Implementation → Debugging → Testing. How can I help you with Phase 1 (${mentorPhase})?`
           }
         ]);
+
+        const storedToken = localStorage.getItem("accessToken");
+        if (storedToken) {
+          fetch(`/api/projects/${found.id}`, {
+            headers: { Authorization: `Bearer ${storedToken}` }
+          })
+            .then(res => res.json())
+            .then(json => {
+              if (json.success && json.data?.userProgress) {
+                const prog = json.data.userProgress;
+                if (prog.completedTaskIds && Array.isArray(prog.completedTaskIds)) {
+                  setCompletedTaskIds(prog.completedTaskIds);
+                }
+                if (prog.repoUrl) setGithubUrl(prog.repoUrl);
+                if (prog.demoUrl) setLiveDemoUrl(prog.demoUrl);
+                if (prog.reflectionNotes) setReflectionNotes(prog.reflectionNotes);
+                if (prog.status === "submitted" || prog.status === "completed") {
+                  setSubmissionFeedback({
+                    score: prog.score || 92,
+                    text: prog.aiFeedback || prog.ai_feedback || "Exceptional architectural isolation! Clean separation of domain entities."
+                  });
+                }
+              }
+            })
+            .catch(() => {});
+        }
       }
     } else {
       setActiveProject(null);

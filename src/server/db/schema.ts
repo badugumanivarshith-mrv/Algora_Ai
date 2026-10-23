@@ -476,7 +476,9 @@ export const applications = pgTable("applications", {
   status: varchar("status", { length: 50 }).default("Applied").notNull(), // 'Applied', 'Screening', 'Interviewing', 'Offered', 'Rejected'
   feedback: text("feedback"),
   appliedAt: timestamp("applied_at", { withTimezone: true }).defaultNow().notNull()
-});
+}, (table) => ({
+  uniqueJobStudent: uniqueIndex("unique_job_student_app").on(table.jobId, table.studentId)
+}));
 
 // ==========================================
 // 12. ENTERPRISE PLACEMENT ECOSYSTEM

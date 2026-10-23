@@ -12,6 +12,7 @@ import {
 } from "../db/schema";
 import { eq, desc, and } from "drizzle-orm";
 import { realtimeBroadcaster } from "../services/realtimeService";
+import { sanitizeHtml } from "../utils/sanitize";
 
 // Helper to update reputation and contributions for a user
 async function rewardUser(userId: string, reputPoints: number, contribPoints: number) {
@@ -128,6 +129,21 @@ export async function postStudyGroupChat(req: Request, res: Response) {
     const { message } = req.body;
     if (!message) return res.status(400).json({ error: "Message cannot be empty" });
 
+    const isUuid = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(groupId);
+    if (!isUuid) {
+      return res.status(404).json({ error: "Study group not found" });
+    }
+
+    const [group] = await db.select().from(studyGroups).where(eq(studyGroups.id, groupId));
+    if (!group) return res.status(404).json({ error: "Study group not found" });
+
+    const memberRows = await db.select().from(studyGroupMembers).where(
+      and(eq(studyGroupMembers.groupId, groupId), eq(studyGroupMembers.userId, userId))
+    );
+    if (memberRows.length === 0) {
+      return res.status(403).json({ error: "Forbidden: You must join this study group to post messages" });
+    }
+
     const userProfile = await db.select().from(users).where(eq(users.id, userId));
     const userName = userProfile[0]?.name || "Anonymous";
     const avatarUrl = userProfile[0]?.avatarUrl || "";
@@ -137,7 +153,7 @@ export async function postStudyGroupChat(req: Request, res: Response) {
       userId,
       userName,
       avatarUrl,
-      message
+      message: sanitizeHtml(message)
     }).returning();
 
     // Reward for active discussion engagement
@@ -169,8 +185,8 @@ export async function createForumPost(req: Request, res: Response) {
     const avatarUrl = userProfile[0]?.avatarUrl || "";
 
     const [post] = await db.insert(forumPosts).values({
-      title,
-      content,
+      title: sanitizeHtml(title),
+      content: sanitizeHtml(content),
       category,
       referenceId,
       userId,
@@ -237,6 +253,16 @@ export async function createForumComment(req: Request, res: Response) {
     const { content } = req.body;
     if (!content) return res.status(400).json({ error: "Comment content cannot be empty" });
 
+    const isUuid = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(postId);
+    if (!isUuid) {
+      return res.status(404).json({ error: "Forum post not found" });
+    }
+
+    const [post] = await db.select().from(forumPosts).where(eq(forumPosts.id, postId));
+    if (!post) {
+      return res.status(404).json({ error: "Forum post not found" });
+    }
+
     const userProfile = await db.select().from(users).where(eq(users.id, userId));
     const userName = userProfile[0]?.name || "Anonymous";
     const avatarUrl = userProfile[0]?.avatarUrl || "";
@@ -246,7 +272,7 @@ export async function createForumComment(req: Request, res: Response) {
       userId,
       userName,
       avatarUrl,
-      content
+      content: sanitizeHtml(content)
     }).returning();
 
     // Reward for commenting

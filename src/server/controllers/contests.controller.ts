@@ -17,7 +17,7 @@ import {
   userTopicProgress,
   dailyReviews
 } from "../db/schema";
-import { eq, and, desc, asc } from "drizzle-orm";
+import { eq, and, desc, asc, sql } from "drizzle-orm";
 import { AuthenticatedRequest } from "../middlewares/auth.middleware";
 import { submitToJudgeQueue } from "../services/queueService";
 import { createNotificationInternal } from "./notifications.controller";
@@ -121,7 +121,7 @@ export async function createContest(req: AuthenticatedRequest, res: Response): P
       startTime: new Date(startTime),
       endTime: new Date(endTime),
       durationMinutes: durationMinutes || 90,
-      status: "upcoming",
+      status: req.body.status || (new Date() >= new Date(startTime) ? "active" : "upcoming"),
       createdAt: new Date(),
     };
 
@@ -205,8 +205,23 @@ export async function submitContestSolution(req: AuthenticatedRequest, res: Resp
 
     // Deadline & timing check
     const now = new Date();
+    if (now < new Date(contest.startTime) || contest.status === "upcoming") {
+      res.status(400).json({ success: false, error: "Contest has not started yet" });
+      return;
+    }
+
     if (now > new Date(contest.endTime) || contest.status === "completed" || contest.status === "expired") {
       res.status(400).json({ success: false, error: "Contest has ended" });
+      return;
+    }
+
+    // Registration check
+    const regList = await drizzleDb
+      .select()
+      .from(contestRegistrations)
+      .where(and(eq(contestRegistrations.contestId, id), eq(contestRegistrations.userId, userId)));
+    if (regList.length === 0) {
+      res.status(403).json({ success: false, error: "Must register for contest before submitting solutions" });
       return;
     }
 
@@ -256,39 +271,42 @@ export async function submitContestSolution(req: AuthenticatedRequest, res: Resp
       submittedAt: new Date(),
     });
 
-    // Update Contest Leaderboard Score for user
-    const existingLeaderboard = await drizzleDb
+    // Atomically upsert Contest Leaderboard Score for user with distinct solved problem deduplication
+    const userSubs = await drizzleDb
       .select()
-      .from(contestLeaderboards)
-      .where(and(eq(contestLeaderboards.contestId, id), eq(contestLeaderboards.userId, userId)));
+      .from(contestSubmissions)
+      .where(and(eq(contestSubmissions.contestId, id), eq(contestSubmissions.userId, userId)));
 
-    let currentLB = existingLeaderboard[0];
-    if (!currentLB) {
-      const lbId = crypto.randomUUID();
-      const newLB = await drizzleDb
-        .insert(contestLeaderboards)
-        .values({
-          id: lbId,
-          contestId: id,
-          userId,
-          totalScore: pointsAwarded,
-          totalPenaltyMinutes: penaltyMinutes,
-          solvedCount: isAccepted ? 1 : 0,
+    const distinctSolvedProblemIds = new Set(
+      userSubs.filter((s) => s.status === "Accepted").map((s) => s.problemId)
+    );
+    const distinctSolved = distinctSolvedProblemIds.size;
+    const calculatedScore = distinctSolved * 100;
+    const calculatedPenalty = userSubs
+      .filter((s) => s.status !== "Accepted")
+      .reduce((sum, s) => sum + (s.penaltyMinutes || 5), 0);
+
+    const lbId = crypto.randomUUID();
+    await drizzleDb
+      .insert(contestLeaderboards)
+      .values({
+        id: lbId,
+        contestId: id,
+        userId,
+        totalScore: calculatedScore,
+        totalPenaltyMinutes: calculatedPenalty,
+        solvedCount: distinctSolved,
+        updatedAt: new Date(),
+      })
+      .onConflictDoUpdate({
+        target: [contestLeaderboards.userId, contestLeaderboards.contestId],
+        set: {
+          totalScore: calculatedScore,
+          totalPenaltyMinutes: calculatedPenalty,
+          solvedCount: distinctSolved,
           updatedAt: new Date(),
-        })
-        .returning();
-      currentLB = newLB[0];
-    } else {
-      await drizzleDb
-        .update(contestLeaderboards)
-        .set({
-          totalScore: currentLB.totalScore + pointsAwarded,
-          totalPenaltyMinutes: currentLB.totalPenaltyMinutes + penaltyMinutes,
-          solvedCount: currentLB.solvedCount + (isAccepted ? 1 : 0),
-          updatedAt: new Date(),
-        })
-        .where(eq(contestLeaderboards.id, currentLB.id));
-    }
+        }
+      });
 
     // =========================================================
     // DEEP SYSTEM INTEGRATION ACTIONS

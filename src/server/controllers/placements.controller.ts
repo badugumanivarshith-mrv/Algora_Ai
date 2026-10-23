@@ -23,6 +23,11 @@ export async function createPlacementDrive(req: AuthenticatedRequest, res: Respo
       return;
     }
 
+    if (req.user?.role !== 'faculty' && req.user?.role !== 'admin') {
+      res.status(403).json({ success: false, error: "Forbidden: Only faculty or administrators can create placement drives" });
+      return;
+    }
+
     const { title, company, eligibilityCgpa, eligibilityXp, status } = req.body;
     if (!title || !company) {
       res.status(400).json({ success: false, error: "Missing required fields" });
@@ -137,6 +142,11 @@ export async function getDriveRegistrations(req: AuthenticatedRequest, res: Resp
 
 export async function createInterviewRound(req: AuthenticatedRequest, res: Response): Promise<void> {
   try {
+    if (req.user?.role !== 'faculty' && req.user?.role !== 'recruiter' && req.user?.role !== 'admin') {
+      res.status(403).json({ success: false, error: "Forbidden: Only faculty, recruiters, or administrators can schedule interview rounds" });
+      return;
+    }
+
     const { registrationId, roundNumber, roundType, scheduledAt } = req.body;
     if (!registrationId || !roundType) {
       res.status(400).json({ success: false, error: "Missing required fields" });
@@ -161,6 +171,11 @@ export async function createInterviewRound(req: AuthenticatedRequest, res: Respo
 
 export async function awardOffer(req: AuthenticatedRequest, res: Response): Promise<void> {
   try {
+    if (req.user?.role !== 'faculty' && req.user?.role !== 'recruiter' && req.user?.role !== 'admin') {
+      res.status(403).json({ success: false, error: "Forbidden: Only faculty, recruiters, or administrators can award offers" });
+      return;
+    }
+
     const { registrationId, packageAmount } = req.body;
     if (!registrationId || !packageAmount) {
       res.status(400).json({ success: false, error: "Missing registration ID or package amount" });
@@ -220,6 +235,11 @@ export async function getCompanyPartnerships(req: AuthenticatedRequest, res: Res
 
 export async function createCompanyPartnership(req: AuthenticatedRequest, res: Response): Promise<void> {
   try {
+    if (req.user?.role !== 'faculty' && req.user?.role !== 'admin') {
+      res.status(403).json({ success: false, error: "Forbidden: Only faculty or administrators can create company partnerships" });
+      return;
+    }
+
     const { companyName, partnershipTier } = req.body;
     if (!companyName) {
       res.status(400).json({ success: false, error: "Missing company name" });

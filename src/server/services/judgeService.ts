@@ -126,6 +126,10 @@ export class ProductionCodeJudge {
 
         if (execResult.verdict !== "Accepted") {
           this.cleanup(sandboxDir);
+          const safeErrorMessage = tc.hidden
+            ? (execResult.verdict === "Wrong Answer" ? "Output mismatch on hidden test case" : execResult.errorMessage)
+            : (execResult.errorMessage || `Testcase #${i + 1} output mismatch`);
+
           return {
             submissionId: req.submissionId,
             verdict: execResult.verdict,
@@ -133,7 +137,7 @@ export class ProductionCodeJudge {
             memoryMb: 14.5,
             passedTestCases,
             totalTestCases,
-            errorMessage: execResult.errorMessage || `Testcase #${i + 1} output mismatch`,
+            errorMessage: safeErrorMessage,
             testDetails
           };
         }
@@ -248,10 +252,20 @@ export class ProductionCodeJudge {
     }
 
     try {
+      const safeEnv: NodeJS.ProcessEnv = {
+        PATH: process.env.PATH || '',
+        SYSTEMROOT: process.env.SYSTEMROOT || '',
+        COMSPEC: process.env.COMSPEC || '',
+        PATHEXT: process.env.PATHEXT || '',
+        TEMP: dir,
+        TMP: dir,
+      };
+
       const proc = spawnSync(command, args, {
         input: inputStr,
         timeout: timeLimitMs,
-        encoding: "utf-8"
+        encoding: "utf-8",
+        env: safeEnv,
       });
 
       const duration = Date.now() - startTime;

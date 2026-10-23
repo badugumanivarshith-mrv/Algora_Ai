@@ -93,10 +93,22 @@ export async function markAsRead(req: AuthenticatedRequest, res: Response): Prom
       return;
     }
 
-    await drizzleDb
+    const isUuid = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(id);
+    if (!isUuid) {
+      res.status(404).json({ success: false, error: "Notification not found" });
+      return;
+    }
+
+    const updated = await drizzleDb
       .update(notifications)
       .set({ isRead: true })
-      .where(and(eq(notifications.id, id), eq(notifications.userId, userId)));
+      .where(and(eq(notifications.id, id), eq(notifications.userId, userId)))
+      .returning();
+
+    if (updated.length === 0) {
+      res.status(404).json({ success: false, error: "Notification not found" });
+      return;
+    }
 
     res.status(200).json({ success: true, message: "Notification marked as read" });
   } catch (err: any) {
@@ -134,9 +146,21 @@ export async function deleteNotification(req: AuthenticatedRequest, res: Respons
       return;
     }
 
-    await drizzleDb
+    const isUuid = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(id);
+    if (!isUuid) {
+      res.status(404).json({ success: false, error: "Notification not found" });
+      return;
+    }
+
+    const deleted = await drizzleDb
       .delete(notifications)
-      .where(and(eq(notifications.id, id), eq(notifications.userId, userId)));
+      .where(and(eq(notifications.id, id), eq(notifications.userId, userId)))
+      .returning();
+
+    if (deleted.length === 0) {
+      res.status(404).json({ success: false, error: "Notification not found" });
+      return;
+    }
 
     res.status(200).json({ success: true, message: "Notification deleted" });
   } catch (err: any) {

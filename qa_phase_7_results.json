@@ -1,0 +1,212 @@
+{
+  "timestamp": "2026-10-23T14:14:47.991Z",
+  "browser": "Google Chrome (Headless CDP Automation)",
+  "totalJourneys": 10,
+  "passed": 10,
+  "failed": 0,
+  "results": [
+    {
+      "journeyId": 1,
+      "journeyName": "Student Registration, Login, Logout & Session Persistence",
+      "status": "PASSED",
+      "domEvidence": [
+        "Landing Page Loaded: title=\"ALGORA — AI-Powered Coding Learning Platform\"",
+        "AuthModal displayed in DOM with active form.",
+        "Authenticated Dashboard reached: http://localhost:3000/dashboard",
+        "Session successfully persisted across browser refresh (token & state preserved).",
+        "User logged out and redirected to public Landing Page."
+      ],
+      "dbEvidence": [
+        "PostgreSQL Verified: users.id=6b7ba177-52ab-46d9-95c4-f90c63c6e595, role=student, college=IIT Bombay, xp=100"
+      ],
+      "networkEvidence": [
+        "POST /api/auth/register: HTTP 201, user.id=6b7ba177-52ab-46d9-95c4-f90c63c6e595",
+        "POST /api/auth/login: HTTP 200, login success"
+      ],
+      "authEvidence": [
+        "JWT Access Token generated: eyJhbGciOiJIUzI1NiIsInR5c...",
+        "Token verified in localStorage after reload: eyJhbGciOiJIUzI1NiIs...",
+        "Token after logout: null (cleared successfully)",
+        "Sign-in completed successfully, token re-established in localStorage."
+      ],
+      "errors": [],
+      "durationMs": 8909
+    },
+    {
+      "journeyId": 2,
+      "journeyName": "Learning Track Navigation & Topic Progression",
+      "status": "PASSED",
+      "domEvidence": [
+        "Learning Page DOM mounted: \"Learning\"",
+        "Refreshed Learning DOM shows active track metrics."
+      ],
+      "dbEvidence": [
+        "PostgreSQL Verified: user_topic_progress recorded (topic_id=top_arrays, concept_completed=true)"
+      ],
+      "networkEvidence": [
+        "POST /api/learning/topics/top_arrays/stage: status=200, success=true"
+      ],
+      "authEvidence": [],
+      "errors": [],
+      "durationMs": 3105
+    },
+    {
+      "journeyId": 3,
+      "journeyName": "Code Editor Execution, Submission Results & Errors",
+      "status": "PASSED",
+      "domEvidence": [
+        "Workspace DOM loaded with Code Editor and Action Controls."
+      ],
+      "dbEvidence": [
+        "PostgreSQL Verified: submissions.id=4328e08a-3f69-4d74-bdf2-edfb90fe4ad6, status=Accepted, passed=3/3, time=350ms"
+      ],
+      "networkEvidence": [
+        "POST /api/problems/run: status=200, success=true",
+        "POST /api/problems/submit: status=201, status=accepted"
+      ],
+      "authEvidence": [],
+      "errors": [],
+      "durationMs": 3837
+    },
+    {
+      "journeyId": 4,
+      "journeyName": "AI Mentor Conversation & Socratic Hint Progression",
+      "status": "PASSED",
+      "domEvidence": [
+        "AI Mentor page loaded with interactive chat prompt.",
+        "AI Pedagogical Response: \"💡 **Guiding Question**: What invariant or property remains true about your data...\""
+      ],
+      "dbEvidence": [],
+      "networkEvidence": [
+        "POST /api/ai/mentor: status=200, success=true",
+        "GET /api/problems/two-sum/hints: status=200, hintsCount=3"
+      ],
+      "authEvidence": [],
+      "errors": [],
+      "durationMs": 1564
+    },
+    {
+      "journeyId": 5,
+      "journeyName": "Project Enrollment, Task Updates & Submission",
+      "status": "PASSED",
+      "domEvidence": [
+        "Projects catalog rendered in DOM."
+      ],
+      "dbEvidence": [
+        "PostgreSQL Verified: user_projects (project_id=banking-system, status=submitted, score=92, repo_url=https://github.com/e2e-student/algora-distributed-kv)"
+      ],
+      "networkEvidence": [
+        "POST /api/projects/banking-system/enroll: status=200, success=true",
+        "POST /api/projects/banking-system/tasks/toggle: status=200",
+        "POST /api/projects/banking-system/submit: status=200, score=92"
+      ],
+      "authEvidence": [],
+      "errors": [],
+      "durationMs": 1605
+    },
+    {
+      "journeyId": 6,
+      "journeyName": "Daily Review Rating & SM-2 Spaced Repetition Scheduling",
+      "status": "PASSED",
+      "domEvidence": [
+        "Daily Review DOM rendered with active review queue."
+      ],
+      "dbEvidence": [
+        "PostgreSQL Seeded Review Card: id=e084c295-969b-4bc0-ba5b-2c1bb993d78e, title=\"Hash Map Lookup Complexity\"",
+        "PostgreSQL Verified SM-2 Update: repetition=1, interval=1 days, EF=2.60, nextReview=Sat Oct 24 2026 00:00:00 GMT+0530 (India Standard Time)"
+      ],
+      "networkEvidence": [
+        "POST /api/reviews/e084c295-969b-4bc0-ba5b-2c1bb993d78e/rate (rating 5): status=200, success=true"
+      ],
+      "authEvidence": [],
+      "errors": [],
+      "durationMs": 1587
+    },
+    {
+      "journeyId": 7,
+      "journeyName": "Recruiter Job Creation & Student Application Progression",
+      "status": "PASSED",
+      "domEvidence": [
+        "Recruiter Portal DOM rendered with job management view."
+      ],
+      "dbEvidence": [
+        "PostgreSQL Verified Job: id=bb45a5c7-59c9-4b4d-9ec4-14f005c5d38c, title=\"Principal Systems Engineer\"",
+        "PostgreSQL Verified: applications (id=6479c770-f814-412f-ad4f-0cafa122c9be, status=Applied)",
+        "PostgreSQL Verified Status Update: status=\"Interviewing\", feedback=\"Strong algorithmic foundations, advancing to technical round.\""
+      ],
+      "networkEvidence": [
+        "POST /api/recruiter/jobs: status=201, jobId=bb45a5c7-59c9-4b4d-9ec4-14f005c5d38c",
+        "POST /api/recruiter/applications (student): status=201, success=true",
+        "PATCH /api/recruiter/applications: status=200"
+      ],
+      "authEvidence": [
+        "Recruiter JWT token generated: eyJhbGciOiJIUzI1NiIsInR5c..."
+      ],
+      "errors": [],
+      "durationMs": 48320
+    },
+    {
+      "journeyId": 8,
+      "journeyName": "Faculty Dashboard, Risk Information & Intervention Workflow",
+      "status": "PASSED",
+      "domEvidence": [
+        "Faculty Dashboard mounted in DOM with risk analytics."
+      ],
+      "dbEvidence": [
+        "PostgreSQL Verified: faculty_interventions (student_id=6b7ba177-52ab-46d9-95c4-f90c63c6e595, recommendation=\"Assign targeted flashcards on sliding window ...\")"
+      ],
+      "networkEvidence": [
+        "GET /api/faculty/overview: status=200",
+        "GET /api/faculty/risk: status=200",
+        "POST /api/faculty/intervention: status=201, success=true"
+      ],
+      "authEvidence": [
+        "Faculty JWT token generated: eyJhbGciOiJIUzI1NiIsInR5c..."
+      ],
+      "errors": [],
+      "durationMs": 4730
+    },
+    {
+      "journeyId": 9,
+      "journeyName": "Community Group Membership, Messaging & Unauthorized Access",
+      "status": "PASSED",
+      "domEvidence": [
+        "Community Hub mounted in DOM with study groups and forums."
+      ],
+      "dbEvidence": [
+        "Study Group identified in PostgreSQL: id=5dfa4680-4f14-4ef4-b197-d3a9cd36a348",
+        "PostgreSQL Verified Membership: user 6b7ba177-52ab-46d9-95c4-f90c63c6e595 in group 5dfa4680-4f14-4ef4-b197-d3a9cd36a348",
+        "PostgreSQL Verified Chat: id=390214f8-775f-4cc7-a933-95b2700f3112, message=\"E2E Community Message: Ready for contest #1792764759112!\""
+      ],
+      "networkEvidence": [
+        "POST /api/community/groups/5dfa4680-4f14-4ef4-b197-d3a9cd36a348/join: status=200, success=true",
+        "POST /api/community/groups/5dfa4680-4f14-4ef4-b197-d3a9cd36a348/chats: status=201, success=undefined"
+      ],
+      "authEvidence": [
+        "Unauthorized boundary test: HTTP 401 (Rejected without token as expected)"
+      ],
+      "errors": [],
+      "durationMs": 3859
+    },
+    {
+      "journeyId": 10,
+      "journeyName": "Contest Registration, Submission & Leaderboard Display",
+      "status": "PASSED",
+      "domEvidence": [
+        "Contest Engine page mounted with live countdown timer and schedule.",
+        "Live Leaderboard page mounted with rank tiers and filter controls."
+      ],
+      "dbEvidence": [
+        "PostgreSQL Contest identified: id=c1111111-1111-1111-1111-111111111111",
+        "PostgreSQL Verified: contest_registrations (contest_id=c1111111-1111-1111-1111-111111111111, user_id=6b7ba177-52ab-46d9-95c4-f90c63c6e595)"
+      ],
+      "networkEvidence": [
+        "POST /api/contests/c1111111-1111-1111-1111-111111111111/register: status=200, success=true",
+        "GET /api/leaderboard: status=200, entriesCount=86"
+      ],
+      "authEvidence": [],
+      "errors": [],
+      "durationMs": 51344
+    }
+  ]
+}

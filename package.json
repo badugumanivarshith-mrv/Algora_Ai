@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "clean": "node -e \"const fs = require('fs'); ['dist', 'server.js'].forEach(p => fs.rmSync(p, {recursive: true, force: true}))\"",
     "lint": "tsc --noEmit",
-    "test": "tsx src/server/tests/runAllTests.ts"
+    "test": "tsx src/server/tests/runAllTests.ts",
+    "test:e2e": "tsx src/server/tests/qaPhase7FrontendE2E.ts"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",

@@ -22,17 +22,52 @@ import * as placementsController from '../controllers/placements.controller';
 import * as knowledgeGraphController from '../controllers/knowledgeGraph.controller';
 import * as careerOSController from '../controllers/careerOS.controller';
 import * as marketplaceController from '../controllers/marketplace.controller';
+import crypto from 'crypto';
 import { realtimeBroadcaster } from '../services/realtimeService';
 import { requireAuth, optionalAuth, requireRole } from '../middlewares/auth.middleware';
 import { validateBody, validateEmail } from '../middlewares/validation.middleware';
+import { authLimiter, aiLimiter, judgeLimiter } from '../middlewares/rateLimit.middleware';
 
 import { getPostgresConnectionStatus } from '../db/db';
+import { getEnvAudit } from '../config/index';
 
 export const apiRouter = Router();
 
-// Healthcheck
+// Healthcheck & Operational Probes
 apiRouter.get('/health', (req, res) => {
   res.json({ status: 'ok', service: 'ALGORA Backend API', timestamp: new Date().toISOString() });
+});
+
+apiRouter.get('/health/live', (req, res) => {
+  res.status(200).json({
+    status: 'ok',
+    uptimeSeconds: Math.floor(process.uptime()),
+    timestamp: new Date().toISOString()
+  });
+});
+
+apiRouter.get('/health/ready', (req, res) => {
+  const status = getPostgresConnectionStatus();
+  if (status.connected) {
+    res.status(200).json({
+      status: 'ready',
+      ready: true,
+      database: status,
+      timestamp: new Date().toISOString()
+    });
+  } else {
+    res.status(503).json({
+      status: 'unavailable',
+      ready: false,
+      database: status,
+      message: 'Primary database connection offline. Service not ready to handle production traffic.',
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+apiRouter.get('/health/env', (req, res) => {
+  res.json(getEnvAudit());
 });
 
 apiRouter.get('/health/db', (req, res) => {
@@ -46,12 +81,12 @@ apiRouter.get('/health/db', (req, res) => {
 });
 
 // 1. Authentication Routes
-apiRouter.post('/auth/register', validateBody(['name', 'email', 'password']), validateEmail, authController.register);
-apiRouter.post('/auth/login', validateBody(['email', 'password']), validateEmail, authController.login);
+apiRouter.post('/auth/register', authLimiter.middleware(), validateBody(['name', 'email', 'password']), validateEmail, authController.register);
+apiRouter.post('/auth/login', authLimiter.middleware(), validateBody(['email', 'password']), validateEmail, authController.login);
 apiRouter.post('/auth/refresh', validateBody(['refreshToken']), authController.refreshToken);
 apiRouter.post('/auth/logout', authController.logout);
-apiRouter.post('/auth/password-reset-request', validateEmail, authController.requestPasswordReset);
-apiRouter.post('/auth/password-reset', validateBody(['resetToken', 'newPassword']), authController.resetPassword);
+apiRouter.post('/auth/password-reset-request', authLimiter.middleware(), validateEmail, authController.requestPasswordReset);
+apiRouter.post('/auth/password-reset', authLimiter.middleware(), validateBody(['resetToken', 'newPassword']), authController.resetPassword);
 apiRouter.get('/auth/profile', requireAuth, authController.getProfile);
 
 // 2. Learning Tracks & Progression Routes
@@ -64,21 +99,23 @@ apiRouter.post('/learning/topics/:topicId/stage', requireAuth, learningControlle
 apiRouter.get('/problems', optionalAuth, problemsController.getProblems);
 apiRouter.get('/problems/:idOrSlug', optionalAuth, problemsController.getProblemById);
 apiRouter.get('/problems/:problemId/hints', optionalAuth, problemsController.getProblemHints);
-apiRouter.post('/problems/run', problemsController.runCode);
-apiRouter.post('/problems/submit', optionalAuth, problemsController.submitCode);
+apiRouter.post('/problems/run', judgeLimiter.middleware(), problemsController.runCode);
+apiRouter.post('/problems/submit', judgeLimiter.middleware(), optionalAuth, problemsController.submitCode);
 
 // 4. Projects Routes (Beginner, Intermediate, Advanced)
 apiRouter.get('/projects', optionalAuth, projectsController.getProjects);
 apiRouter.get('/projects/:projectId', optionalAuth, projectsController.getProjectById);
 apiRouter.post('/projects/:projectId/enroll', requireAuth, projectsController.enrollProject);
 apiRouter.post('/projects/:projectId/tasks/toggle', requireAuth, projectsController.toggleProjectTask);
+apiRouter.post('/projects/:projectId/toggle-task', requireAuth, projectsController.toggleProjectTask);
 apiRouter.post('/projects/:projectId/submit', requireAuth, projectsController.submitProject);
 
 // 5. AI Mentor & Intelligence Routes
-apiRouter.post('/ai/mentor/chat', optionalAuth, aiController.mentorChat);
+apiRouter.post('/ai/mentor/chat', aiLimiter.middleware(), optionalAuth, aiController.mentorChat);
+apiRouter.post('/ai/mentor', aiLimiter.middleware(), optionalAuth, aiController.mentorChat);
 apiRouter.get('/ai/analyst/report', optionalAuth, aiController.aiAnalystReport);
 apiRouter.get('/ai/planner', requireAuth, aiController.getAIStudyPlan);
-apiRouter.post('/ai/planner', requireAuth, aiController.createAIStudyPlan);
+apiRouter.post('/ai/planner', aiLimiter.middleware(), requireAuth, aiController.createAIStudyPlan);
 apiRouter.get('/ai/recommendations', requireAuth, aiController.getAIRecommendations);
 
 // 6. Daily Review & Spaced Repetition Routes
@@ -111,7 +148,7 @@ apiRouter.get('/realtime/stream', (req, res) => {
   res.setHeader('Content-Type', 'text/event-stream');
   res.setHeader('Cache-Control', 'no-cache');
   res.setHeader('Connection', 'keep-alive');
-  const clientId = Date.now().toString();
+  const clientId = crypto.randomUUID();
   const userId = req.query.userId as string | undefined;
   realtimeBroadcaster.addClient(clientId, res, userId);
 });
@@ -139,30 +176,30 @@ apiRouter.post('/community/reviews/:reviewId/comments', requireAuth, communityCo
 apiRouter.get('/community/presence', optionalAuth, communityController.getPresenceCount);
 
 // 13. Faculty & Institution Intelligence Routes
-apiRouter.get('/faculty/overview', requireAuth, facultyController.getFacultyOverview);
-apiRouter.get('/faculty/risk', requireAuth, facultyController.getRiskIntelligence);
-apiRouter.post('/faculty/intervention', requireAuth, facultyController.createIntervention);
+apiRouter.get('/faculty/overview', requireAuth, requireRole('faculty', 'admin'), facultyController.getFacultyOverview);
+apiRouter.get('/faculty/risk', requireAuth, requireRole('faculty', 'admin'), facultyController.getRiskIntelligence);
+apiRouter.post('/faculty/intervention', requireAuth, requireRole('faculty', 'admin'), facultyController.createIntervention);
 
 // 14. Recruiter & Placement Portal Routes
-apiRouter.post('/recruiter/jobs', requireAuth, recruiterController.createJob);
-apiRouter.put('/recruiter/jobs/:id', requireAuth, recruiterController.editJob);
-apiRouter.delete('/recruiter/jobs/:id', requireAuth, recruiterController.deleteJob);
+apiRouter.post('/recruiter/jobs', requireAuth, requireRole('recruiter', 'admin'), recruiterController.createJob);
+apiRouter.put('/recruiter/jobs/:id', requireAuth, requireRole('recruiter', 'admin'), recruiterController.editJob);
+apiRouter.delete('/recruiter/jobs/:id', requireAuth, requireRole('recruiter', 'admin'), recruiterController.deleteJob);
 apiRouter.get('/recruiter/jobs', optionalAuth, recruiterController.getJobs);
-apiRouter.get('/recruiter/candidates', requireAuth, recruiterController.getCandidateProfiles);
+apiRouter.get('/recruiter/candidates', requireAuth, requireRole('recruiter', 'admin'), recruiterController.getCandidateProfiles);
 apiRouter.post('/recruiter/applications', requireAuth, recruiterController.applyToJob);
 apiRouter.get('/recruiter/applications', requireAuth, recruiterController.getJobApplications);
-apiRouter.patch('/recruiter/applications', requireAuth, recruiterController.updateApplicationStatus);
-apiRouter.post('/recruiter/offers', requireAuth, recruiterController.sendOffer);
+apiRouter.patch('/recruiter/applications', requireAuth, requireRole('recruiter', 'admin'), recruiterController.updateApplicationStatus);
+apiRouter.post('/recruiter/offers', requireAuth, requireRole('recruiter', 'admin'), recruiterController.sendOffer);
 
 // 15. Enterprise Placements & Drives
-apiRouter.post('/placements/drives', requireAuth, placementsController.createPlacementDrive);
-apiRouter.get('/placements/drives', requireAuth, placementsController.getPlacementDrives);
+apiRouter.post('/placements/drives', requireAuth, requireRole('faculty', 'admin'), placementsController.createPlacementDrive);
+apiRouter.get('/placements/drives', optionalAuth, placementsController.getPlacementDrives);
 apiRouter.post('/placements/register', requireAuth, placementsController.registerForDrive);
 apiRouter.get('/placements/registrations', requireAuth, placementsController.getDriveRegistrations);
-apiRouter.post('/placements/interviews', requireAuth, placementsController.createInterviewRound);
-apiRouter.post('/placements/offers', requireAuth, placementsController.awardOffer);
-apiRouter.get('/placements/partnerships', requireAuth, placementsController.getCompanyPartnerships);
-apiRouter.post('/placements/partnerships', requireAuth, placementsController.createCompanyPartnership);
+apiRouter.post('/placements/interviews', requireAuth, requireRole('faculty', 'recruiter', 'admin'), placementsController.createInterviewRound);
+apiRouter.post('/placements/offers', requireAuth, requireRole('faculty', 'recruiter', 'admin'), placementsController.awardOffer);
+apiRouter.get('/placements/partnerships', optionalAuth, placementsController.getCompanyPartnerships);
+apiRouter.post('/placements/partnerships', requireAuth, requireRole('faculty', 'admin'), placementsController.createCompanyPartnership);
 
 // 16. AI Knowledge Graph & Skill Gap Diagnostic
 apiRouter.get('/knowledge/graph', requireAuth, knowledgeGraphController.getKnowledgeGraph);
@@ -177,15 +214,15 @@ apiRouter.post('/career/milestones', requireAuth, careerOSController.createMiles
 
 // 18. Industry Projects Marketplace (Phase 20)
 apiRouter.get('/marketplace/projects', requireAuth, marketplaceController.getMarketplaceProjects);
-apiRouter.post('/marketplace/projects', requireAuth, marketplaceController.createMarketplaceProject);
+apiRouter.post('/marketplace/projects', requireAuth, requireRole('recruiter', 'faculty', 'admin'), marketplaceController.createMarketplaceProject);
 apiRouter.post('/marketplace/apply', requireAuth, marketplaceController.applyToProject);
 apiRouter.get('/marketplace/portfolio', requireAuth, marketplaceController.getPortfolios);
 apiRouter.post('/marketplace/portfolio', requireAuth, marketplaceController.createPortfolioEntry);
 apiRouter.get('/marketplace/certificates', requireAuth, marketplaceController.getCertificates);
-apiRouter.post('/marketplace/certificates', requireAuth, marketplaceController.issueCertificate);
+apiRouter.post('/marketplace/certificates', requireAuth, requireRole('faculty', 'admin'), marketplaceController.issueCertificate);
 apiRouter.get('/marketplace/teams', requireAuth, marketplaceController.getProjectTeams);
 apiRouter.post('/marketplace/teams', requireAuth, marketplaceController.createProjectTeam);
 apiRouter.get('/marketplace/mentors', requireAuth, marketplaceController.getMentorAssignments);
-apiRouter.post('/marketplace/mentors', requireAuth, marketplaceController.assignMentor);
+apiRouter.post('/marketplace/mentors', requireAuth, requireRole('faculty', 'admin'), marketplaceController.assignMentor);
 
 

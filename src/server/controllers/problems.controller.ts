@@ -93,6 +93,12 @@ export async function runCode(req: Request, res: Response): Promise<void> {
       return;
     }
 
+    const validLangs = ['python', 'cpp', 'java', 'c'];
+    if (!validLangs.includes(String(language).toLowerCase())) {
+      res.status(400).json({ success: false, error: `Invalid language '${language}'. Supported languages: ${validLangs.join(', ')}` });
+      return;
+    }
+
     const list = await drizzleDb.select().from(problems).where(eq(problems.id, problemId));
     const problem = list[0] || null;
     const testCases = problem
@@ -142,6 +148,12 @@ export async function submitCode(req: AuthenticatedRequest, res: Response): Prom
       return;
     }
 
+    const validLangs = ['python', 'cpp', 'java', 'c'];
+    if (!validLangs.includes(String(language).toLowerCase())) {
+      res.status(400).json({ success: false, error: `Invalid language '${language}'. Supported languages: ${validLangs.join(', ')}` });
+      return;
+    }
+
     if (!userId) {
       res.status(401).json({ success: false, error: 'Unauthorized: Guests cannot submit official problem attempts. Please log in or register.' });
       return;
@@ -183,10 +195,20 @@ export async function submitCode(req: AuthenticatedRequest, res: Response): Prom
       errorMessage: judgeResult.errorMessage,
     };
 
+    // Check if user already solved this problem previously to prevent duplicate XP exploits
+    const previousAccepted = await drizzleDb.select().from(submissions).where(
+      and(
+        eq(submissions.userId, userId),
+        eq(submissions.problemId, problemId),
+        eq(submissions.status, 'Accepted')
+      )
+    );
+    const isFirstTimeSolved = isAccepted && previousAccepted.length === 0;
+
     await drizzleDb.insert(submissions).values(submission);
 
     let xpEarned = 0;
-    if (isAccepted) {
+    if (isFirstTimeSolved) {
       xpEarned = problem.difficulty === 'Easy' ? 50 : problem.difficulty === 'Medium' ? 100 : 200;
       const usersList = await drizzleDb.select().from(users).where(eq(users.id, userId));
       if (usersList.length > 0) {

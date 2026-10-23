@@ -16,13 +16,30 @@ export async function getTracks(req: AuthenticatedRequest, res: Response): Promi
     const tracksList = await drizzleDb.select().from(learningTracks);
     const topicsList = await drizzleDb.select().from(topics);
 
+    const userId = req.user?.id;
+    let userProgressList: any[] = [];
+    if (userId) {
+      userProgressList = await drizzleDb.select()
+        .from(userTopicProgress)
+        .where(eq(userTopicProgress.userId, userId));
+    }
+
+    const completedTopicIds = new Set(
+      userProgressList
+        .filter((p) => p.status === 'completed' || Number(p.masteryScore || 0) >= 100)
+        .map((p) => p.topicId)
+    );
+
     const result = tracksList.map((track) => {
       const trackTopics = topicsList.filter((t) => t.trackId === track.id);
+      const total = trackTopics.length;
+      const completed = trackTopics.filter((t) => completedTopicIds.has(t.id)).length;
+      const percent = total > 0 ? Math.round((completed / total) * 100) : 0;
       return {
         ...track,
-        totalTopics: trackTopics.length,
-        completedTopics: 0,
-        progressPercent: 0,
+        totalTopics: total,
+        completedTopics: completed,
+        progressPercent: percent,
       };
     });
 
@@ -135,8 +152,10 @@ export async function updateTopicStageProgress(req: AuthenticatedRequest, res: R
         projectCompleted: false,
         interviewCompleted: false,
         masteryScore: 0,
-      }).returning();
-      current = inserted[0];
+      }).onConflictDoNothing().returning();
+      current = inserted[0] || (await drizzleDb.select()
+        .from(userTopicProgress)
+        .where(and(eq(userTopicProgress.userId, userId), eq(userTopicProgress.topicId, topicId))))[0];
     }
 
     const isCompleted = completed !== undefined ? Boolean(completed) : true;
@@ -169,6 +188,17 @@ export async function updateTopicStageProgress(req: AuthenticatedRequest, res: R
 
     const masteryScore = Math.min(100, Math.round((count / 8) * 100));
 
+    const wasAlreadyCompleted = (
+      (stageKey === 'concept' && Boolean(current.conceptCompleted || current.concept_completed)) ||
+      (stageKey === 'syntax' && Boolean(current.syntaxCompleted || current.syntax_completed)) ||
+      (stageKey === 'examples' && Boolean(current.examplesCompleted || current.examples_completed)) ||
+      (stageKey === 'common mistakes' && Boolean(current.mistakesCompleted || current.mistakes_completed)) ||
+      (stageKey === 'assignment' && Boolean(current.assignmentCompleted || current.assignment_completed)) ||
+      (stageKey === 'project' && Boolean(current.projectCompleted || current.project_completed)) ||
+      (stageKey === 'interview questions' && Boolean(current.interviewCompleted || current.interview_completed)) ||
+      ((stageKey === 'practice problems' || stageKey === 'practice') && Number(current.problemsCompletedCount || current.problems_completed_count || 0) > 0)
+    );
+
     const fieldToUpdate: any = {
       conceptCompleted: updatedConcept,
       syntaxCompleted: updatedSyntax,
@@ -179,25 +209,52 @@ export async function updateTopicStageProgress(req: AuthenticatedRequest, res: R
       interviewCompleted: updatedInterview,
       problemsCompletedCount: updatedProblems,
       masteryScore,
+      status: masteryScore >= 100 ? 'completed' : 'in_progress',
       lastStudiedAt: new Date(),
     };
 
-    if (isCompleted) {
-      const usersList = await drizzleDb.select().from(users).where(eq(users.id, userId));
-      if (usersList.length > 0) {
-        const user = usersList[0];
-        const newXp = user.xp + 25;
-        const newLevel = Math.floor(newXp / 400) + 1;
-        await drizzleDb.update(users).set({ xp: newXp, level: newLevel }).where(eq(users.id, userId));
-      }
-    }
+    if (isCompleted && !wasAlreadyCompleted) {
+      let stageColCondition: any = null;
+      if (stageKey === 'concept') stageColCondition = eq(userTopicProgress.conceptCompleted, false);
+      else if (stageKey === 'syntax') stageColCondition = eq(userTopicProgress.syntaxCompleted, false);
+      else if (stageKey === 'examples') stageColCondition = eq(userTopicProgress.examplesCompleted, false);
+      else if (stageKey === 'common mistakes') stageColCondition = eq(userTopicProgress.mistakesCompleted, false);
+      else if (stageKey === 'assignment') stageColCondition = eq(userTopicProgress.assignmentCompleted, false);
+      else if (stageKey === 'project') stageColCondition = eq(userTopicProgress.projectCompleted, false);
+      else if (stageKey === 'interview questions') stageColCondition = eq(userTopicProgress.interviewCompleted, false);
+      else if (stageKey === 'practice problems' || stageKey === 'practice') stageColCondition = eq(userTopicProgress.problemsCompletedCount, 0);
 
-    const updatedRows = await drizzleDb.update(userTopicProgress)
-      .set(fieldToUpdate)
-      .where(eq(userTopicProgress.id, current.id))
-      .returning();
-    
-    current = updatedRows[0] || { ...current, ...fieldToUpdate };
+      // Attempt atomic conditional transition
+      const atomicRows = stageColCondition
+        ? await drizzleDb.update(userTopicProgress)
+            .set(fieldToUpdate)
+            .where(and(eq(userTopicProgress.id, current.id), stageColCondition))
+            .returning()
+        : [];
+
+      if (atomicRows.length > 0) {
+        current = atomicRows[0];
+        const usersList = await drizzleDb.select().from(users).where(eq(users.id, userId));
+        if (usersList.length > 0) {
+          const user = usersList[0];
+          const newXp = user.xp + 25;
+          const newLevel = Math.floor(newXp / 400) + 1;
+          await drizzleDb.update(users).set({ xp: newXp, level: newLevel }).where(eq(users.id, userId));
+        }
+      } else {
+        const fallbackRows = await drizzleDb.update(userTopicProgress)
+          .set(fieldToUpdate)
+          .where(eq(userTopicProgress.id, current.id))
+          .returning();
+        current = fallbackRows[0] || current;
+      }
+    } else {
+      const updatedRows = await drizzleDb.update(userTopicProgress)
+        .set(fieldToUpdate)
+        .where(eq(userTopicProgress.id, current.id))
+        .returning();
+      current = updatedRows[0] || { ...current, ...fieldToUpdate };
+    }
 
     res.status(200).json({
       success: true,

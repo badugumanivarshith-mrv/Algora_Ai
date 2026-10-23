@@ -31,6 +31,11 @@ export async function createMarketplaceProject(req: AuthenticatedRequest, res: R
       return;
     }
 
+    if (req.user?.role !== 'recruiter' && req.user?.role !== 'faculty' && req.user?.role !== 'admin') {
+      res.status(403).json({ success: false, error: "Forbidden: Only recruiters, faculty, or administrators can post marketplace projects" });
+      return;
+    }
+
     const { title, company, description, techStack } = req.body;
     if (!title || !company || !description || !techStack) {
       res.status(400).json({ success: false, error: "Missing required fields" });
@@ -149,9 +154,14 @@ export async function getCertificates(req: AuthenticatedRequest, res: Response):
 
 export async function issueCertificate(req: AuthenticatedRequest, res: Response): Promise<void> {
   try {
-    const userId = req.user?.id;
+    const userId = req.body.studentId || req.body.userId || req.user?.id;
     if (!userId) {
       res.status(401).json({ success: false, error: "Unauthorized" });
+      return;
+    }
+
+    if (req.user?.role !== 'faculty' && req.user?.role !== 'admin') {
+      res.status(403).json({ success: false, error: "Forbidden: Only faculty or administrators can issue industry certificates" });
       return;
     }
 

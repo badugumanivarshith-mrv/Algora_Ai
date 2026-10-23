@@ -39,7 +39,7 @@ export async function getReviewQueue(req: AuthenticatedRequest, res: Response): 
 export async function submitReviewRating(req: AuthenticatedRequest, res: Response): Promise<void> {
   try {
     const { reviewId } = req.params;
-    const { quality } = req.body;
+    const quality = req.body.quality !== undefined ? req.body.quality : req.body.rating;
     const userId = req.user?.id;
 
     if (!userId) {
@@ -63,6 +63,24 @@ export async function submitReviewRating(req: AuthenticatedRequest, res: Respons
     if (!card) {
       res.status(404).json({ success: false, error: 'Review card not found' });
       return;
+    }
+
+    if (card.userId !== userId) {
+      res.status(403).json({ success: false, error: 'Forbidden: You cannot rate another user\'s review card' });
+      return;
+    }
+
+    // Concurrency Guard: prevent duplicate reviews within the same session
+    if (card.lastReviewedAt) {
+      const elapsedMs = Date.now() - new Date(card.lastReviewedAt).getTime();
+      if (elapsedMs < 30000) {
+        res.status(200).json({
+          success: true,
+          message: `Card already reviewed for this session. Scheduled for review in ${card.intervalDays} day(s).`,
+          data: card,
+        });
+        return;
+      }
     }
 
     const q = Number(quality);
@@ -89,7 +107,7 @@ export async function submitReviewRating(req: AuthenticatedRequest, res: Respons
 
     const nextDate = new Date(Date.now() + interval_days * 86400000).toISOString().split('T')[0];
 
-    await drizzleDb.update(dailyReviews)
+    const updatedRows = await drizzleDb.update(dailyReviews)
       .set({
         easinessFactor: String(easiness_factor),
         intervalDays: interval_days,
@@ -97,12 +115,17 @@ export async function submitReviewRating(req: AuthenticatedRequest, res: Respons
         nextReviewDate: nextDate,
         lastReviewedAt: new Date(),
       })
-      .where(eq(dailyReviews.id, card.id));
+      .where(and(eq(dailyReviews.id, card.id), eq(dailyReviews.repetitionNumber, card.repetitionNumber || 0)))
+      .returning();
 
-    const usersList = await drizzleDb.select().from(users).where(eq(users.id, userId));
-    if (usersList.length > 0) {
-      const user = usersList[0];
-      await drizzleDb.update(users).set({ xp: user.xp + 10 }).where(eq(users.id, userId));
+    if (updatedRows.length > 0) {
+      const usersList = await drizzleDb.select().from(users).where(eq(users.id, userId));
+      if (usersList.length > 0) {
+        const user = usersList[0];
+        const newXp = user.xp + 10;
+        const newLevel = Math.floor(newXp / 400) + 1;
+        await drizzleDb.update(users).set({ xp: newXp, level: newLevel }).where(eq(users.id, userId));
+      }
     }
 
     res.status(200).json({

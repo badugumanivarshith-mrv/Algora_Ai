@@ -203,9 +203,13 @@ export default function Community() {
     if (!newGroupName || !newGroupDesc) return;
 
     try {
+      const storedToken = localStorage.getItem("accessToken");
       const res = await fetch("/api/community/groups", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(storedToken ? { Authorization: `Bearer ${storedToken}` } : {})
+        },
         body: JSON.stringify({ name: newGroupName, description: newGroupDesc, category: newGroupCat })
       });
       if (res.ok) {
@@ -224,13 +228,23 @@ export default function Community() {
       return;
     }
     try {
-      const res = await fetch(`/api/community/groups/${groupId}/join`, { method: "POST" });
+      const storedToken = localStorage.getItem("accessToken");
+      const res = await fetch(`/api/community/groups/${groupId}/join`, {
+        method: "POST",
+        headers: {
+          ...(storedToken ? { Authorization: `Bearer ${storedToken}` } : {})
+        }
+      });
       if (res.ok) {
         const group = studyGroups.find((g) => g.id === groupId);
         if (group) {
           setSelectedGroup(group);
           // Load chats
-          const chatsRes = await fetch(`/api/community/groups/${groupId}/chats`);
+          const chatsRes = await fetch(`/api/community/groups/${groupId}/chats`, {
+            headers: {
+              ...(storedToken ? { Authorization: `Bearer ${storedToken}` } : {})
+            }
+          });
           const chatsData = await chatsRes.json();
           setChats(chatsData);
         }
@@ -247,9 +261,13 @@ export default function Community() {
     if (!newMsg || !selectedGroup) return;
 
     try {
+      const storedToken = localStorage.getItem("accessToken");
       const res = await fetch(`/api/community/groups/${selectedGroup.id}/chats`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(storedToken ? { Authorization: `Bearer ${storedToken}` } : {})
+        },
         body: JSON.stringify({ message: newMsg })
       });
       if (res.ok) {
@@ -260,7 +278,12 @@ export default function Community() {
 
   const handleSelectPost = async (post: ForumPost) => {
     try {
-      const res = await fetch(`/api/community/forum/${post.id}`);
+      const storedToken = localStorage.getItem("accessToken");
+      const res = await fetch(`/api/community/forum/${post.id}`, {
+        headers: {
+          ...(storedToken ? { Authorization: `Bearer ${storedToken}` } : {})
+        }
+      });
       const data = await res.json();
       setSelectedPost(data);
     } catch {}
@@ -275,9 +298,13 @@ export default function Community() {
     if (!newPostTitle || !newPostContent) return;
 
     try {
+      const storedToken = localStorage.getItem("accessToken");
       const res = await fetch("/api/community/forum", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(storedToken ? { Authorization: `Bearer ${storedToken}` } : {})
+        },
         body: JSON.stringify({ title: newPostTitle, content: newPostContent, category: newPostCategory })
       });
       if (res.ok) {
@@ -298,9 +325,13 @@ export default function Community() {
     if (!newCommentText || !selectedPost) return;
 
     try {
+      const storedToken = localStorage.getItem("accessToken");
       const res = await fetch(`/api/community/forum/${selectedPost.id}/comments`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(storedToken ? { Authorization: `Bearer ${storedToken}` } : {})
+        },
         body: JSON.stringify({ content: newCommentText })
       });
       if (res.ok) {
@@ -319,9 +350,13 @@ export default function Community() {
     if (!newReviewTitle || !newReviewDesc || !newReviewCode) return;
 
     try {
+      const storedToken = localStorage.getItem("accessToken");
       const res = await fetch("/api/community/reviews", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(storedToken ? { Authorization: `Bearer ${storedToken}` } : {})
+        },
         body: JSON.stringify({
           problemId: newReviewProb,
           code: newReviewCode,

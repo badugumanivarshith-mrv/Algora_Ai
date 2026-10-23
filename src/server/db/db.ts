@@ -20,7 +20,7 @@ export const pool = new Pool({
   connectionString: DATABASE_URL,
   max: 20, // Max clients in connection pool
   idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 5000,
+  connectionTimeoutMillis: 15000,
   ssl: isNeon ? { rejectUnauthorized: false } : undefined,
 });
 
@@ -605,6 +605,8 @@ export function getPostgresConnectionStatus() {
                   ALTER TABLE marketplace_projects ADD COLUMN tech_stack VARCHAR(255) DEFAULT 'TypeScript, Node.js';
               END IF;
               ALTER TABLE marketplace_projects DROP COLUMN IF EXISTS "techstack";
+              
+              CREATE UNIQUE INDEX IF NOT EXISTS unique_job_student_app ON applications(job_id, student_id);
           END $$;
         `);
       }
@@ -616,3 +618,29 @@ export function getPostgresConnectionStatus() {
     console.log("[DB] PostgreSQL primary storage offline. Fallback active. Error:", err.message);
   }
 })();
+
+/**
+ * Actively probe and restore PostgreSQL connection state if primary storage recovers
+ */
+export async function verifyAndReconnectPostgres(): Promise<boolean> {
+  try {
+    const res = await pool.query('SELECT 1 as alive;');
+    if (res.rows[0]?.alive === 1) {
+      isPostgresConnected = true;
+      return true;
+    }
+    return false;
+  } catch {
+    isPostgresConnected = false;
+    return false;
+  }
+}
+
+/**
+ * Drain database connection pool during graceful shutdown
+ */
+export async function closePostgresPool(): Promise<void> {
+  try {
+    await pool.end();
+  } catch {}
+}

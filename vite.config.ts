@@ -1,14 +1,17 @@
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
-import {defineConfig} from 'vite';
-import { VitePWA } from 'vite-plugin-pwa';
+import {defineConfig, type PluginOption} from 'vite';
 
-export default defineConfig(() => {
-  return {
-    plugins: [
-      react(),
-      tailwindcss(),
+export default defineConfig(async ({ command }) => {
+  const plugins: PluginOption[] = [
+    react(),
+    tailwindcss(),
+  ];
+
+  if (command === 'build') {
+    const { VitePWA } = await import('vite-plugin-pwa');
+    plugins.push(
       VitePWA({
         registerType: 'autoUpdate',
         includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'icon.svg'],
@@ -44,11 +47,14 @@ export default defineConfig(() => {
           ],
         },
         devOptions: {
-          enabled: true,
-          type: 'module',
+          enabled: false,
         },
       })
-    ],
+    );
+  }
+
+  return {
+    plugins,
     resolve: {
       alias: {
         '@': path.resolve(import.meta.dirname, '.'),
@@ -57,7 +63,7 @@ export default defineConfig(() => {
     build: {
       rollupOptions: {
         output: {
-          manualChunks(id) {
+          manualChunks(id: string) {
             if (id.includes('node_modules')) {
               if (id.includes('react') || id.includes('react-dom') || id.includes('react-router-dom') || id.includes('react-router')) {
                 return 'vendor-core';

@@ -118,18 +118,51 @@ async function runTests() {
     const faculty = facultyList[0] || null;
     assert(!!faculty && faculty.role === 'faculty', 'Faculty admin account exists with proper RBAC');
 
+    // --- 7. QA PHASE 5 COMPREHENSIVE SUITE (TC76-TC100) ---
+    console.log('\n--- 7. QA Phase 5 (TC76-TC100) Comprehensive Suite ---');
+    const { runQAPhase5 } = await import('./qaPhase5Tests');
+    const phase5Result = await runQAPhase5();
+    passed += phase5Result.passed;
+    failed += phase5Result.failed;
+
+    // --- 8. QA PHASE 6 END-TO-END WORKFLOW INTEGRATION (WL1-WL10) ---
+    console.log('\n--- 8. QA Phase 6 (WL1-WL10) End-to-End Workflow Integration ---');
+    const { runQAPhase6Workflows } = await import('./qaPhase6Workflows');
+    const phase6Result = await runQAPhase6Workflows();
+    passed += phase6Result.passed;
+    failed += phase6Result.failed;
+
+    // --- 9. QA PHASE 8 SECURITY, CONCURRENCY & RELIABILITY (TC101-TC124) ---
+    console.log('\n--- 9. QA Phase 8 (TC101-TC124) Security, Concurrency & Reliability ---');
+    const { runQAPhase8 } = await import('./qaPhase8SecurityConcurrency');
+    const phase8Result = await runQAPhase8();
+    passed += phase8Result.passed;
+    failed += phase8Result.failed;
+
+    // --- 10. QA PHASE 9 DEPLOYMENT, RECOVERY & READINESS (TC125-TC135) ---
+    console.log('\n--- 10. QA Phase 9 (TC125-TC135) Deployment, Recovery & Readiness ---');
+    const { runQAPhase9 } = await import('./qaPhase9DeploymentRecovery');
+    const phase9Result = await runQAPhase9();
+    passed += phase9Result.passed;
+    failed += phase9Result.failed;
+
+    // --- 11. QA PHASE 10 RELEASE CANDIDATE & DEPLOYMENT VALIDATION (TC136-TC145) ---
+    console.log('\n--- 11. QA Phase 10 (TC136-TC145) Release Candidate & Deployment Validation ---');
+    const { runQAPhase10Suite } = await import('./qaPhase10ReleaseValidation');
+    const phase10Result = await runQAPhase10Suite();
+    passed += phase10Result.passed;
+    failed += phase10Result.failed;
+
   } catch (err: any) {
     console.error('Fatal Test Suite Error:', err.message);
     failed++;
   }
 
   console.log('\n========================================');
-  console.log(`📊 TEST RESULTS: ${passed} PASSED | ${failed} FAILED`);
+  console.log(`📊 TOTAL UNIFIED TEST RESULTS: ${passed} PASSED | ${failed} FAILED`);
   console.log('========================================\n');
 
-  if (failed > 0) {
-    process.exit(1);
-  }
+  process.exit(failed > 0 ? 1 : 0);
 }
 
 runTests();

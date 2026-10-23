@@ -84,7 +84,10 @@ export default function RecruiterPortal() {
 
   const fetchJobs = async () => {
     try {
-      const res = await fetch("/api/recruiter/jobs");
+      const storedToken = localStorage.getItem("accessToken");
+      const res = await fetch("/api/recruiter/jobs", {
+        headers: { ...(storedToken ? { Authorization: `Bearer ${storedToken}` } : {}) }
+      });
       const json = await res.json();
       if (json.success) setJobs(json.data);
     } catch {}
@@ -92,7 +95,10 @@ export default function RecruiterPortal() {
 
   const fetchCandidates = async () => {
     try {
-      const res = await fetch("/api/recruiter/candidates");
+      const storedToken = localStorage.getItem("accessToken");
+      const res = await fetch("/api/recruiter/candidates", {
+        headers: { ...(storedToken ? { Authorization: `Bearer ${storedToken}` } : {}) }
+      });
       const json = await res.json();
       if (json.success) setCandidates(json.data);
     } catch {}
@@ -100,7 +106,10 @@ export default function RecruiterPortal() {
 
   const fetchApplications = async () => {
     try {
-      const res = await fetch("/api/recruiter/applications");
+      const storedToken = localStorage.getItem("accessToken");
+      const res = await fetch("/api/recruiter/applications", {
+        headers: { ...(storedToken ? { Authorization: `Bearer ${storedToken}` } : {}) }
+      });
       const json = await res.json();
       if (json.success) setApps(json.data);
     } catch {}
@@ -114,9 +123,13 @@ export default function RecruiterPortal() {
     }
 
     try {
+      const storedToken = localStorage.getItem("accessToken");
       const res = await fetch("/api/recruiter/jobs", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(storedToken ? { Authorization: `Bearer ${storedToken}` } : {})
+        },
         body: JSON.stringify({
           title: jobTitle,
           company: jobCompany,
@@ -137,6 +150,8 @@ export default function RecruiterPortal() {
         setShowPostJob(false);
         fetchJobs();
         confetti({ particleCount: 50 });
+      } else {
+        alert(json.error || "Failed to post job listing.");
       }
     } catch {}
   };
@@ -148,9 +163,13 @@ export default function RecruiterPortal() {
     }
 
     try {
+      const storedToken = localStorage.getItem("accessToken");
       const res = await fetch("/api/recruiter/applications", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(storedToken ? { Authorization: `Bearer ${storedToken}` } : {})
+        },
         body: JSON.stringify({ jobId })
       });
       const json = await res.json();
@@ -170,9 +189,13 @@ export default function RecruiterPortal() {
 
     setIsUpdating(true);
     try {
+      const storedToken = localStorage.getItem("accessToken");
       const res = await fetch("/api/recruiter/applications", {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(storedToken ? { Authorization: `Bearer ${storedToken}` } : {})
+        },
         body: JSON.stringify({
           appId: selectedApp.id,
           status: newStatus,

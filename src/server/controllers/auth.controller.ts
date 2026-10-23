@@ -26,7 +26,12 @@ async function generateTokens(user: UserEntity) {
     expiresIn: config.jwt.expiresIn,
   } as jwt.SignOptions);
 
-  const refreshToken = jwt.sign(payload, config.jwt.refreshSecret as jwt.Secret, {
+  const refreshPayload = {
+    ...payload,
+    jti: crypto.randomUUID(),
+  };
+
+  const refreshToken = jwt.sign(refreshPayload, config.jwt.refreshSecret as jwt.Secret, {
     expiresIn: config.jwt.refreshExpiresIn,
   } as jwt.SignOptions);
 
@@ -233,6 +238,9 @@ export async function refresh(req: Request, res: Response): Promise<void> {
       updated_at: row.updatedAt.toISOString()
     };
 
+    // Rotate refresh token: invalidate used token
+    await drizzleDb.delete(refreshTokens).where(eq(refreshTokens.token, refreshToken));
+
     const tokens = await generateTokens(user);
 
     res.status(200).json({
@@ -259,11 +267,78 @@ export async function logout(req: Request, res: Response): Promise<void> {
 }
 
 export async function requestPasswordReset(req: Request, res: Response): Promise<void> {
-  res.status(200).json({ success: true, message: 'If the email exists, a password reset link has been sent.' });
+  try {
+    const { email } = req.body;
+    if (!email) {
+      res.status(400).json({ success: false, error: 'Email is required' });
+      return;
+    }
+
+    const normalizedEmail = String(email).toLowerCase().trim();
+    const rows = await drizzleDb.select().from(users).where(eq(users.email, normalizedEmail));
+    const user = rows[0] || null;
+
+    let resetToken: string | null = null;
+    if (user) {
+      resetToken = crypto.randomBytes(32).toString('hex');
+      const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+      await drizzleDb.insert(passwordResetTokens).values({
+        id: crypto.randomUUID(),
+        userId: user.id,
+        resetToken,
+        expiresAt,
+        used: false
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'If the email exists, a password reset link has been sent.',
+      resetToken: resetToken || undefined
+    });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
 }
 
 export async function resetPassword(req: Request, res: Response): Promise<void> {
-  res.status(200).json({ success: true, message: 'Password reset successfully.' });
+  try {
+    const { resetToken, newPassword } = req.body;
+    if (!resetToken || !newPassword) {
+      res.status(400).json({ success: false, error: 'Reset token and new password are required' });
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      res.status(400).json({ success: false, error: 'Password must be at least 6 characters' });
+      return;
+    }
+
+    const tokenRows = await drizzleDb.select()
+      .from(passwordResetTokens)
+      .where(and(eq(passwordResetTokens.resetToken, resetToken), eq(passwordResetTokens.used, false)));
+    const tokenRecord = tokenRows[0] || null;
+
+    if (!tokenRecord || new Date() > new Date(tokenRecord.expiresAt)) {
+      res.status(400).json({ success: false, error: 'Invalid or expired reset token' });
+      return;
+    }
+
+    const salt = bcrypt.genSaltSync(10);
+    const passwordHash = bcrypt.hashSync(newPassword, salt);
+
+    await drizzleDb.update(users)
+      .set({ passwordHash })
+      .where(eq(users.id, tokenRecord.userId));
+
+    await drizzleDb.update(passwordResetTokens)
+      .set({ used: true })
+      .where(eq(passwordResetTokens.id, tokenRecord.id));
+
+    res.status(200).json({ success: true, message: 'Password reset successfully.' });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
 }
 
 export async function me(req: AuthenticatedRequest, res: Response): Promise<void> {

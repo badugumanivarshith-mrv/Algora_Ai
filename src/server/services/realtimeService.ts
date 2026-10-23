@@ -184,6 +184,23 @@ class RealtimeBroadcaster {
   public broadcastSystemEvent(eventData: any): void {
     this.broadcast("system_event", eventData);
   }
+
+  /**
+   * Graceful shutdown: notifies all connected clients and drains SSE connections
+   */
+  public closeAll(): void {
+    if (this.heartbeatInterval) {
+      clearInterval(this.heartbeatInterval);
+      this.heartbeatInterval = null;
+    }
+    for (const [id, client] of this.clients.entries()) {
+      try {
+        client.res.write(`event: system_event\ndata: ${JSON.stringify({ status: "server_shutdown", message: "Server undergoing rolling update. Reconnecting shortly." })}\n\n`);
+        client.res.end();
+      } catch {}
+    }
+    this.clients.clear();
+  }
 }
 
 export const realtimeBroadcaster = new RealtimeBroadcaster();

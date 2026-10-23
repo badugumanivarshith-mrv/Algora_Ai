@@ -4,7 +4,7 @@
  * ALGORA Authentication & Guest Mode Modal
  */
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { X, Mail, Lock, User as UserIcon, Building2, Target, ArrowRight, Sparkles, AlertCircle, ShieldCheck } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 
@@ -18,6 +18,13 @@ interface AuthModalProps {
 export default function AuthModal({ isOpen, onClose, initialMode = "login", onSuccess }: AuthModalProps) {
   const { login, register, continueAsGuest, authError, clearError } = useAuth();
   const [mode, setMode] = useState<"login" | "register" | "guest">(initialMode);
+
+  useEffect(() => {
+    if (isOpen) {
+      setMode(initialMode);
+      clearError();
+    }
+  }, [initialMode, isOpen]);
 
   // Form State
   const [name, setName] = useState("");

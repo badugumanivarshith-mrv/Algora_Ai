@@ -59,7 +59,10 @@ export default function Faculty() {
 
   const fetchFacultyData = async () => {
     try {
-      const res = await fetch("/api/faculty/overview");
+      const storedToken = localStorage.getItem("accessToken");
+      const res = await fetch("/api/faculty/overview", {
+        headers: { ...(storedToken ? { Authorization: `Bearer ${storedToken}` } : {}) }
+      });
       const json = await res.json();
       if (json.success && json.data) {
         setStudents(json.data.students);
@@ -73,7 +76,10 @@ export default function Faculty() {
 
   const fetchRiskAlerts = async () => {
     try {
-      const res = await fetch("/api/faculty/risk");
+      const storedToken = localStorage.getItem("accessToken");
+      const res = await fetch("/api/faculty/risk", {
+        headers: { ...(storedToken ? { Authorization: `Bearer ${storedToken}` } : {}) }
+      });
       const json = await res.json();
       if (json.success && json.data) {
         setRiskAlerts(json.data.atRiskStudents);
@@ -91,9 +97,13 @@ export default function Faculty() {
 
     setIsSubmitting(true);
     try {
+      const storedToken = localStorage.getItem("accessToken");
       const res = await fetch("/api/faculty/intervention", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(storedToken ? { Authorization: `Bearer ${storedToken}` } : {})
+        },
         body: JSON.stringify({
           studentId: selectedStudent.id,
           recommendation: interventionText

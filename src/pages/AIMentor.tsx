@@ -56,13 +56,46 @@ export default function AIMentor() {
 
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }); }, [msgs]);
 
-  const send = (text?: string) => {
+  const send = async (text?: string, tier?: string) => {
     const content = text || input;
     if (!content.trim()) return;
     const now = new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
     setMsgs((m) => [...m, { role: "user", type: "text", content, time: now }]);
     setInput("");
     setTyping(true);
+
+    try {
+      const storedToken = localStorage.getItem("accessToken");
+      const res = await fetch("/api/ai/mentor", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(storedToken ? { Authorization: `Bearer ${storedToken}` } : {})
+        },
+        body: JSON.stringify({
+          message: content,
+          mode: "concept",
+          requestedTier: tier || "hint"
+        })
+      });
+
+      if (res.ok) {
+        const json = await res.json();
+        if (json.success && json.reply) {
+          setTyping(false);
+          setMsgs((m) => [...m, {
+            role: "ai",
+            type: json.data?.type === "code" ? "code" : json.data?.type === "insight" ? "insight" : "text",
+            content: json.reply,
+            time: new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" }),
+          }]);
+          return;
+        }
+      }
+    } catch {
+      // Fallback below
+    }
+
     setTimeout(() => {
       setTyping(false);
       setMsgs((m) => [...m, {
@@ -70,7 +103,7 @@ export default function AIMentor() {
         content: "Great question! The key insight here is to think about what makes each subproblem unique. What changes between recursive calls? That's your state. Once you've nailed that down, memoization writes itself.",
         time: new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" }),
       }]);
-    }, 1400);
+    }, 600);
   };
 
   return (

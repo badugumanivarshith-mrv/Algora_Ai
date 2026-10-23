@@ -14,6 +14,11 @@ import { AuthenticatedRequest } from "../middlewares/auth.middleware";
 
 export async function getFacultyOverview(req: AuthenticatedRequest, res: Response): Promise<void> {
   try {
+    if (req.user?.role !== 'faculty' && req.user?.role !== 'admin') {
+      res.status(403).json({ success: false, error: "Forbidden: Faculty or administrator role required" });
+      return;
+    }
+
     const studentsList = await drizzleDb.select().from(users).where(eq(users.role, "student"));
 
     const totalStudents = studentsList.length;
@@ -59,6 +64,11 @@ export async function getFacultyOverview(req: AuthenticatedRequest, res: Respons
 
 export async function getRiskIntelligence(req: AuthenticatedRequest, res: Response): Promise<void> {
   try {
+    if (req.user?.role !== 'faculty' && req.user?.role !== 'admin') {
+      res.status(403).json({ success: false, error: "Forbidden: Faculty or administrator role required" });
+      return;
+    }
+
     const studentsList = await drizzleDb.select().from(users).where(eq(users.role, "student"));
 
     // Filter students into specific risk intelligence tiers
@@ -110,6 +120,11 @@ export async function createIntervention(req: AuthenticatedRequest, res: Respons
     const facultyId = req.user?.id;
     if (!facultyId) {
       res.status(401).json({ success: false, error: "Unauthorized" });
+      return;
+    }
+
+    if (req.user?.role !== 'faculty' && req.user?.role !== 'admin') {
+      res.status(403).json({ success: false, error: "Forbidden: Faculty or administrator role required" });
       return;
     }
 

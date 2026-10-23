@@ -20,6 +20,11 @@ export async function createJob(req: AuthenticatedRequest, res: Response): Promi
       return;
     }
 
+    if (req.user?.role !== 'recruiter' && req.user?.role !== 'admin') {
+      res.status(403).json({ success: false, error: "Forbidden: Only recruiters or administrators can create job postings" });
+      return;
+    }
+
     const { title, company, description, location, type, salary, requirements } = req.body;
     if (!title || !company || !description || !requirements) {
       res.status(400).json({ success: false, error: "Missing required fields" });
@@ -59,6 +64,11 @@ export async function editJob(req: AuthenticatedRequest, res: Response): Promise
       return;
     }
 
+    if (existing.createdBy !== recruiterId && req.user?.role !== 'admin') {
+      res.status(403).json({ success: false, error: "Forbidden: You can only edit your own job postings" });
+      return;
+    }
+
     const [updated] = await drizzleDb.update(jobs)
       .set({
         title: title || existing.title,
@@ -93,6 +103,11 @@ export async function deleteJob(req: AuthenticatedRequest, res: Response): Promi
       return;
     }
 
+    if (existing.createdBy !== recruiterId && req.user?.role !== 'admin') {
+      res.status(403).json({ success: false, error: "Forbidden: You can only delete your own job postings" });
+      return;
+    }
+
     await drizzleDb.delete(jobs).where(eq(jobs.id, id));
     res.json({ success: true, message: "Job deleted successfully" });
   } catch (err: any) {
@@ -102,6 +117,11 @@ export async function deleteJob(req: AuthenticatedRequest, res: Response): Promi
 
 export async function sendOffer(req: AuthenticatedRequest, res: Response): Promise<void> {
   try {
+    if (req.user?.role !== 'recruiter' && req.user?.role !== 'admin') {
+      res.status(403).json({ success: false, error: "Forbidden: Only recruiters can send job offers" });
+      return;
+    }
+
     const { applicationId, salaryOffer, feedback } = req.body;
     if (!applicationId) {
       res.status(400).json({ success: false, error: "Missing application ID" });
@@ -148,8 +168,24 @@ export async function getJobs(req: AuthenticatedRequest, res: Response): Promise
 
 export async function getCandidateProfiles(req: AuthenticatedRequest, res: Response): Promise<void> {
   try {
-    // Returns students with accumulated mastery analytics, XP, and reputationScore for recruiter search
-    const studentsList = await drizzleDb.select().from(users).where(eq(users.role, "student"));
+    // Returns students with accumulated mastery analytics, XP, and reputationScore for recruiter search (sensitive passwordHash omitted)
+    const studentsList = await drizzleDb.select({
+      id: users.id,
+      name: users.name,
+      email: users.email,
+      role: users.role,
+      college: users.college,
+      avatarUrl: users.avatarUrl,
+      xp: users.xp,
+      level: users.level,
+      streak: users.streak,
+      targetCompany: users.targetCompany,
+      dailyGoalMinutes: users.dailyGoalMinutes,
+      reputationScore: users.reputationScore,
+      contributionScore: users.contributionScore,
+      createdAt: users.createdAt,
+      updatedAt: users.updatedAt
+    }).from(users).where(eq(users.role, "student"));
     res.json({ success: true, data: studentsList });
   } catch (err: any) {
     res.status(500).json({ success: false, error: err.message });
@@ -179,24 +215,18 @@ export async function applyToJob(req: AuthenticatedRequest, res: Response): Prom
       return;
     }
 
-    // Check existing
-    const existing = await drizzleDb.select().from(applications).where(
-      and(
-        eq(applications.jobId, jobId),
-        eq(applications.studentId, studentId)
-      )
-    );
-
-    if (existing.length > 0) {
-      res.status(400).json({ success: false, error: "Already applied to this opening" });
-      return;
-    }
-
-    const [app] = await drizzleDb.insert(applications).values({
+    // Atomically insert on conflict do nothing to prevent concurrent double-application race conditions
+    const inserted = await drizzleDb.insert(applications).values({
       jobId,
       studentId,
       status: "Applied"
-    }).returning();
+    }).onConflictDoNothing().returning();
+
+    const app = inserted[0];
+    if (!app) {
+      res.status(400).json({ success: false, error: "Already applied to this opening" });
+      return;
+    }
 
     // Notify recruiter / system logs
     const jobDetailsList = await drizzleDb.select().from(jobs).where(eq(jobs.id, jobId));
@@ -263,6 +293,11 @@ export async function updateApplicationStatus(req: AuthenticatedRequest, res: Re
       .set({ status: normalizedStatus, feedback })
       .where(eq(applications.id, targetAppId))
       .returning();
+
+    if (!updatedApp) {
+      res.status(404).json({ success: false, error: "Application not found" });
+      return;
+    }
 
     // Trigger persistent real-time notifications to the student
     await drizzleDb.insert(notifications).values({

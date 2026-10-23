@@ -1,10 +1,13 @@
+import { useState, useEffect } from "react";
 import {
   AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell,
 } from "recharts";
 import {
   Flame, Clock, Target, TrendingUp, TrendingDown, CheckCircle2,
   XCircle, AlertCircle, ChevronRight, Zap, Code2, Brain, Calendar,
+  RotateCw, Eye, RefreshCw, BookOpenCheck, Sparkles, Award
 } from "lucide-react";
+import { useAuth } from "../context/AuthContext";
 
 const timeline = [
   { t: "9AM", p: 1 },{ t: "10AM", p: 0 },{ t: "11AM", p: 2 },{ t: "12PM", p: 0 },
@@ -50,9 +53,74 @@ function Tip({ active, payload, label }: any) {
 }
 
 export default function DailyReview() {
+  const { user } = useAuth();
   const today = new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
+
+  // SM-2 Review Queue State
+  const [queue, setQueue] = useState<any[]>([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isFlipped, setIsFlipped] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [ratingMessage, setRatingMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchReviewQueue();
+  }, [user]);
+
+  const fetchReviewQueue = async () => {
+    setLoading(true);
+    try {
+      const storedToken = localStorage.getItem("accessToken");
+      const res = await fetch("/api/reviews/queue", {
+        headers: {
+          ...(storedToken ? { Authorization: `Bearer ${storedToken}` } : {})
+        }
+      });
+      const data = await res.json();
+      if (data.success && Array.isArray(data.data)) {
+        setQueue(data.data);
+      }
+    } catch {
+      // Fallback
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRate = async (quality: number) => {
+    const card = queue[currentIndex];
+    if (!card) return;
+
+    try {
+      const storedToken = localStorage.getItem("accessToken");
+      const res = await fetch(`/api/reviews/${card.id}/rate`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(storedToken ? { Authorization: `Bearer ${storedToken}` } : {})
+        },
+        body: JSON.stringify({ quality })
+      });
+      const json = await res.json();
+      if (json.success) {
+        setRatingMessage(`Rated ${quality}/5! Next review: ${json.data?.nextReviewDate || "scheduled"}`);
+      }
+    } catch {
+      setRatingMessage(`Rated ${quality}/5 (offline simulated).`);
+    }
+
+    setTimeout(() => {
+      setRatingMessage(null);
+      setIsFlipped(false);
+      setCurrentIndex((prev) => prev + 1);
+    }, 1200);
+  };
+
+  const currentCard = queue[currentIndex];
+  const isDeckCompleted = queue.length > 0 && currentIndex >= queue.length;
+
   return (
-    <div style={{ padding: 24, maxWidth: 1280, margin: "0 auto", display: "flex", flexDirection: "column", gap: 20 }}>
+    <div style={{ padding: 24, maxWidth: 1280, margin: "0 auto", display: "flex", flexDirection: "column", gap: 24 }}>
       {/* Header */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
@@ -60,16 +128,182 @@ export default function DailyReview() {
             <Flame size={18} color="white" />
           </div>
           <div>
-            <p style={{ fontSize: 11, color: "var(--text-muted)", margin: 0 }}>{today}</p>
-            <h2 style={{ fontSize: 20, fontWeight: 700, color: "var(--text-primary)", margin: 0, letterSpacing: "-0.02em" }}>Today's Review</h2>
+            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+              <RotateCw size={13} style={{ color: "var(--amber)" }} />
+              <span style={{ fontSize: 11, fontWeight: 700, color: "var(--amber)", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                SuperMemo-2 Spaced Repetition
+              </span>
+            </div>
+            <h2 style={{ fontSize: 22, fontWeight: 800, color: "var(--text-primary)", margin: "2px 0 0", letterSpacing: "-0.02em" }}>Daily Memory Review</h2>
           </div>
         </div>
-        <button className="btn btn-secondary btn-sm" style={{ gap: 5 }}>
-          <Calendar size={12} /> View history
-        </button>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <div className="surface-card" style={{ padding: "6px 14px", display: "flex", alignItems: "center", gap: 6, fontSize: 12, fontWeight: 600 }}>
+            <BookOpenCheck size={14} style={{ color: "var(--amber)" }} />
+            <span>{queue.length} Cards in Queue</span>
+          </div>
+          <button className="btn btn-secondary btn-sm" onClick={fetchReviewQueue} style={{ gap: 5 }}>
+            <RefreshCw size={12} /> Sync Queue
+          </button>
+        </div>
       </div>
 
-      {/* Metrics */}
+      {/* SM-2 Interactive Spaced Repetition Card Deck */}
+      <div className="surface-card" style={{ padding: 24, position: "relative", overflow: "hidden" }}>
+        {loading ? (
+          <div style={{ padding: "40px 0", textAlign: "center", color: "var(--text-muted)" }}>
+            <RefreshCw size={24} className="animate-spin" style={{ margin: "0 auto 8px" }} />
+            <p style={{ fontSize: 13, margin: 0 }}>Loading your personalized spaced review queue...</p>
+          </div>
+        ) : !isDeckCompleted && currentCard ? (
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            {/* Progress Bar & EF Indicator */}
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: 12, color: "var(--text-secondary)" }}>
+              <span style={{ fontWeight: 600 }}>Card {currentIndex + 1} of {queue.length}</span>
+              <span className="badge badge-neutral" style={{ fontSize: 11 }}>
+                Easiness Factor: {Number(currentCard.easinessFactor || currentCard.easiness_factor || 2.5).toFixed(2)}x
+              </span>
+            </div>
+            <div className="progress" style={{ height: 4 }}>
+              <div
+                className="progress-fill"
+                style={{
+                  width: `${((currentIndex + 1) / queue.length) * 100}%`,
+                  background: "linear-gradient(90deg, #f59e0b, #ef4444)"
+                }}
+              />
+            </div>
+
+            {/* Flashcard Body */}
+            <div
+              id="sm2-flashcard"
+              onClick={() => setIsFlipped(!isFlipped)}
+              style={{
+                minHeight: 220,
+                padding: "24px 28px",
+                borderRadius: "var(--radius-lg)",
+                background: "var(--bg-subtle)",
+                border: "1px solid var(--border-strong)",
+                cursor: "pointer",
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "space-between",
+                transition: "all 0.2s ease",
+              }}
+            >
+              <div>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+                  <span className="badge badge-blue" style={{ fontSize: 10, textTransform: "uppercase" }}>
+                    {currentCard.itemType || currentCard.item_type || "Recall"} • {currentCard.subtopic || "DSA"}
+                  </span>
+                  <span style={{ fontSize: 11, color: "var(--text-muted)", display: "flex", alignItems: "center", gap: 4 }}>
+                    <Eye size={12} /> {isFlipped ? "Click to view question" : "Click to flip answer"}
+                  </span>
+                </div>
+
+                {!isFlipped ? (
+                  <div>
+                    <span style={{ fontSize: 10, fontWeight: 700, color: "var(--text-muted)", letterSpacing: "0.05em", textTransform: "uppercase" }}>
+                      QUESTION / PATTERN INVARIANT
+                    </span>
+                    <h3 style={{ fontSize: 17, fontWeight: 700, color: "var(--text-primary)", margin: "8px 0" }}>
+                      {currentCard.title}
+                    </h3>
+                    <p style={{ fontSize: 13.5, color: "var(--text-secondary)", lineHeight: 1.6, margin: "8px 0 0" }}>
+                      {currentCard.frontContent || currentCard.front_content || "Explain the optimal time and space complexity."}
+                    </p>
+                  </div>
+                ) : (
+                  <div>
+                    <span style={{ fontSize: 10, fontWeight: 700, color: "var(--green)", letterSpacing: "0.05em", textTransform: "uppercase" }}>
+                      RECALL ANSWER & MECHANICS
+                    </span>
+                    <p style={{ fontSize: 14.5, fontWeight: 600, color: "var(--green)", margin: "8px 0" }}>
+                      {currentCard.backContent || currentCard.back_content || "Mastered with optimal complexity."}
+                    </p>
+                    <div style={{ marginTop: 12, padding: "10px 14px", borderRadius: "var(--radius-md)", background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
+                      <p style={{ fontSize: 12, color: "var(--text-muted)", margin: 0 }}>
+                        💡 <strong>Key Takeaway:</strong> Invariant maintained across iterations. Interval advances exponentially upon recall.
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div style={{ textAlign: "center", fontSize: 11, color: "var(--text-muted)", marginTop: 16 }}>
+                {!isFlipped ? "Tap card to check mental recall" : "Rate how easily you recalled this card:"}
+              </div>
+            </div>
+
+            {/* Rating Buttons */}
+            {isFlipped && (
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 10 }}>
+                <button
+                  id="sm2-rate-1"
+                  onClick={(e) => { e.stopPropagation(); handleRate(1); }}
+                  className="btn btn-secondary"
+                  style={{ borderColor: "var(--red)", color: "var(--red)", flexDirection: "column", padding: "10px 8px" }}
+                >
+                  <span style={{ fontSize: 12, fontWeight: 700 }}>Again (1)</span>
+                  <span style={{ fontSize: 10, opacity: 0.8 }}>&lt; 1 Day Review</span>
+                </button>
+                <button
+                  id="sm2-rate-3"
+                  onClick={(e) => { e.stopPropagation(); handleRate(3); }}
+                  className="btn btn-secondary"
+                  style={{ borderColor: "var(--amber)", color: "var(--amber)", flexDirection: "column", padding: "10px 8px" }}
+                >
+                  <span style={{ fontSize: 12, fontWeight: 700 }}>Hard (3)</span>
+                  <span style={{ fontSize: 10, opacity: 0.8 }}>2 Days Review</span>
+                </button>
+                <button
+                  id="sm2-rate-4"
+                  onClick={(e) => { e.stopPropagation(); handleRate(4); }}
+                  className="btn btn-secondary"
+                  style={{ borderColor: "var(--blue)", color: "var(--blue)", flexDirection: "column", padding: "10px 8px" }}
+                >
+                  <span style={{ fontSize: 12, fontWeight: 700 }}>Good (4)</span>
+                  <span style={{ fontSize: 10, opacity: 0.8 }}>4 Days Review</span>
+                </button>
+                <button
+                  id="sm2-rate-5"
+                  onClick={(e) => { e.stopPropagation(); handleRate(5); }}
+                  className="btn btn-primary"
+                  style={{ background: "var(--green)", borderColor: "var(--green)", flexDirection: "column", padding: "10px 8px" }}
+                >
+                  <span style={{ fontSize: 12, fontWeight: 700 }}>Easy (5)</span>
+                  <span style={{ fontSize: 10, opacity: 0.9 }}>7 Days Review</span>
+                </button>
+              </div>
+            )}
+
+            {ratingMessage && (
+              <div style={{ padding: "8px 14px", borderRadius: "var(--radius-md)", background: "var(--green-light)", color: "var(--green)", fontSize: 12, fontWeight: 600, textAlign: "center" }}>
+                {ratingMessage}
+              </div>
+            )}
+          </div>
+        ) : (
+          <div style={{ padding: "28px 0", textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
+            <div style={{ width: 44, height: 44, borderRadius: "50%", background: "var(--green-light)", color: "var(--green)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <CheckCircle2 size={24} />
+            </div>
+            <h3 style={{ fontSize: 16, fontWeight: 700, color: "var(--text-primary)", margin: 0 }}>
+              All Daily Review Cards Completed! 🎉
+            </h3>
+            <p style={{ fontSize: 12, color: "var(--text-muted)", margin: 0, maxWidth: 460 }}>
+              Your memory intervals have been refreshed using SuperMemo-2. No knowledge decay today!
+            </p>
+            <button
+              className="btn btn-secondary btn-sm"
+              onClick={() => { setCurrentIndex(0); setIsFlipped(false); }}
+              style={{ gap: 6, marginTop: 4 }}
+            >
+              <RefreshCw size={12} /> Practice Entire Deck Again
+            </button>
+          </div>
+        )}
+      </div>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 14 }}>
         {[
           { label: "Solved",       value: "11",     sub: "vs 6 yesterday",    icon: Code2,      color: "var(--blue)"   },

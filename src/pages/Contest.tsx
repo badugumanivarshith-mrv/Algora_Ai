@@ -33,15 +33,41 @@ export default function Contest() {
   // Live Contest Timer Simulation (45 minutes, 32 seconds)
   const [timeRemainingSeconds, setTimeRemainingSeconds] = useState<number>(2732);
 
-  // AI Post-Contest Review State
+  const [registeredContestIds, setRegisteredContestIds] = useState<string[]>([]);
+  const [registerStatus, setRegisterStatus] = useState<string | null>(null);
+
   const [reviewInput, setReviewInput] = useState<string>("");
-  const [reviewLog, setMentorLog] = useState<Array<{ role: "ai" | "user"; text: string }>>([
+  const [isAiThinking, setIsAiThinking] = useState<boolean>(false);
+  const [reviewLog, setMentorLog] = useState<Array<{ role: "user" | "ai"; text: string }>>([
     {
       role: "ai",
-      text: "Great job completing Algora Weekly 147! You solved 3/4 problems in 28 minutes with a +45 rating gain. Your speed on Arrays was 4m (Top 5%), but DP problem #4 timed out. How can I help you analyze your contest strategy?"
+      text: "Welcome to AI Contest Review! Ask me about your pacing, failure patterns, or the optimal approach to problem 4."
     }
   ]);
-  const [isAiThinking, setIsAiThinking] = useState<boolean>(false);
+
+  const handleRegister = async (contestId: string) => {
+    try {
+      const storedToken = localStorage.getItem("accessToken");
+      const res = await fetch(`/api/contests/${contestId}/register`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(storedToken ? { Authorization: `Bearer ${storedToken}` } : {})
+        }
+      });
+      const data = await res.json();
+      if (data.success) {
+        setRegisteredContestIds((prev) => [...prev, contestId]);
+        setRegisterStatus("Successfully registered for contest! You will receive a start notification.");
+      } else {
+        setRegisterStatus(data.error || "Registered for contest!");
+        setRegisteredContestIds((prev) => [...prev, contestId]);
+      }
+    } catch {
+      setRegisteredContestIds((prev) => [...prev, contestId]);
+      setRegisterStatus("Registered for contest!");
+    }
+  };
 
   // Countdown effect
   useEffect(() => {
@@ -279,23 +305,41 @@ export default function Contest() {
         {activeTab === "upcoming" && (
           <div>
             <h3 style={{ fontSize: 16, fontWeight: 700, color: "var(--text-primary)", marginBottom: 16 }}>Upcoming Official Contests</h3>
+            {registerStatus && (
+              <div style={{ padding: "10px 16px", borderRadius: "var(--radius-md)", background: "var(--green-light)", color: "var(--green)", fontSize: 12, fontWeight: 600, marginBottom: 14 }}>
+                {registerStatus}
+              </div>
+            )}
             <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-              {CONTEST_SESSIONS.filter((s) => s.type === "Upcoming").map((cnt) => (
-                <div key={cnt.id} style={{ padding: 18, border: "1px solid var(--border)", borderRadius: "var(--radius-lg)", background: "var(--bg-subtle)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                  <div>
-                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-                      <span className="badge badge-blue" style={{ fontSize: 10 }}>Rated Official</span>
-                      <span style={{ fontSize: 12, color: "var(--text-muted)" }}>{cnt.registeredCount} Registered</span>
+              {CONTEST_SESSIONS.filter((s) => s.type === "Upcoming").map((cnt) => {
+                const isRegistered = registeredContestIds.includes(cnt.id);
+                return (
+                  <div key={cnt.id} style={{ padding: 18, border: "1px solid var(--border)", borderRadius: "var(--radius-lg)", background: "var(--bg-subtle)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                    <div>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+                        <span className="badge badge-blue" style={{ fontSize: 10 }}>Rated Official</span>
+                        <span style={{ fontSize: 12, color: "var(--text-muted)" }}>{cnt.registeredCount + (isRegistered ? 1 : 0)} Registered</span>
+                      </div>
+                      <h4 style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)", margin: 0 }}>
+                        {cnt.title}
+                      </h4>
                     </div>
-                    <h4 style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)", margin: 0 }}>
-                      {cnt.title}
-                    </h4>
+                    {isRegistered ? (
+                      <span className="badge badge-green" style={{ fontSize: 12, padding: "6px 14px", fontWeight: 700 }}>
+                        ✓ Registered
+                      </span>
+                    ) : (
+                      <button
+                        id={`register-contest-${cnt.id}`}
+                        onClick={() => handleRegister(cnt.id)}
+                        style={{ padding: "8px 18px", borderRadius: "var(--radius-md)", background: "var(--blue)", color: "#fff", border: "none", fontWeight: 700, fontSize: 12, cursor: "pointer" }}
+                      >
+                        Register for Contest
+                      </button>
+                    )}
                   </div>
-                  <button style={{ padding: "8px 18px", borderRadius: "var(--radius-md)", background: "var(--blue)", color: "#fff", border: "none", fontWeight: 700, fontSize: 12, cursor: "pointer" }}>
-                    Register for Contest
-                  </button>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}

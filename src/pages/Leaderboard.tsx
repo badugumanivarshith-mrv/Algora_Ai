@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Trophy, Zap, Flame, ArrowUpRight, ArrowDownRight, Minus, Search } from "lucide-react";
 
 type Tab = "global" | "weekly" | "monthly" | "college";
@@ -34,8 +34,21 @@ const makeUsers = (count = 20) =>
 export default function Leaderboard() {
   const [tab, setTab] = useState<Tab>("global");
   const [q, setQ] = useState("");
+  const [realUsers, setRealUsers] = useState<any[]>([]);
 
-  const rows = makeUsers(20).filter((u) => !q || u.name.toLowerCase().includes(q.toLowerCase()) || u.college.toLowerCase().includes(q.toLowerCase()));
+  useEffect(() => {
+    fetch("/api/leaderboard")
+      .then((res) => res.json())
+      .then((json) => {
+        if (json.success && Array.isArray(json.data) && json.data.length > 0) {
+          setRealUsers(json.data);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const baseList = realUsers.length > 0 ? realUsers : makeUsers(20);
+  const rows = baseList.filter((u) => !q || (u.name && u.name.toLowerCase().includes(q.toLowerCase())) || (u.college && u.college.toLowerCase().includes(q.toLowerCase())));
 
   return (
     <div style={{ padding: 24, maxWidth: 1200, margin: "0 auto", display: "flex", flexDirection: "column", gap: 20 }}>

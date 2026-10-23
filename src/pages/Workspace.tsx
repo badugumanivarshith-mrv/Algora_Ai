@@ -190,11 +190,11 @@ export default function Workspace() {
         if (json.success) {
           setExecResult({
             status: json.data.isAccepted ? "Accepted" : "Wrong Answer",
-            runtimeMs: json.data.submission.execution_time_ms,
-            memoryMb: json.data.submission.memory_mb,
-            passedTests: json.data.submission.passed_test_cases,
-            totalTests: json.data.submission.total_test_cases,
-            stdout: `Official Submission Evaluated!\nVerdict: ${json.data.submission.status}\nXP Earned: ${json.data.xpEarned || 0}`,
+            runtimeMs: json.data.executionTimeMs ?? json.data.submission?.executionTimeMs ?? json.data.submission?.execution_time_ms ?? 0,
+            memoryMb: json.data.memoryMb ?? json.data.submission?.memoryMb ?? json.data.submission?.memory_mb ?? 0,
+            passedTests: json.data.passedTestCases ?? json.data.submission?.passedTestCases ?? json.data.submission?.passed_test_cases ?? 0,
+            totalTests: json.data.totalTestCases ?? json.data.submission?.totalTestCases ?? json.data.submission?.total_test_cases ?? 0,
+            stdout: `Official Submission Evaluated!\nVerdict: ${json.data.verdict || json.data.submission?.status || "Evaluated"}\nXP Earned: ${json.data.xpEarned || 0}`,
             testResults: [
               {
                 testCaseId: "tc-hidden",
