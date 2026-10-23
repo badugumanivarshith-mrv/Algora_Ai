@@ -28,7 +28,7 @@ import { requireAuth, optionalAuth, requireRole } from '../middlewares/auth.midd
 import { validateBody, validateEmail } from '../middlewares/validation.middleware';
 import { authLimiter, aiLimiter, judgeLimiter } from '../middlewares/rateLimit.middleware';
 
-import { getPostgresConnectionStatus } from '../db/db';
+import { getPostgresConnectionStatus, pool } from '../db/db';
 import { getEnvAudit } from '../config/index';
 
 export const apiRouter = Router();
@@ -76,6 +76,29 @@ apiRouter.get('/health/db', (req, res) => {
     status: status.connected ? 'healthy' : 'fallback',
     connection: status,
     databaseName: 'neondb',
+    timestamp: new Date().toISOString()
+  });
+});
+
+apiRouter.get('/health/metrics', (req, res) => {
+  const mem = process.memoryUsage();
+  res.json({
+    status: 'ok',
+    uptimeSeconds: Math.floor(process.uptime()),
+    memory: {
+      rssMb: Math.round((mem.rss / 1024 / 1024) * 100) / 100,
+      heapTotalMb: Math.round((mem.heapTotal / 1024 / 1024) * 100) / 100,
+      heapUsedMb: Math.round((mem.heapUsed / 1024 / 1024) * 100) / 100,
+      externalMb: Math.round((mem.external / 1024 / 1024) * 100) / 100,
+    },
+    database: {
+      totalClients: pool.totalCount,
+      idleClients: pool.idleCount,
+      waitingClients: pool.waitingCount,
+    },
+    realtime: {
+      activeSSEConnections: realtimeBroadcaster.getConnectedClientsCount(),
+    },
     timestamp: new Date().toISOString()
   });
 });

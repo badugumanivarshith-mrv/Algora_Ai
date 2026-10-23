@@ -160,6 +160,13 @@ async function runTests() {
     passed += phase11Result.passed;
     failed += phase11Result.failed;
 
+    // --- 13. QA PHASE 12 RELEASE HARDENING & OBSERVABILITY (RH01-RH08) ---
+    console.log('\n--- 13. QA Phase 12 (RH01-RH08) Production Observability & Release Hardening ---');
+    const { runReleaseHardeningTests } = await import('./qaPhase12ReleaseHardening');
+    const phase12Result = await runReleaseHardeningTests();
+    passed += phase12Result.passed;
+    failed += phase12Result.failed;
+
   } catch (err: any) {
     console.error('Fatal Test Suite Error:', err.message);
     failed++;
