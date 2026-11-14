@@ -26,7 +26,7 @@ function databaseIdentity(databaseUrl: string): { host: string; database: string
   };
 }
 
-function run(command: string, args: string[], env: NodeJS.ProcessEnv): Promise<void> {
+function postgresArgs(databaseUrl: string): string[] {\n  const url = new URL(databaseUrl);\n  return ['--host', url.hostname, '--port', url.port || '5432', '--username', decodeURIComponent(url.username), '--dbname', decodeURIComponent(url.pathname.slice(1))];\n}\n\nfunction postgresEnv(databaseUrl: string): NodeJS.ProcessEnv {\n  const url = new URL(databaseUrl);\n  const env = { ...process.env, PGPASSWORD: decodeURIComponent(url.password) };\n  const sslmode = url.searchParams.get('sslmode');\n  if (sslmode) env.PGSSLMODE = sslmode;\n  return env;\n}\n\nfunction run(command: string, args: string[], env: NodeJS.ProcessEnv): Promise<void> {
   return new Promise((resolve, reject) => {
     const child = spawn(command, args, { env, stdio: ['ignore', 'ignore', 'pipe'] });
     let stderr = '';
