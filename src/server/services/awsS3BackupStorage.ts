@@ -37,7 +37,7 @@ export function getS3BackupConfig(): S3BackupConfig {
   const region = required('AWS_REGION');
   const accessKeyId = required('AWS_ACCESS_KEY_ID');
   const secretAccessKey = required('AWS_SECRET_ACCESS_KEY');
-  if (!/^[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]$/.test(bucket) || bucket.includes('..')) {
+  if (!/^[a-z0-9][a-z0-9-]{1,61}[a-z0-9]$/.test(bucket) || bucket.includes('..')) {
     throw new Error('AWS_S3_BACKUP_BUCKET is not a valid DNS-compatible bucket name');
   }
   return {
@@ -130,7 +130,7 @@ export async function uploadBackupFile(
     throw new Error('S3 backup object key must be a safe relative key');
   }
   const stat = await fs.stat(filePath);
-  if (!stat.isFile() || stat.size === 0) throw new Error('Backup artifact is missing or empty');
+  if (!stat.isFile() || stat.size === 0) throw new Error('Backup artifact is missing or empty');\n  if (stat.size > 5 * 1024 * 1024 * 1024) throw new Error('S3 single-PUT limit exceeded (5 GiB); multipart upload is not implemented yet');
   const checksum = await sha256File(filePath);
   const payloadHash = checksum;
   const signed = signedHeaders(config, 'PUT', objectKey, payloadHash, {
