@@ -1,6 +1,6 @@
 /**
  * Explicit, isolated PostgreSQL recovery drill.
- *
+ *        npm run dr:restore-drill -- /secure/path/backup.manifest.json <manifest-sha256>
  * Usage: DR_ALLOW_RESTORE=true DR_TARGET_DATABASE_URL=<empty scratch DB URL>
  *        npm run dr:restore-drill -- /secure/path/backup.manifest.json
  *
@@ -108,6 +108,7 @@ async function main() {
     const foreignKeys = Number(foreignKeysText);
     const users = Number(usersText);
     const problems = Number(problemsText);
+    if (!Number.isInteger(tables) || tables < 1 || !Number.isInteger(foreignKeys) || !Number.isInteger(users) || !Number.isInteger(problems)) {
       throw new Error(`Post-restore schema verification failed: ${verification}`);
     }
     const elapsedMs = Math.round(performance.now() - started);
