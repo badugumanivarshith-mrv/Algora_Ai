@@ -96,7 +96,7 @@ function signedHeaders(
   if (config.sessionToken) headers['x-amz-security-token'] = config.sessionToken;
 
   const names = Object.keys(headers).map((name) => name.toLowerCase()).sort();
-  const canonicalHeaders = names.map((name) => `${name}:${headers[name].trim().replace(/\s+/g, ' ')}\n`).join('');
+  const canonicalHeaders = names.map((name) => `${name}:${headers[name].trim().replace(/\\s+/g, ' ')}`).join('\\n');
   const signedNames = names.join(';');
   const canonicalRequest = [
     method, path, '', canonicalHeaders, signedNames, payloadHash,
