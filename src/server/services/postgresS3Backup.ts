@@ -8,7 +8,7 @@ import { promises as fs } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { randomUUID } from 'node:crypto';
-import { uploadBackupFile, sha256File, getS3BackupConfig } from './awsS3BackupStorage';
+import { uploadBackupFile, getS3BackupConfig } from './awsS3BackupStorage';
 
 export interface PublishedBackupManifest {
   format: 'algora-postgres-custom-v1';
