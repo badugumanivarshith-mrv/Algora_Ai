@@ -1,7 +1,9 @@
 /**
  * Explicit, isolated PostgreSQL recovery drill.
- *        npm run dr:restore-drill -- /secure/path/backup.manifest.json <manifest-sha256>
  * Usage: DR_ALLOW_RESTORE=true DR_TARGET_DATABASE_URL=<empty scratch DB URL>
+ *        npm run dr:restore-drill -- /secure/path/backup.manifest.json <manifest-sha256>
+ * The target database must exist and be empty; this script never drops a database.
+ */
  *        npm run dr:restore-drill -- /secure/path/backup.manifest.json
  *
  * The target database must already exist and be empty. This command never
