@@ -22,7 +22,7 @@ function databaseIdentity(databaseUrl: string): { host: string; database: string
   const parsed = new URL(databaseUrl);
   return {
     host: parsed.hostname.toLowerCase(),
-    database: decodeURIComponent(parsed.pathname.replace(/^\\//, '')),
+    database: decodeURIComponent(parsed.pathname.slice(1)),
   };
 }
 
@@ -40,10 +40,10 @@ function run(command: string, args: string[], env: NodeJS.ProcessEnv): Promise<v
   });
 }
 
-export async function createAndPublishPostgresBackup(): Promise<PublishedBackupManifest> {
+export interface PublishedBackupResult { manifest: PublishedBackupManifest; manifestSha256: string; }\n\nexport async function createAndPublishPostgresBackup(): Promise<PublishedBackupResult> {
   const databaseUrl = process.env.DATABASE_URL;
   if (!databaseUrl) throw new Error('DATABASE_URL is required to create a PostgreSQL backup');
-  if (process.env.NODE_ENV !== 'production' && process.env.DR_ALLOW_BACKUP !== 'true') {
+  if (process.env.DR_ALLOW_BACKUP !== 'true') {
     throw new Error('Set DR_ALLOW_BACKUP=true to explicitly authorize a backup operation');
   }
   const config = getS3BackupConfig();
