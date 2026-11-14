@@ -40,7 +40,7 @@ function run(command: string, args: string[], env: NodeJS.ProcessEnv): Promise<v
   });
 }
 
-export interface PublishedBackupResult { manifest: PublishedBackupManifest; manifestSha256: string; }\n\nexport async function createAndPublishPostgresBackup(): Promise<PublishedBackupResult> {
+export interface PublishedBackupResult { manifest: PublishedBackupManifest; manifestSha256: string; }
 
 export async function createAndPublishPostgresBackup(): Promise<PublishedBackupResult> {
   const databaseUrl = process.env.DATABASE_URL;
