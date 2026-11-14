@@ -34,6 +34,11 @@ function postgresArgs(databaseUrl: string): string[] {
 function postgresEnv(databaseUrl: string): NodeJS.ProcessEnv {
   const url = new URL(databaseUrl);
   const env = { ...process.env, PGPASSWORD: decodeURIComponent(url.password) };
+  delete env.DATABASE_URL;
+  delete env.DR_TARGET_DATABASE_URL;
+  delete env.AWS_ACCESS_KEY_ID;
+  delete env.AWS_SECRET_ACCESS_KEY;
+  delete env.AWS_SESSION_TOKEN;
   const sslmode = url.searchParams.get('sslmode');
   if (sslmode) env.PGSSLMODE = sslmode;
   return env;
