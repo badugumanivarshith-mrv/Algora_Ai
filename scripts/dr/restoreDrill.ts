@@ -13,7 +13,7 @@ import { promises as fs } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { performance } from 'node:perf_hooks';
-import { downloadAndVerifyBackup, getS3BackupConfig } from '../../src/server/services/awsS3BackupStorage';
+import { downloadAndVerifyBackup, getS3BackupConfig, sha256File } from '../../src/server/services/awsS3BackupStorage';
 
 interface Manifest {
   format: 'algora-postgres-custom-v1';
@@ -99,7 +99,7 @@ async function main() {
 
     const verification = await command(psql, [
       ...postgresArgs(targetUrl), '-X', '-A', '-t', '-F', '|', '-v', 'ON_ERROR_STOP=1',
-      '-c', "SELECT (SELECT count(*) FROM information_schema.tables WHERE table_schema='public'), (SELECT count(*) FROM information_schema.table_constraints WHERE constraint_schema='public' AND constraint_type='FOREIGN KEY')",
+      '-c', "SELECT (SELECT count(*) FROM information_schema.tables WHERE table_schema='public'), (SELECT count(*) FROM information_schema.table_constraints WHERE constraint_schema='public' AND constraint_type='FOREIGN KEY'), (SELECT count(*) FROM public.users), (SELECT count(*) FROM public.problems)",
     ], postgresEnv(targetUrl));
     const [tablesText, foreignKeysText] = verification.split('|');
     const tables = Number(tablesText);
