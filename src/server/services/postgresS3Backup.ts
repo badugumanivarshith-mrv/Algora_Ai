@@ -66,8 +66,8 @@ export async function createAndPublishPostgresBackup(): Promise<PublishedBackupR
   const dumpPath = path.join(tempDir, 'database.dump');
   try {
     await run(process.env.PG_DUMP_PATH || 'pg_dump', [
-      '--format=custom', '--no-owner', '--no-acl', '--file', dumpPath, databaseUrl,
-    ], process.env);
+      '--format=custom', '--no-owner', '--no-acl', '--file', dumpPath, ...postgresArgs(databaseUrl),
+    ], postgresEnv(databaseUrl));
     const stat = await fs.stat(dumpPath);
     if (!stat.size) throw new Error('pg_dump produced an empty artifact');
     await run(process.env.PG_RESTORE_PATH || 'pg_restore', ['--list', dumpPath], process.env);
