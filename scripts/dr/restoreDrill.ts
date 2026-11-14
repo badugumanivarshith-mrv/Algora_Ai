@@ -24,7 +24,7 @@ interface Manifest {
 
 function identity(value: string) {
   const url = new URL(value);
-  return { host: url.hostname.toLowerCase(), database: decodeURIComponent(url.pathname.replace(/^\\//, '')) };
+  return { host: url.hostname.toLowerCase(), database: decodeURIComponent(url.pathname.slice(1)) };
 }
 
 function postgresArgs(databaseUrl: string): string[] {
@@ -87,20 +87,20 @@ async function main() {
     const existing = await command(psql, [
       ...postgresArgs(targetUrl), '-X', '-A', '-t', '-v', 'ON_ERROR_STOP=1',
       '-c', "SELECT count(*) FROM information_schema.tables WHERE table_schema='public'",
-    ], process.env);
+    ], postgresEnv(targetUrl));
     if (Number(existing) !== 0) {
       throw new Error(`Safety stop: target database is not empty (${existing} public tables)`);
     }
 
     await command(process.env.PG_RESTORE_PATH || 'pg_restore', [
       '--no-owner', '--no-acl', '--exit-on-error', '--single-transaction',
-      '--dbname', targetUrl, dumpPath,
+      ...postgresArgs(targetUrl), dumpPath,
     ], process.env);
 
     const verification = await command(psql, [
       ...postgresArgs(targetUrl), '-X', '-A', '-t', '-F', '|', '-v', 'ON_ERROR_STOP=1',
       '-c', "SELECT (SELECT count(*) FROM information_schema.tables WHERE table_schema='public'), (SELECT count(*) FROM information_schema.table_constraints WHERE constraint_schema='public' AND constraint_type='FOREIGN KEY')",
-    ], process.env);
+    ], postgresEnv(targetUrl));
     const [tablesText, foreignKeysText] = verification.split('|');
     const tables = Number(tablesText);
     const foreignKeys = Number(foreignKeysText);
