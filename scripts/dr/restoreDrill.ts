@@ -95,7 +95,7 @@ async function main() {
     await command(process.env.PG_RESTORE_PATH || 'pg_restore', [
       '--no-owner', '--no-acl', '--exit-on-error', '--single-transaction',
       ...postgresArgs(targetUrl), dumpPath,
-    ], process.env);
+    ], postgresEnv(targetUrl));
 
     const verification = await command(psql, [
       ...postgresArgs(targetUrl), '-X', '-A', '-t', '-F', '|', '-v', 'ON_ERROR_STOP=1',
