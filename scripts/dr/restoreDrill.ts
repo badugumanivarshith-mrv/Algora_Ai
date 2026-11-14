@@ -90,7 +90,7 @@ async function main() {
   const dumpPath = path.join(scratch, 'recovery.dump');
   try {
     await downloadAndVerifyBackup(manifest.artifact.key, dumpPath, manifest.artifact.sha256, getS3BackupConfig());
-    await command(process.env.PG_RESTORE_PATH || 'pg_restore', ['--list', dumpPath], process.env);
+    await command(process.env.PG_RESTORE_PATH || 'pg_restore', ['--list', dumpPath], postgresEnv(targetUrl));
 
     const psql = process.env.PSQL_PATH || 'psql';
     const existing = await command(psql, [
