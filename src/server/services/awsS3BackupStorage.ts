@@ -130,7 +130,8 @@ export async function uploadBackupFile(
     throw new Error('S3 backup object key must be a safe relative key');
   }
   const stat = await fs.stat(filePath);
-  if (!stat.isFile() || stat.size === 0) throw new Error('Backup artifact is missing or empty');\n  if (stat.size > 5 * 1024 * 1024 * 1024) throw new Error('S3 single-PUT limit exceeded (5 GiB); multipart upload is not implemented yet');
+  if (!stat.isFile() || stat.size === 0) throw new Error('Backup artifact is missing or empty');
+  if (stat.size > 5 * 1024 * 1024 * 1024) throw new Error('S3 single-PUT limit exceeded (5 GiB); multipart upload is not implemented yet');
   const checksum = await sha256File(filePath);
   const payloadHash = checksum;
   const signed = signedHeaders(config, 'PUT', objectKey, payloadHash, {
