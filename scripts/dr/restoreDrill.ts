@@ -63,7 +63,9 @@ async function main() {
   const targetUrl = process.env.DR_TARGET_DATABASE_URL;
   if (!targetUrl) throw new Error('DR_TARGET_DATABASE_URL must point to a pre-created scratch database');
   const manifestPath = process.argv[2];
-  if (!manifestPath) throw new Error('Provide the locally downloaded backup manifest JSON path');
+  const expectedManifestSha256 = process.argv[3];
+  if (!manifestPath || !expectedManifestSha256) throw new Error('Provide manifest JSON path and its SHA-256 printed by dr:backup');
+  if (!/^[a-f0-9]{64}$/i.test(expectedManifestSha256) || (await sha256File(manifestPath)).toLowerCase() !== expectedManifestSha256.toLowerCase()) throw new Error('Backup manifest SHA-256 verification failed');
   const manifest = JSON.parse(await fs.readFile(manifestPath, 'utf8')) as Manifest;
   if (manifest.format !== 'algora-postgres-custom-v1' || !manifest.artifact?.key || !/^[a-f0-9]{64}$/i.test(manifest.artifact.sha256)) {
     throw new Error('Unsupported or invalid Algora backup manifest');
@@ -101,10 +103,11 @@ async function main() {
       ...postgresArgs(targetUrl), '-X', '-A', '-t', '-F', '|', '-v', 'ON_ERROR_STOP=1',
       '-c', "SELECT (SELECT count(*) FROM information_schema.tables WHERE table_schema='public'), (SELECT count(*) FROM information_schema.table_constraints WHERE constraint_schema='public' AND constraint_type='FOREIGN KEY'), (SELECT count(*) FROM public.users), (SELECT count(*) FROM public.problems)",
     ], postgresEnv(targetUrl));
-    const [tablesText, foreignKeysText] = verification.split('|');
+    const [tablesText, foreignKeysText, usersText, problemsText] = verification.split('|');
     const tables = Number(tablesText);
     const foreignKeys = Number(foreignKeysText);
-    if (!Number.isInteger(tables) || tables < 1 || !Number.isInteger(foreignKeys)) {
+    const users = Number(usersText);
+    const problems = Number(problemsText);
       throw new Error(`Post-restore schema verification failed: ${verification}`);
     }
     const elapsedMs = Math.round(performance.now() - started);
@@ -116,6 +119,8 @@ async function main() {
       backupSha256: manifest.artifact.sha256,
       tables,
       foreignKeys,
+      restoredUsers: users,
+      restoredProblems: problems,
       elapsedMs,
       note: 'Isolated target restore and schema checks passed; application-level data checks remain deployment-specific.',
     }, null, 2) + '\n');
