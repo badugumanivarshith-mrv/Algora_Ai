@@ -27,6 +27,19 @@ function identity(value: string) {
   return { host: url.hostname.toLowerCase(), database: decodeURIComponent(url.pathname.replace(/^\\//, '')) };
 }
 
+function postgresArgs(databaseUrl: string): string[] {
+  const url = new URL(databaseUrl);
+  return ['--host', url.hostname, '--port', url.port || '5432', '--username', decodeURIComponent(url.username), '--dbname', decodeURIComponent(url.pathname.slice(1))];
+}
+
+function postgresEnv(databaseUrl: string): NodeJS.ProcessEnv {
+  const url = new URL(databaseUrl);
+  const env = { ...process.env, PGPASSWORD: decodeURIComponent(url.password) };
+  const sslmode = url.searchParams.get('sslmode');
+  if (sslmode) env.PGSSLMODE = sslmode;
+  return env;
+}
+
 function command(bin: string, args: string[], env: NodeJS.ProcessEnv): Promise<string> {
   return new Promise((resolve, reject) => {
     const child = spawn(bin, args, { env, stdio: ['ignore', 'pipe', 'pipe'] });
@@ -72,7 +85,7 @@ async function main() {
 
     const psql = process.env.PSQL_PATH || 'psql';
     const existing = await command(psql, [
-      targetUrl, '-X', '-A', '-t', '-v', 'ON_ERROR_STOP=1',
+      ...postgresArgs(targetUrl), '-X', '-A', '-t', '-v', 'ON_ERROR_STOP=1',
       '-c', "SELECT count(*) FROM information_schema.tables WHERE table_schema='public'",
     ], process.env);
     if (Number(existing) !== 0) {
@@ -85,7 +98,7 @@ async function main() {
     ], process.env);
 
     const verification = await command(psql, [
-      targetUrl, '-X', '-A', '-t', '-F', '|', '-v', 'ON_ERROR_STOP=1',
+      ...postgresArgs(targetUrl), '-X', '-A', '-t', '-F', '|', '-v', 'ON_ERROR_STOP=1',
       '-c', "SELECT (SELECT count(*) FROM information_schema.tables WHERE table_schema='public'), (SELECT count(*) FROM information_schema.table_constraints WHERE constraint_schema='public' AND constraint_type='FOREIGN KEY')",
     ], process.env);
     const [tablesText, foreignKeysText] = verification.split('|');
@@ -105,13 +118,13 @@ async function main() {
       foreignKeys,
       elapsedMs,
       note: 'Isolated target restore and schema checks passed; application-level data checks remain deployment-specific.',
-    }, null, 2) + '\\n');
+    }, null, 2) + '\n');
   } finally {
     await fs.rm(scratch, { recursive: true, force: true });
   }
 }
 
 main().catch((error) => {
-  process.stderr.write(`RESTORE_DRILL_FAILED: ${error instanceof Error ? error.message : String(error)}\\n`);
+  process.stderr.write(`RESTORE_DRILL_FAILED: ${error instanceof Error ? error.message : String(error)}\n`);
   process.exitCode = 1;
 });
