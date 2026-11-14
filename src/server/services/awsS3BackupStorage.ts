@@ -155,6 +155,7 @@ export async function uploadBackupFile(
       });
     });
     request.on('error', reject);
+    request.setTimeout(120_000, () => request.destroy(new Error('S3 request timed out')));
     const source = createReadStream(filePath);
     source.on('error', (error) => request.destroy(error));
     source.pipe(request);
@@ -200,6 +201,7 @@ export async function downloadAndVerifyBackup(
       }
     });
     request.on('error', reject);
+    request.setTimeout(120_000, () => request.destroy(new Error('S3 request timed out')));
     request.end();
   });
 
