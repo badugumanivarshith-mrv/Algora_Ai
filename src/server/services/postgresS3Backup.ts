@@ -41,6 +41,8 @@ function run(command: string, args: string[], env: NodeJS.ProcessEnv): Promise<v
 }
 
 export interface PublishedBackupResult { manifest: PublishedBackupManifest; manifestSha256: string; }\n\nexport async function createAndPublishPostgresBackup(): Promise<PublishedBackupResult> {
+
+export async function createAndPublishPostgresBackup(): Promise<PublishedBackupResult> {
   const databaseUrl = process.env.DATABASE_URL;
   if (!databaseUrl) throw new Error('DATABASE_URL is required to create a PostgreSQL backup');
   if (process.env.DR_ALLOW_BACKUP !== 'true') {
@@ -69,8 +71,8 @@ export interface PublishedBackupResult { manifest: PublishedBackupManifest; mani
     };
     const manifestPath = path.join(tempDir, 'manifest.json');
     await fs.writeFile(manifestPath, JSON.stringify(manifest, null, 2), { mode: 0o600 });
-    await uploadBackupFile(manifestPath, manifest.manifestKey, config);
-    return manifest;
+    const manifestUpload = await uploadBackupFile(manifestPath, manifest.manifestKey, config);
+    return { manifest, manifestSha256: manifestUpload.sha256 };
   } finally {
     await fs.rm(tempDir, { recursive: true, force: true });
   }
