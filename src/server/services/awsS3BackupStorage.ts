@@ -8,6 +8,7 @@
 import { createHash, createHmac } from 'node:crypto';
 import { createReadStream, createWriteStream, promises as fs } from 'node:fs';
 import https from 'node:https';
+import path from 'node:path';
 import { pipeline } from 'node:stream/promises';
 
 export interface S3BackupConfig {
@@ -172,7 +173,7 @@ export async function downloadAndVerifyBackup(
     throw new Error('S3 backup object key must be a safe relative key');
   }
   if (!/^[a-f0-9]{64}$/i.test(expectedSha256)) throw new Error('Expected SHA-256 must be 64 hexadecimal characters');
-  await fs.mkdir(new URL('.', `file://${destinationPath}`), { recursive: true }).catch(() => undefined);
+  await fs.mkdir(path.dirname(path.resolve(destinationPath)), { recursive: true });
   const signed = signedHeaders(config, 'GET', objectKey, sha256(Buffer.alloc(0)));
   let bytes = 0;
   let remoteChecksum = '';
