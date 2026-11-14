@@ -12,7 +12,7 @@
     "lint": "tsc --noEmit",
     "test": "tsx src/server/tests/runAllTests.ts",
     "test:e2e": "tsx src/server/tests/qaPhase7FrontendE2E.ts",
-    "dr:backup": "tsx -e \"import { createAndPublishPostgresBackup } from './src/server/services/postgresS3Backup'; createAndPublishPostgresBackup().then(x => console.log(JSON.stringify(x, null, 2))).catch(e => { console.error(e); process.exit(1); })\"",
+    "dr:backup": "tsx scripts/dr/createBackup.ts",
     "dr:restore-drill": "tsx scripts/dr/restoreDrill.ts"
   },
   "dependencies": {
