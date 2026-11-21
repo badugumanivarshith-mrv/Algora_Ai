@@ -1,3 +1,6 @@
+import dotenv from 'dotenv';
+dotenv.config();
+
 import { createAndPublishPostgresBackup } from '../../src/server/services/postgresS3Backup';
 
 createAndPublishPostgresBackup()
